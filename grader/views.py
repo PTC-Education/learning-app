@@ -86,6 +86,7 @@ def login(request: HttpRequest):
     user.did = request.GET.get('did')
     user.wid = request.GET.get('wvmid')
     user.eid = request.GET.get('eid')
+    user.etype = request.GET.get('etype')
     user.save() 
 
     return redirect(
@@ -195,7 +196,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
             massAsGroup=True, auth_token=curr_user.access_token
         )
     if not user_mass_prop: # API error 
-        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app in the part studio that you originally started this modelling question with ...")
+        return HttpResponse(curr_user.etype)
+        # return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app in the part studio that you originally started this modelling question with ...")
     # Get info about the document the user currently has opened
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     # Set list of user_props [mass, vol, periphery, principleInertia]
@@ -284,6 +286,57 @@ def grade_model(request: HttpRequest, os_user_id: str):
         request, "grader/grader.html", 
         context=context
     )
+
+#################### Helper API calls ####################
+
+def get_mass_props(
+    domain: str, did: str, wvm: str, wvmid: str, eid: str, etype: str, auth_token: str, massAsGroup=True
+) -> Any: 
+    """ Get the mass and geometry properties of the given element 
+    """
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/{}/d/{}/{}/{}/e/{}/massproperties".format(
+            etype, did, wvm, wvmid, eid
+        )
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }, 
+        params={
+            "massAsGroup": massAsGroup
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
+
+def get_doc_info(
+    domain: str, did: str, auth_token: str
+) -> Any: 
+    """ Get the document info from the current document
+    """
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/documents/{}".format(did)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
 
 #################### Other helper functions ####################
 

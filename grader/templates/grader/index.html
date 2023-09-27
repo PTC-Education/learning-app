@@ -22,6 +22,12 @@
         <div>
             <h3>Instructions:</h3>
             <p>Auto grader instrucitons here.</p>
+            <!-- Go to auto grader -->
+            <br />
+            <form action="{% url 'grader:grader' user.os_user_id %}">
+                <input type="submit" value="Go to Auto Grader"/>
+            </form>
+            <br>
             <p class="details">For more information, view the <a href="{% url 'grader:home' user.os_user_id %}#details">detailed instructions</a>.</p>
         </div>
         <br /><br />
