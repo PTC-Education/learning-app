@@ -61,5 +61,12 @@
             {% endfor %}
         </ul>
         {% endif %}
+
+        <br>
+        <p>User's data</p>
+        {% if mdHTMLtext %}
+        <p>User's data</p>
+            {{ mdHTMLtext|safe }}
+        {% endif %}
     </body>
 </html>

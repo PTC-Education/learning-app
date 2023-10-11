@@ -10,7 +10,10 @@ from django.utils import timezone
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
 
+
 from .models import * 
+
+import markdown
 
 # Create your views here.
 def home(request: HttpRequest, os_user_id=None):
@@ -185,7 +188,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     ref_urls = request.GET.getlist('ref_url')
-    #print("ref URLs",ref_urls) #grabs the url from the user input #removeMilan
+    print("ref URLs",ref_urls) #grabs the url from the user input #removeMilan
 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -202,6 +205,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
         # return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app in the part studio that you originally started this modelling question with ...")
     # Get info about the document the user currently has opened
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+    #print("user document info",user_doc_info)
     # Set list of user_props [mass, vol, periphery, principleInertia]
     try:
         if curr_user.etype == "partstudios":
@@ -232,6 +236,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # Get info and mass props for all url's in ref doc list
     ref_props = []
     failed_urls = []
+    blob=[]
     for i, url in enumerate(ref_urls):
         ref_url = get_ref_url_ids(url)
         try:
@@ -253,6 +258,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
             doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
             doc_name = doc_info['name']
             doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+
+
+            elements_info=get_elements_info(curr_user.os_domain, ref_url['did'],ref_url['wid'] ,auth_token=curr_user.access_token)
+            for element_info in elements_info:
+                if(element_info['name'] == "example.md"):
+                    blob.append(get_blob_data(curr_user.os_domain, ref_url['did'],ref_url['wid'],element_info['id'] ,auth_token=curr_user.access_token))
+                    print(blob)
             ref_props.append([doc_name, doc_time, doc_mass])
         except:
             failed_urls.append(url)
@@ -261,6 +273,10 @@ def grade_model(request: HttpRequest, os_user_id: str):
         failed_urls = None
 
     ref_table = ref_table_create(ref_props)
+    mdHTMLtext=md_HTML_create(blob[0])
+    print("&&&&&&&&&&")
+    print(mdHTMLtext)
+    print("**********")
     err_tol = 0.005
 
     if len(ref_props)>0 and user_props:
@@ -282,7 +298,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
         check_symbols=None
         
     ref_table = ref_table_create(ref_props,check_symbols)
-    print("ref_table after", ref_table)
 
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
     context={
@@ -290,7 +305,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
         "doc_time" : user_doc_time,
         "ref_table" : ref_table,
         "failed_urls" : failed_urls,
-        "ref_urls" : ref_urls
+        "ref_urls" : ref_urls,
+        "mdHTMLtext":mdHTMLtext
     }
     return render(
         request, "grader/grader.html", 
@@ -324,6 +340,49 @@ def get_mass_props(
         return response.json() 
     else: 
         return None
+
+
+def get_elements_info(
+    domain: str, did: str, wid: str, auth_token: str
+) -> Any: 
+    """ Get the document info from the current document
+    """
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/documents/d/{}/w/{}/elements".format(did,wid)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
+def get_blob_data(
+    domain: str, did: str, wid: str, eid: str, auth_token: str
+) -> Any: 
+    """ Get the document info from the current document
+    """
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/blobelements/d/{}/w/{}/e/{}".format(did,wid,eid)
+        ), 
+        headers={
+            "Accept": "application/octet-stream", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.content
+    else: 
+        return None
+
 
 
 def get_doc_info(
@@ -391,6 +450,21 @@ def part_mass_check(user_prop: Iterable[Any], ref_prop: Iterable[Any]=None, chec
             </tr>
             '''
         return mass_msg + "</table><br><small>Reference URL can't be accessed or is a different element type</small>"
+
+
+
+def md_HTML_create(blob: Iterable[Any]=None) -> Union[bool, str]: 
+    
+    mdHTMLtext=''
+    if blob:
+        print(blob)
+        mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
+        #mdHTMLtext=blob
+        print(mdHTMLtext)
+    
+    return mdHTMLtext
+
+
 
 def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) -> Union[bool, str]: 
     
