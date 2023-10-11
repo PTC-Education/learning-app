@@ -40,6 +40,8 @@
             <button class="add" onclick="add()">Add</button>
             <button class="remove" onclick="remove()">Remove</button>
         </div>
+
+
         <h3>Time from document creation to last modified</h3>
         {% if doc_time %}
             {{ doc_time|safe }}
@@ -63,10 +65,8 @@
         {% endif %}
 
         <br>
-        <p>User's data</p>
         {% if mdHTMLtext %}
-        <p>User's data</p>
-            {{ mdHTMLtext|safe }}
-        {% endif %}
+        {{ mdHTMLtext|safe }}
+    {% endif %}
     </body>
 </html>

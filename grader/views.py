@@ -236,7 +236,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # Get info and mass props for all url's in ref doc list
     ref_props = []
     failed_urls = []
-    blob=[]
+    blobs=[]
     for i, url in enumerate(ref_urls):
         ref_url = get_ref_url_ids(url)
         try:
@@ -260,11 +260,11 @@ def grade_model(request: HttpRequest, os_user_id: str):
             doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
 
 
-            elements_info=get_elements_info(curr_user.os_domain, ref_url['did'],ref_url['wid'] ,auth_token=curr_user.access_token)
+            elements_info=get_elements_info(curr_user.os_domain, ref_url['did'],ref_url['wid'] ,auth_token=curr_user.access_token) #get all elements in the document
             for element_info in elements_info:
-                if(element_info['name'] == "example.md"):
-                    blob.append(get_blob_data(curr_user.os_domain, ref_url['did'],ref_url['wid'],element_info['id'] ,auth_token=curr_user.access_token))
-                    print(blob)
+                if(element_info['name'] == "example.md"): #only for elements that is named example.md
+                    blobs.append(get_blob_data(curr_user.os_domain, ref_url['did'],ref_url['wid'],element_info['id'] ,auth_token=curr_user.access_token)) #grad the content of the markdown file
+                    print(blobs)
             ref_props.append([doc_name, doc_time, doc_mass])
         except:
             failed_urls.append(url)
@@ -273,10 +273,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
         failed_urls = None
 
     ref_table = ref_table_create(ref_props)
-    mdHTMLtext=md_HTML_create(blob[0])
-    print("&&&&&&&&&&")
-    print(mdHTMLtext)
-    print("**********")
+    mdHTMLtext=md_HTML_create(blobs)  #convert markdown .md file to HTML
     err_tol = 0.005
 
     if len(ref_props)>0 and user_props:
@@ -453,11 +450,10 @@ def part_mass_check(user_prop: Iterable[Any], ref_prop: Iterable[Any]=None, chec
 
 
 
-def md_HTML_create(blob: Iterable[Any]=None) -> Union[bool, str]: 
+def md_HTML_create(blobs: Iterable[Any]=None) -> Union[bool, str]: 
     
     mdHTMLtext=''
-    if blob:
-        print(blob)
+    for blob in blobs:
         mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
         #mdHTMLtext=blob
         print(mdHTMLtext)
