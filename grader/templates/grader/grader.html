@@ -40,6 +40,8 @@
             <button class="add" onclick="add()">Add</button>
             <button class="remove" onclick="remove()">Remove</button>
         </div>
+
+
         <h3>Time from document creation to last modified</h3>
         {% if doc_time %}
             {{ doc_time|safe }}
@@ -54,12 +56,17 @@
         {% endif %}
         <br>
         {% if failed_urls %}
-        <p>We failed to get information from the followign reference URLs</p>
+        <p>We failed to get information from the following reference URLs</p>
         <ul>
             {% for url in failed_urls %}
                 <li>{{ failed_urls|safe }}</li>
             {% endfor %}
         </ul>
         {% endif %}
+
+        <br>
+        {% if mdHTMLtext %}
+        {{ mdHTMLtext|safe }}
+    {% endif %}
     </body>
 </html>

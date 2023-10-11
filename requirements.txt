@@ -30,3 +30,4 @@ trimesh==3.21.4
 typing-extensions==4.5.0
 urllib3==1.26.15
 whitenoise==6.4.0
+markdown==3.4
