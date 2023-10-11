@@ -185,6 +185,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     ref_urls = request.GET.getlist('ref_url')
+    #print("ref URLs",ref_urls) #grabs the url from the user input #removeMilan
 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -195,6 +196,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
             curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.etype, 
             massAsGroup=True, auth_token=curr_user.access_token
         )
+    #print("user_mass_prop", user_mass_prop) #removeMilan
     if not user_mass_prop: # API error 
         return HttpResponse(curr_user.etype)
         # return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app in the part studio that you originally started this modelling question with ...")
@@ -217,10 +219,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     user_mass_prop['principalInertia'][0]
                 ]
         for i, prop in enumerate(user_props):
+
+            #instead of rounding off the mass here we will round off during display
             if prop < 0.1 or prop > 99: 
                 user_props[i] = '{:.2e}'.format(user_props[i])
             else: 
                 user_props[i] = round(user_props[i], 3)
+            pass
     except:
         user_props = None
     
@@ -239,6 +244,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
             elif curr_user.etype == "assemblies":
                 doc_mass = mass_prop['mass'][0]
             # Round for display
+            #might be source of error
             if doc_mass < 0.1 or doc_mass > 99: 
                 doc_mass = '{:.2e}'.format(doc_mass)
             else: 
@@ -255,24 +261,28 @@ def grade_model(request: HttpRequest, os_user_id: str):
         failed_urls = None
 
     ref_table = ref_table_create(ref_props)
-
     err_tol = 0.005
 
     if len(ref_props)>0 and user_props:
         check_symbols=[]
         for i, ref_prop in enumerate(ref_props): 
+
             # Check for accuracy 
             if (
-                ref_prop[2] * (1 - err_tol) > user_props[0] or 
-                user_props[0] > ref_prop[2] * (1 + err_tol)
+                float(ref_prop[2]) * (1 - err_tol) > float(user_props[0]) or 
+                float(user_props[0]) > float(ref_prop[2]) * (1 + err_tol)
             ): 
                 check_symbols.append("&#x2717;")
+                print("wrong")
             else: 
                 check_symbols.append("&#x2713;")
+                print("right")
+
     else:
         check_symbols=None
         
     ref_table = ref_table_create(ref_props,check_symbols)
+    print("ref_table after", ref_table)
 
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
     context={
