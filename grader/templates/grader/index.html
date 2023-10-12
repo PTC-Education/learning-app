@@ -36,6 +36,14 @@
                 <input type="submit" value="Go to Auto Grader"/>
             </form>
             <br>
+            <h3>Launch HTML:</h3>
+            <p>Auto grader instrucitons here.</p>
+            <br />
+            <form action="{% url 'grader:instruction' user.os_user_id %}">
+                <input type="submit" value="Launch HTML"/>
+            </form>
+
+            <br>
             <p class="details">For more information, view the <a href="{% url 'grader:home' user.os_user_id %}#details">detailed instructions</a>.</p>
         </div>
         <br /><br />
