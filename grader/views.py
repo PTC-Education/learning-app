@@ -208,7 +208,8 @@ def showlist(request: HttpRequest, os_user_id: str):
         print("Error") #need better error message here
     context={
             "user": curr_user, 
-            "filenames":markdown_file_names #send all markdown file names with the context
+            "filenames":markdown_file_names, #send all markdown file names with the context
+            "blob":blobs
         }
     return render(
         request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
@@ -217,6 +218,8 @@ def showlist(request: HttpRequest, os_user_id: str):
     )
 
     #saving the snippet below for instruction.html to render markdown files to HTML
+
+
     '''
     
         context={

@@ -3,8 +3,8 @@
     <head>
         {% load static %}
         <link rel="stylesheet" href="{% static 'grader/home.css' %}">
-        <!-- Load js for url fields -->
-        <script src="{% static 'grader/url_fields.js' %}" type="text/javascript" defer></script>
+        <!-- Load js for filenames -->
+        <script src="{% static 'grader/filename.js' %}" type="text/javascript" defer></script>
         <!-- Load js for handling export of csv -->
         <script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer></script>
         <!-- Load loading_modelling function to enable loading screen -->
@@ -24,9 +24,17 @@
         {% if error_message %}
         <p id="err_msg"><strong>{{ error_message }}</strong></p>
         {% endif %}
-            {% if filenames %}
-            {{ filenames }}
-        {% endif %}
+
+       {% if filenames %}
+        {% for filename in filenames %}
+            <input type="text" name="filename" id="fname" value={{filename|safe}}  title="Copy/paste reference model" size="50" /> <button class="add">>Load file</button>
+            <script>console.log("df")</script>
+         {% endfor %}
+       
+
+         {% endif %}
+
+
 
     </body>
 </html>
