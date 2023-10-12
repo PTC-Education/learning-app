@@ -20,8 +20,13 @@
 
         <!-- Render the HTML from the markdown file-->
         <br>
+
+        {% if error_message %}
+        <p id="err_msg"><strong>{{ error_message }}</strong></p>
+    {% endif %}
         {% if mdHTMLtext %}
         {{ mdHTMLtext|safe }}
         {% endif %}
+
     </body>
 </html>

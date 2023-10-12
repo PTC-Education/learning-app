@@ -169,7 +169,7 @@ def index(request: HttpRequest, os_user_id: str):
 
 
 
-def instruction(request: HttpRequest, os_user_id: str): 
+def showlist(request: HttpRequest, os_user_id: str): 
     """ 
     If the user wants to load instruction content on the app as HTML using a markdown file the view is called
     
@@ -184,28 +184,60 @@ def instruction(request: HttpRequest, os_user_id: str):
     
     :template:`grader/grader.html`
     """
-    mdHTMLtext=''
+    mdHTMLtext='Empty'
 
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
     blobs=[] #store the blob from the markdown imported on the document
+    markdown_file_names=[] #array to store all markdown files in the document
     #get all elements in the document
     elements_info=get_elements_info(curr_user.os_domain, curr_user.did,curr_user.wid ,auth_token=curr_user.access_token) 
-    #only for elements that is named instruction.md
-    for element_info in elements_info:
-        if(element_info['name'] == "instruction.md"): 
-            blobs.append(get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)) #read the content of the markdown file
-    mdHTMLtext=md_HTML_create(blobs)  #convert markdown .md file to HTML
+
+    try:
+        for element_info in elements_info:
+            #if(element_info['name'] == "instruction.md"): 
+            if(element_info["dataType"] == "text/x-markdown"): #check if the element is a markdown file
+                blobs.append(get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)) #read the content of the markdown file
+                markdown_file_names.append(element_info["name"])
+            
+            mdHTMLtext=md_HTML_create(blobs)  #convert markdown .md file to HTML
+   
+    except:
+        print("Error") #need better error message here
     context={
-        "user": curr_user, 
-        "mdHTMLtext":mdHTMLtext
-    }
+            "user": curr_user, 
+            "filenames":markdown_file_names #send all markdown file names with the context
+        }
+    return render(
+        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        context=context
+   
+    )
+
+    #saving the snippet below for instruction.html to render markdown files to HTML
+    '''
+    
+        context={
+            "user": curr_user, 
+            "error_message":"Error"
+        }
+    if mdHTMLtext=='Empty':
+        context={
+            "user": curr_user, 
+            "error_message":"No supporting markdownfile found. Upload instruction.md "
+        }
+    else:
+        context={
+            "user": curr_user, 
+            "mdHTMLtext":mdHTMLtext
+        }
     return render(
         request, "grader/instruction.html", 
         context=context
     )
+    '''
 
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
@@ -287,7 +319,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
             elif curr_user.etype == "assemblies":
                 doc_mass = mass_prop['mass'][0]
             # Round for display
-            #might be source of error
             if doc_mass < 0.1 or doc_mass > 99: 
                 doc_mass = '{:.2e}'.format(doc_mass)
             else: 

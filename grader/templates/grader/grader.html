@@ -44,7 +44,6 @@
 
         
         {% if doc_time %}
-
         <h3>Time from document creation to last modified</h3>
             {{ doc_time|safe }}
             <br /><br />
@@ -67,9 +66,5 @@
         </ul>
         {% endif %}
 
-        <br>
-        {% if mdHTMLtext %}
-        {{ mdHTMLtext|safe }}
-    {% endif %}
     </body>
 </html>
