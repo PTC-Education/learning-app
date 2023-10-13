@@ -19,19 +19,16 @@
         <br />
 
         <!-- Render the HTML from the markdown file-->
-        <br>
-
         {% if error_message %}
         <p id="err_msg"><strong>{{ error_message }}</strong></p>
         {% endif %}
-
-       {% if filenames %}
-        {% for filename in filenames %}
-            <input type="text" name="filename" id="fname" value={{filename|safe}}  title="Copy/paste reference model" size="50" /> <button class="add">>Load file</button>
-            <script>console.log("df")</script>
+        <!-- Render the HTML from the markdown file-->
+       {% if blobs %}
+        {% for blob in blobs %}
+            <input type="text" name="filename" id="fname" value={{blob.0|safe}}  title="Copy/paste reference model" size="50" /> <!--Name of the markdown files-->
+            <input type="text" name="filename" id="fname" value={{blob.1|safe}}  title="Copy/paste reference model" size="50" /> <!--Contents of the markdown files--> <!--Later on this will be exposed with a button click, next previous, scroll features etc. -->
+      
          {% endfor %}
-       
-
          {% endif %}
 
 

@@ -190,7 +190,7 @@ def showlist(request: HttpRequest, os_user_id: str):
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
-    blobs=[] #store the blob from the markdown imported on the document
+    blobs=[] # to store the blob from the markdowns imported on the document
     markdown_file_names=[] #array to store all markdown files in the document
     #get all elements in the document
     elements_info=get_elements_info(curr_user.os_domain, curr_user.did,curr_user.wid ,auth_token=curr_user.access_token) 
@@ -199,17 +199,22 @@ def showlist(request: HttpRequest, os_user_id: str):
         for element_info in elements_info:
             #if(element_info['name'] == "instruction.md"): 
             if(element_info["dataType"] == "text/x-markdown"): #check if the element is a markdown file
-                blobs.append(get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)) #read the content of the markdown file
-                markdown_file_names.append(element_info["name"])
+                filename=element_info["name"]
+                filecontent_in_md=get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)
+                filecontent_in_HTML=md_HTML_create(filecontent_in_md)
+                blobs.append([filename,filecontent_in_HTML])
+                print(blobs)
+                #blobs.append(element_info["name"],get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)) #read the content of the markdown file
+                #markdown_file_names.append(element_info["name"])
             
-            mdHTMLtext=md_HTML_create(blobs)  #convert markdown .md file to HTML
+            #mdHTMLtext=md_HTML_create(blobs)  #convert markdown .md file to HTML
    
     except:
         print("Error") #need better error message here
     context={
             "user": curr_user, 
-            "filenames":markdown_file_names, #send all markdown file names with the context
-            "blob":blobs
+            "filenames":markdown_file_names, # all markdown file names with the context
+            "blobs":blobs                     #all markdown contents   
         }
     return render(
         request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
@@ -218,8 +223,6 @@ def showlist(request: HttpRequest, os_user_id: str):
     )
 
     #saving the snippet below for instruction.html to render markdown files to HTML
-
-
     '''
     
         context={
@@ -512,11 +515,10 @@ def part_mass_check(user_prop: Iterable[Any], ref_prop: Iterable[Any]=None, chec
 
 
 
-def md_HTML_create(blobs: Iterable[Any]=None) -> Union[bool, str]: 
+def md_HTML_create(blob: Iterable[Any]=None) -> Union[bool, str]: 
     
     mdHTMLtext=''
-    for blob in blobs:
-        mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
+    mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
     return mdHTMLtext
 
 
