@@ -9,6 +9,7 @@ urlpatterns = [
     path('oauthRedirect/', views.authorize, name='authorize'), 
     path('index/<str:os_user_id>/', views.index, name='index'), 
     path('grader/<str:os_user_id>/', views.grader, name='grader'),
+    path('showlist/<str:os_user_id>/', views.showlist, name='showlist'),
     path('grade/<str:os_user_id>/<str:ref_url>/', views.grade_model, name="grade"), 
     path('grade/<str:os_user_id>/', views.grade_model, name="grade")
 ]

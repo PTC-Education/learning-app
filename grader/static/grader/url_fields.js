@@ -1,5 +1,6 @@
 var formfield = document.getElementById('url_field_form');
 
+
 function add(){
   var newField = document.createElement('input');
   newField.setAttribute('type','text');

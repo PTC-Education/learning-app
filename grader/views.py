@@ -36,7 +36,7 @@ def home(request: HttpRequest, os_user_id=None):
         context['user'] = curr_user
     return render(request, "grader/home.html", context=context)
 
-# Create your views here.
+
 def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
     The auto grader page for checking a model's mass properties and time completion. 
@@ -57,6 +57,7 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     if mass_props:
         context['mass_props'] = mass_props
     return render(request, "grader/grader.html", context=context)
+
 
 
 def login(request: HttpRequest): 
@@ -168,6 +169,82 @@ def index(request: HttpRequest, os_user_id: str):
 
 
 
+def showlist(request: HttpRequest, os_user_id: str): 
+    """ 
+    If the user wants to load instruction content on the app as HTML using a markdown file the view is called
+    
+    **Context:**
+    
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/grader.html`
+    """
+    mdHTMLtext='Empty'
+
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    blobs=[] # to store the blob from the markdowns imported on the document
+    markdown_file_names=[] #array to store all markdown files in the document
+    #get all elements in the document
+    elements_info=get_elements_info(curr_user.os_domain, curr_user.did,curr_user.wid ,auth_token=curr_user.access_token) 
+
+    try:
+        for element_info in elements_info:
+            #if(element_info['name'] == "instruction.md"): 
+            if(element_info["dataType"] == "text/x-markdown"): #check if the element is a markdown file
+                filename=element_info["name"]
+                filecontent_in_md=get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)
+                filecontent_in_HTML=md_HTML_create(filecontent_in_md)
+                blobs.append([filename,filecontent_in_HTML])
+                print(blobs)
+                #blobs.append(element_info["name"],get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)) #read the content of the markdown file
+                #markdown_file_names.append(element_info["name"])
+            
+            #mdHTMLtext=md_HTML_create(blobs)  #convert markdown .md file to HTML
+   
+    except:
+        print("Error") #need better error message here
+    context={
+            "user": curr_user, 
+            "filenames":markdown_file_names, # all markdown file names with the context
+            "blobs":blobs                     #all markdown contents   
+        }
+    return render(
+        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        context=context
+   
+    )
+
+    #saving the snippet below for instruction.html to render markdown files to HTML
+    '''
+    
+        context={
+            "user": curr_user, 
+            "error_message":"Error"
+        }
+    if mdHTMLtext=='Empty':
+        context={
+            "user": curr_user, 
+            "error_message":"No supporting markdownfile found. Upload instruction.md "
+        }
+    else:
+        context={
+            "user": curr_user, 
+            "mdHTMLtext":mdHTMLtext
+        }
+    return render(
+        request, "grader/instruction.html", 
+        context=context
+    )
+    '''
+
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits a model, API calls are made to check if the 
@@ -188,7 +265,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     ref_urls = request.GET.getlist('ref_url')
-    print("ref URLs",ref_urls) #grabs the url from the user input #removeMilan
 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -199,13 +275,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
             curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.etype, 
             massAsGroup=True, auth_token=curr_user.access_token
         )
-    #print("user_mass_prop", user_mass_prop) #removeMilan
+
     if not user_mass_prop: # API error 
         return HttpResponse(curr_user.etype)
         # return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app in the part studio that you originally started this modelling question with ...")
     # Get info about the document the user currently has opened
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
-    #print("user document info",user_doc_info)
+
     # Set list of user_props [mass, vol, periphery, principleInertia]
     try:
         if curr_user.etype == "partstudios":
@@ -249,7 +325,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
             elif curr_user.etype == "assemblies":
                 doc_mass = mass_prop['mass'][0]
             # Round for display
-            #might be source of error
             if doc_mass < 0.1 or doc_mass > 99: 
                 doc_mass = '{:.2e}'.format(doc_mass)
             else: 
@@ -258,13 +333,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
             doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
             doc_name = doc_info['name']
             doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
-
-
-            elements_info=get_elements_info(curr_user.os_domain, ref_url['did'],ref_url['wid'] ,auth_token=curr_user.access_token) #get all elements in the document
-            for element_info in elements_info:
-                if(element_info['name'] == "example.md"): #only for elements that is named example.md
-                    blobs.append(get_blob_data(curr_user.os_domain, ref_url['did'],ref_url['wid'],element_info['id'] ,auth_token=curr_user.access_token)) #grad the content of the markdown file
-                    print(blobs)
             ref_props.append([doc_name, doc_time, doc_mass])
         except:
             failed_urls.append(url)
@@ -273,7 +341,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
         failed_urls = None
 
     ref_table = ref_table_create(ref_props)
-    mdHTMLtext=md_HTML_create(blobs)  #convert markdown .md file to HTML
     err_tol = 0.005
 
     if len(ref_props)>0 and user_props:
@@ -286,10 +353,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 float(user_props[0]) > float(ref_prop[2]) * (1 + err_tol)
             ): 
                 check_symbols.append("&#x2717;")
-                print("wrong")
             else: 
                 check_symbols.append("&#x2713;")
-                print("right")
 
     else:
         check_symbols=None
@@ -303,7 +368,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
         "ref_table" : ref_table,
         "failed_urls" : failed_urls,
         "ref_urls" : ref_urls,
-        "mdHTMLtext":mdHTMLtext
+
     }
     return render(
         request, "grader/grader.html", 
@@ -342,7 +407,7 @@ def get_mass_props(
 def get_elements_info(
     domain: str, did: str, wid: str, auth_token: str
 ) -> Any: 
-    """ Get the document info from the current document
+    """ Get the information about available elements in the current document
     """
     response = requests.get(
         os.path.join(
@@ -363,7 +428,7 @@ def get_elements_info(
 def get_blob_data(
     domain: str, did: str, wid: str, eid: str, auth_token: str
 ) -> Any: 
-    """ Get the document info from the current document
+    """ Get the blob content of the given element
     """
     response = requests.get(
         os.path.join(
@@ -450,14 +515,10 @@ def part_mass_check(user_prop: Iterable[Any], ref_prop: Iterable[Any]=None, chec
 
 
 
-def md_HTML_create(blobs: Iterable[Any]=None) -> Union[bool, str]: 
+def md_HTML_create(blob: Iterable[Any]=None) -> Union[bool, str]: 
     
     mdHTMLtext=''
-    for blob in blobs:
-        mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
-        #mdHTMLtext=blob
-        print(mdHTMLtext)
-    
+    mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
     return mdHTMLtext
 
 
