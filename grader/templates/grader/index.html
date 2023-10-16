@@ -25,27 +25,17 @@
             <p>Auto grader instrucitons here.</p>
             <!-- Go to auto grader -->
             <br />
-            <form action="{% url 'grader:grader' user.os_user_id %}">
-                <input type="submit" value="Go to Auto Grader"/>
+            <form action="{% url 'grader:generic_grader' user.os_user_id %}">
+                <input type="submit" value="Generic Grader"/>
             </form>
             <br>
-            <h3>Launch HTML:</h3>
-            <p>Auto grader instrucitons here.</p>
-            <br />
-            <form action="{% url 'grader:filelist' user.os_user_id %}">
-                <input type="submit" value="Launch HTML"/>
+
+            <form action="{% url 'grader:grader' user.os_user_id %}">
+                <input type="submit" value="Science Olympiad Grader"/>
             </form>
 
-        <br /><br />
+        </div>
 
-
-        <h3>List classes for the user</h3>
-        <br />
-        <form action="{% url 'grader:classlist' user.os_user_id %}">
-            <input type="submit" value="Show classes"/>
-        </form>
-
-    <br /><br />
         <!-- Disclaimer -->
         <div>
             <p id="disclaimer"><a href="{% url 'grader:home' user.os_user_id %}#details">Detailed Instructions</a> | <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOcFJo3V05CMtQSAXmmiF22xdfsdaob7_tBCTCDEwZVdVRwA/viewform?usp=sf_link">Feedback</a></p>

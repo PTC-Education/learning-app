@@ -58,7 +58,26 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
         context['mass_props'] = mass_props
     return render(request, "grader/grader.html", context=context)
 
+def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
+    """ 
+    The auto grader page for checking a model's mass properties and time completion. 
 
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/grader.html`
+    """
+    context = {"user": None,
+               "time": None} 
+    if os_user_id: 
+        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+        context['user'] = curr_user
+    if mass_props:
+        context['mass_props'] = mass_props
+    return render(request, "grader/generic_grader.html", context=context)
 
 def login(request: HttpRequest): 
     """ 
