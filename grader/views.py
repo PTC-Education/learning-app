@@ -167,12 +167,52 @@ def index(request: HttpRequest, os_user_id: str):
 
     return render(request, "grader/index.html", context=context)
 
-
-
-def showlist(request: HttpRequest, os_user_id: str): 
+def classlist(request: HttpRequest, os_user_id: str): 
     """ 
-    If the user wants to load instruction content on the app as HTML using a markdown file the view is called
+    This function loads the list of classes the user has created.
     
+    **Context:**
+    
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/grader.html`
+    """
+
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    classes=[] # to store the names of classes
+    assignments=[] #array to store assisgnments within the classes
+    #get all elements in the document
+    classinfo=get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
+    items=classinfo["items"]
+
+    try:
+        for item in items:
+            if(item["resourceType"]=="classroom"):
+                classes.append([item["name"],item["id"]])
+   
+    except:
+        print("Error in classes") #need better error message here
+    context={
+            "user": curr_user, 
+            "classes":classes,
+        }
+    return render(
+        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        context=context
+   
+    )
+
+def filelist(request: HttpRequest, os_user_id: str): 
+    """ 
+    If the user wants to load instruction content on the app as HTML using a markdown file the view is called. This function will return an array of all markdown files and their contents
     **Context:**
     
     
@@ -194,7 +234,6 @@ def showlist(request: HttpRequest, os_user_id: str):
     markdown_file_names=[] #array to store all markdown files in the document
     #get all elements in the document
     elements_info=get_elements_info(curr_user.os_domain, curr_user.did,curr_user.wid ,auth_token=curr_user.access_token) 
-
     try:
         for element_info in elements_info:
             #if(element_info['name'] == "instruction.md"): 
@@ -203,7 +242,7 @@ def showlist(request: HttpRequest, os_user_id: str):
                 filecontent_in_md=get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)
                 filecontent_in_HTML=md_HTML_create(filecontent_in_md)
                 blobs.append([filename,filecontent_in_HTML])
-                print(blobs)
+                #print(blobs)
                 #blobs.append(element_info["name"],get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)) #read the content of the markdown file
                 #markdown_file_names.append(element_info["name"])
             
@@ -420,6 +459,7 @@ def get_elements_info(
             "Authorization" : "Bearer " + auth_token
         }
     )
+
     if response.ok: 
         return response.json() 
     else: 
@@ -466,6 +506,29 @@ def get_doc_info(
     if response.ok: 
         return response.json() 
     else: 
+        return None
+
+
+def get_class_list(
+    domain: str,  auth_token: str, massAsGroup=True
+) -> Any: 
+    """ Get the list of classes for the user
+    """
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/globaltreenodes/magic/15"        
+            ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+
+    if response.ok: 
+        return response.json() 
+    else:   
         return None
 
 

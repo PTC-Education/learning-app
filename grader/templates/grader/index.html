@@ -32,11 +32,20 @@
             <h3>Launch HTML:</h3>
             <p>Auto grader instrucitons here.</p>
             <br />
-            <form action="{% url 'grader:showlist' user.os_user_id %}">
+            <form action="{% url 'grader:filelist' user.os_user_id %}">
                 <input type="submit" value="Launch HTML"/>
             </form>
 
         <br /><br />
+
+
+        <h3>List classes for the user</h3>
+        <br />
+        <form action="{% url 'grader:classlist' user.os_user_id %}">
+            <input type="submit" value="Show classes"/>
+        </form>
+
+    <br /><br />
         <!-- Disclaimer -->
         <div>
             <p id="disclaimer"><a href="{% url 'grader:home' user.os_user_id %}#details">Detailed Instructions</a> | <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOcFJo3V05CMtQSAXmmiF22xdfsdaob7_tBCTCDEwZVdVRwA/viewform?usp=sf_link">Feedback</a></p>

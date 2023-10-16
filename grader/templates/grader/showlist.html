@@ -23,6 +23,13 @@
         <p id="err_msg"><strong>{{ error_message }}</strong></p>
         {% endif %}
         <!-- Render the HTML from the markdown file-->
+        {% if classes %}
+        {% for class in classes %}
+            <input type="text" name="filename" id="fname" value={{class.0|safe}}  title="Copy/paste reference model" size="50" /> <!--Names of classes-->
+            <input type="text" name="filename" id="fname" value={{class.1|safe}}  title="Copy/paste reference model" size="50" /> <!--Assignments in the classes - need to to be exposed with a dropdown arrow  -->
+      
+         {% endfor %}
+         {% endif %}
        {% if blobs %}
         {% for blob in blobs %}
             <input type="text" name="filename" id="fname" value={{blob.0|safe}}  title="Copy/paste reference model" size="50" /> <!--Name of the markdown files-->
