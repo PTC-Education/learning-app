@@ -20,23 +20,29 @@
         <br />
 
 
-        <h3>Launch HTML:</h3>
-        <p>Auto grader instrucitons here.</p>
+        <h3>Instructions:</h3>
+        <p>If you are a student and working on an assignment go to  the Student resources page. If you are a teacher grading your students' work go to the Teacher resources page.</p>
         <br />
-        
+
+        <!--The buttons to take you to student resources and teacher resources.-->
+        <div class="button-container">
         <form action="{% url 'grader:filelist' user.os_user_id %}" onsubmit="loading_list()">
-            <input type="submit" value="Launch HTML" />
+            <input type="submit" value="Student resources" />
         </form>
-        <div id="lists">
+
+        <form action="{% url 'grader:classlist' user.os_user_id %}" onsubmit="loading_list()">
+            <input type="submit" value="Teacher resources"/>
+        </form>
         </div>
 
-        <h3>List classes for the user</h3>
-        <br />
-        <form action="{% url 'grader:classlist' user.os_user_id %}" >
-            <input type="submit" value="Show classes"/>
-        </form>
-        <!-- Grade model -->
 
+        <div class="spinner-container">
+            <div id="lists">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
+        <!-- Grade model -->
+    </br></br></br></br>
         <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
             <input type="submit" value="Grade model"/>
             <br>

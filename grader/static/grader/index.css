@@ -167,3 +167,31 @@ input[type=submit]:hover {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+
+.button-container {
+    display: flex;
+    gap: 50px;
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
+
+  }
+
+.spinner-container{
+    display: flex;
+    gap: 50px;
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
+
+}
+
+
+
+
+
+
+
+
+

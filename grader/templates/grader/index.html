@@ -20,21 +20,19 @@
         </div>
 
         <!-- General instructions -->
-        <div>
+
             <h3>Instructions:</h3>
             <p>Auto grader instrucitons here.</p>
             <!-- Go to auto grader -->
             <br />
+            <div class="button-container">
             <form action="{% url 'grader:generic_grader' user.os_user_id %}">
                 <input type="submit" value="Generic Grader"/>
             </form>
-            <br>
-
             <form action="{% url 'grader:grader' user.os_user_id %}">
                 <input type="submit" value="Science Olympiad Grader"/>
             </form>
-
-        </div>
+             </div>
 
         <!-- Disclaimer -->
         <div>
