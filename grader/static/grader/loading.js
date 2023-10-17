@@ -5,7 +5,15 @@ function loading_index() {
     }
 }
 
-function loading_modelling() {
-    const main_content = document.getElementById("main"); 
+function loading_list() {
+
+    const main_content = document.getElementById("lists"); 
     main_content.innerHTML = "<div class=\"loader\"></div>"; 
+
+}
+
+function loading_grades() {
+    const main_content = document.getElementById("grades"); 
+    main_content.innerHTML = "<div class=\"loader\"></div>"; 
+
 }

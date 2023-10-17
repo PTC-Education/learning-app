@@ -2,6 +2,7 @@
 <html lang="en-US">
     <head>
         {% load static %}
+        <link rel="stylesheet" href="{% static 'grader/index.css' %}">
         <link rel="stylesheet" href="{% static 'grader/home.css' %}">
         <!-- Load js for url fields -->
         <script src="{% static 'grader/url_fields.js' %}" type="text/javascript" defer></script>
@@ -10,7 +11,7 @@
         <!-- Load loading_modelling function to enable loading screen -->
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
     </head>
-    <body>
+    <body id="main">
         <!-- Return to the home page -->
         <br />
         <form action="{% url 'grader:index' user.os_user_id %}">
@@ -22,20 +23,25 @@
         <h3>Launch HTML:</h3>
         <p>Auto grader instrucitons here.</p>
         <br />
-        <form action="{% url 'grader:filelist' user.os_user_id %}">
-            <input type="submit" value="Launch HTML"/>
+        
+        <form action="{% url 'grader:filelist' user.os_user_id %}" onsubmit="loading_list()">
+            <input type="submit" value="Launch HTML" />
         </form>
-
+        <div id="lists">
+            
+            </div>
 
         <h3>List classes for the user</h3>
         <br />
-        <form action="{% url 'grader:classlist' user.os_user_id %}">
+        <form action="{% url 'grader:classlist' user.os_user_id %}" >
             <input type="submit" value="Show classes"/>
         </form>
         <!-- Grade model -->
-        <form action="{% url 'grader:grade' user.os_user_id %}">
+
+        <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
             <input type="submit" value="Grade model"/>
             <br>
+            
             <div id="url_field_form">
                 <!-- Input reference model you want to compare -->
                 {% if ref_urls %}
@@ -56,7 +62,7 @@
             <button class="remove" onclick="remove()">Remove</button>
         </div>
 
-
+        <div id="grades">
         
         {% if doc_time %}
         <h3>Time from document creation to last modified</h3>
@@ -80,6 +86,6 @@
             {% endfor %}
         </ul>
         {% endif %}
-
+    </div>
     </body>
 </html>

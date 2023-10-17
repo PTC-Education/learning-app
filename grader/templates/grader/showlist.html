@@ -2,6 +2,7 @@
 <html lang="en-US">
     <head>
         {% load static %}
+        <link rel="stylesheet" href="{% static 'grader/index.css' %}">
         <link rel="stylesheet" href="{% static 'grader/home.css' %}">
         <!-- Load js for filenames -->
         <script src="{% static 'grader/filename.js' %}" type="text/javascript" defer></script>
@@ -17,7 +18,7 @@
             <input type="submit" value="Return to Home Page"/>
         </form>
         <br />
-
+        
         <!-- Render the HTML from the markdown file-->
         {% if error_message %}
         <p id="err_msg"><strong>{{ error_message }}</strong></p>
