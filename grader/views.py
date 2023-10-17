@@ -16,26 +16,6 @@ from .models import *
 import markdown
 
 # Create your views here.
-def home(request: HttpRequest, os_user_id=None):
-    """ 
-    The home page that can be accessed either logged in in-app or as a standard URL without login information. 
-    
-    The page documents more extensive user instructions, some technical tips, and a documentation on all data collections from the users. 
-
-    **Arguments:**
-        
-    - ``os_user_id``: (Optional) identify the :model:`grader.AuthUser` model with the user's login information.
-
-    **Template:**
-
-    :template:`grader/home.html`
-    """
-    context = {"user": None} 
-    if os_user_id: 
-        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-        context['user'] = curr_user
-    return render(request, "grader/home.html", context=context)
-
 
 def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 

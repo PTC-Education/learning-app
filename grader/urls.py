@@ -3,8 +3,7 @@ from .import views
 
 app_name = 'grader'
 urlpatterns = [
-    path('',views.home), 
-    path('home/<str:os_user_id>/',views.home, name="home"),
+    path('',views.index), 
     path('oauthSignin/', views.login, name='login'), 
     path('oauthRedirect/', views.authorize, name='authorize'), 
     path('index/<str:os_user_id>/', views.index, name='index'), 
