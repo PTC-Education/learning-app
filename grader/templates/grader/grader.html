@@ -3,6 +3,7 @@
     <head>
         {% load static %}
         <link rel="stylesheet" href="{% static 'grader/home.css' %}">
+        <link rel="stylesheet" href="{% static 'grader/index.css' %}">
         <!-- Load js for url fields -->
         <script src="{% static 'grader/url_fields.js' %}" type="text/javascript" defer></script>
         <!-- Load js for handling export of csv -->
@@ -18,7 +19,7 @@
         </form>
         <br />
         <!-- Grade model -->
-        <form action="{% url 'grader:grade' user.os_user_id %}">
+        <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
             <input type="submit" value="Grade model"/>
             <br>
             <div id="url_field_form">
@@ -42,7 +43,7 @@
         </div>
 
 
-        
+        <div id="grades">
         {% if doc_time %}
         <h3>Time from document creation to last modified</h3>
             {{ doc_time|safe }}
@@ -65,6 +66,6 @@
             {% endfor %}
         </ul>
         {% endif %}
-
+    </div>
     </body>
 </html>
