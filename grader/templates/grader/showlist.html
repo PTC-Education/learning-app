@@ -43,28 +43,25 @@
          {% endfor %}
          {% endif %}
 
-         <div id="doc_field_form">
-         <ul>
-            {% for x in created_docs %}
-              <li>
-                <div class="button-container">
-                <input type="button" name="filename" id="fname" value={{x.0|safe}} size="50" /> <!--Name of the markdown files-->
-                <img src="data:image/png;base64,{{x.4}}">
-                </div>
-              </li>
+        <div id="doc_field_form">
+        <table>
+        {% for x in created_docs %}
+            <tr>
+            <th><input type="button" name="filename" id="fname" value={{x.0|safe}} size="50" /> <!--Name of the markdown files--></th>
+            <th><img src="data:image/png;base64,{{x.4}}"></th>
+            </tr>
             {% endfor %}
-          </ul>
-          <ul>
+        </table>
+        </div>
+        <div>
+        <table>
             {% for x in shared_docs %}
-              <li>
-                <div class="button-container">
-                <input type="button" name="filename" id="fname" value={{x.0|safe}} size="50" /> <!--Name of the markdown files-->
-                <img src="data:image/png;base64,{{x.4}}">
-                </div>
-              </li>
+            <tr>
+            <th><input type="button" name="filename" id="fname" value={{x.0|safe}} size="50" /> <!--Name of the markdown files--></th>
+            <th><img src="data:image/png;base64,{{x.4}}"></th>
+            </tr>
             {% endfor %}
-          </ul>
-          </div>
-
+        </table>
+    </div>
     </body>
 </html>
