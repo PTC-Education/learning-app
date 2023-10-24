@@ -42,10 +42,19 @@
         </div>
         <!-- Grade model -->
     </br></br></br></br>
+
+
+
+    <form action="{% url 'grader:listdocs' user.os_user_id %}" onsubmit="loading_list()">
+        <input type="submit" value="List documents "/>
+    </form>
+
         <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
             <input type="submit" value="Grade model"/>
             <br>
             
+
+
             <div id="url_field_form">
                 <!-- Input reference model you want to compare -->
                 {% if ref_urls %}

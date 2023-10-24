@@ -2,6 +2,7 @@ import os
 import requests
 from datetime import timedelta, datetime
 from typing import Union 
+import json
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse 
@@ -37,7 +38,6 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     if mass_props:
         context['mass_props'] = mass_props
     return render(request, "grader/grader.html", context=context)
-
 def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
     The auto grader page for checking a model's mass properties and time completion. 
@@ -58,7 +58,6 @@ def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     if mass_props:
         context['mass_props'] = mass_props
     return render(request, "grader/generic_grader.html", context=context)
-
 def login(request: HttpRequest): 
     """ 
     When the app extension is first opened, this view should be called. 
@@ -100,8 +99,6 @@ def login(request: HttpRequest):
             os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
         )
     )
-
-
 def authorize(request: HttpRequest): 
     """ 
     When the user authorizes the OAuth integration, Onshape's OAuth authorization page will redirect the user to this page, as registered as the redirect URL. 
@@ -144,8 +141,6 @@ def authorize(request: HttpRequest):
     user.save() 
 
     return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
-
-
 def index(request: HttpRequest, os_user_id: str): 
     """ 
     The index view of the app. 
@@ -165,7 +160,6 @@ def index(request: HttpRequest, os_user_id: str):
     context = {"user": curr_user}
 
     return render(request, "grader/index.html", context=context)
-
 def classlist(request: HttpRequest, os_user_id: str): 
     """ 
     This function loads the list of classes the user has created.
@@ -208,7 +202,6 @@ def classlist(request: HttpRequest, os_user_id: str):
         context=context
    
     )
-
 def filelist(request: HttpRequest, os_user_id: str): 
     """ 
     If the user wants to load instruction content on the app as HTML using a markdown file the view is called. This function will return an array of all markdown files and their contents
@@ -282,7 +275,64 @@ def filelist(request: HttpRequest, os_user_id: str):
         context=context
     )
     '''
+def listdocs(request: HttpRequest, os_user_id: str): 
+    """ 
+    This function loads the list of document created, opened or shared by/with the users
+    
+    **Context:**
+    
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/grader.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
 
+    created_doc_info=[] # arry to store list of documents created by users
+    shared_doc_info=[] #arry to store list of documents shared with users
+    opened_doc_info=[] #arry to store list of documents opened by users
+    #get all elements in the document
+    docsinfo=get_user_doc_list(curr_user.os_domain,auth_token=curr_user.access_token) 
+    items=docsinfo["items"]
+    try:
+        for item in items:
+            userID=item["createdBy"]["id"]
+            documentName=item["name"]
+            documentID=item["id"]
+            workspaceID=item["defaultWorkspace"]["id"]
+            elementID=item["defaultElementId"]
+            image_bytes=get_shadedviews_data(curr_user.os_domain, documentID,workspaceID,elementID, auth_token=curr_user.access_token)
+            if(image_bytes):
+                image_str=image_bytes.decode('utf8')
+                image_json=json.loads(image_str)
+                #append name of the document, document id,workspace id,  thumbnail of the user created document
+                image=image_json["images"][0]
+            else:
+                image=None
+            if(userID==os_user_id):
+                created_doc_info.append((documentName,documentID,workspaceID,elementID,image))
+            else:
+                shared_doc_info.append((documentName,documentID,workspaceID,elementID,image))
+
+ 
+    except:
+        print("Error in classes") #need better error message here
+
+    context={
+            "user": curr_user, 
+            "created_docs":created_doc_info,
+            "shared_docs":shared_doc_info,
+
+        }
+    return render(
+        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        context=context    )
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits a model, API calls are made to check if the 
@@ -415,6 +465,33 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
 #################### Helper API calls ####################
 
+
+
+def get_user_ID(
+    domain: str, auth_token: str
+) -> Any: 
+    """ Get the user ID 
+    """
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/{}/d/{}/{}/{}/e/{}/massproperties".format(
+            etype, did, wvm, wvmid, eid
+        )
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }, 
+        params={
+            "massAsGroup": massAsGroup
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
 def get_mass_props(
     domain: str, did: str, wvm: str, wvmid: str, eid: str, etype: str, auth_token: str, massAsGroup=True
 ) -> Any: 
@@ -440,8 +517,6 @@ def get_mass_props(
         return response.json() 
     else: 
         return None
-
-
 def get_elements_info(
     domain: str, did: str, wid: str, auth_token: str
 ) -> Any: 
@@ -463,7 +538,6 @@ def get_elements_info(
         return response.json() 
     else: 
         return None
-
 def get_blob_data(
     domain: str, did: str, wid: str, eid: str, auth_token: str
 ) -> Any: 
@@ -484,8 +558,27 @@ def get_blob_data(
     else: 
         return None
 
-
-
+def get_shadedviews_data(
+    domain: str, did: str, wid:str, eid:str,  auth_token: str
+) -> Any: 
+    """ Get the image data from the given url
+    """
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/partstudios/d/{}/w/{}/e/{}/shadedviews?viewMatrix=0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0&outputHeight=50&outputWidth=50&pixelSize=0&edges=show&showAllParts=false&includeSurfaces=false&useAntiAliasing=false&includeWires=false".format(did,wid,eid)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.content
+    else: 
+        return None
+    
 def get_doc_info(
     domain: str, did: str, auth_token: str
 ) -> Any: 
@@ -495,6 +588,30 @@ def get_doc_info(
         os.path.join(
             domain, 
             "api/documents/{}".format(did)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+    
+
+
+def get_user_doc_list(
+    domain:str, auth_token: str
+) -> Any: 
+    """ Get list of documents - created by the user/ recently opened by the user and shared with the user
+    """
+
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/documents"
         ), 
         headers={
             "Content-Type": "application/json", 
@@ -524,6 +641,7 @@ def get_class_list(
             "Authorization" : "Bearer " + auth_token
         }
     )
+
 
     if response.ok: 
         return response.json() 
@@ -646,3 +764,4 @@ def get_ref_url_ids(ref_url: str):
         return ref
     except:
         return None
+    

@@ -5,10 +5,15 @@
         <link rel="stylesheet" href="{% static 'grader/index.css' %}">
         <!-- Load js for filenames -->
         <script src="{% static 'grader/filename.js' %}" type="text/javascript" defer></script>
+        <!-- Load js for documentnames -->
+        <script src="{% static 'grader/showlist.js' %}" type="text/javascript" defer></script>
         <!-- Load js for handling export of csv -->
         <script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer></script>
         <!-- Load loading_modelling function to enable loading screen -->
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+
+
+
     </head>
     <body>
         <!-- Return to the home page -->
@@ -38,7 +43,28 @@
          {% endfor %}
          {% endif %}
 
-
+         <div id="doc_field_form">
+         <ul>
+            {% for x in created_docs %}
+              <li>
+                <div class="button-container">
+                <input type="button" name="filename" id="fname" value={{x.0|safe}} size="50" /> <!--Name of the markdown files-->
+                <img src="data:image/png;base64,{{x.4}}">
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+          <ul>
+            {% for x in shared_docs %}
+              <li>
+                <div class="button-container">
+                <input type="button" name="filename" id="fname" value={{x.0|safe}} size="50" /> <!--Name of the markdown files-->
+                <img src="data:image/png;base64,{{x.4}}">
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+          </div>
 
     </body>
 </html>
