@@ -150,14 +150,21 @@ input[type=submit]:hover {
 
 /* Loader */
 .loader {
-    border: 16px solid #f3f3f3;
+    position: relative;
+}
+.loader:after {
+    content: " ";
+    z-index: 10;
+    display: block;
+    position: absolute;
+    border: 10px solid #f3f3f3;
     border-radius: 50%;
-    border-top: 16px solid #3498db;
-    width: 120px;
-    height: 120px;
+    border-top: 10px solid #3498db;
+    width: 80px;
+    height: 80px;
     -webkit-animation: spin 2s linear infinite; /* Safari */
     animation: spin 2s linear infinite;
-}
+  }
 
 /* Loader in Safari */
 @-webkit-keyframes spin {
@@ -175,7 +182,7 @@ input[type=submit]:hover {
     display: flex;
     gap: 50px;
     padding: 10px;
-    justify-content: left;
+    justify-content: center;
     align-items: center;
 
   }

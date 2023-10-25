@@ -17,3 +17,10 @@ function loading_grades() {
     main_content.innerHTML = "<div class=\"loader\"></div>"; 
 
 }
+
+function loading_documentlist() {
+
+    const main_content = document.getElementById("documentlists"); 
+    main_content.innerHTML = "<div class=\"loader\"></div>"; 
+
+}

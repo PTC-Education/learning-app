@@ -18,6 +18,11 @@
         </form>
         <br />
 
+        <div class="spinner-container">
+            <div id="lists">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
 
         <h3>Instructions:</h3>
         <p>If you are a student and working on an assignment go to  the Student resources page. If you are a teacher grading your students' work go to the Teacher resources page.</p>
@@ -35,19 +40,21 @@
         </div>
 
 
-        <div class="spinner-container">
-            <div id="lists">
-                <!--This is where the spinner will load-->
-            </div>
-        </div>
+
         <!-- Grade model -->
-    </br></br></br></br>
+
 
 
 
     <form action="{% url 'grader:listdocs' user.os_user_id %}" onsubmit="loading_list()">
         <input type="submit" value="List documents "/>
     </form>
+
+    <div class="spinner-container">
+        <div id="documentlists">
+            <!--This is where the spinner will load-->
+        </div>
+    </div>
 
         <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
             <input type="submit" value="Grade model"/>

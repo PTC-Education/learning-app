@@ -5,8 +5,6 @@
         <link rel="stylesheet" href="{% static 'grader/index.css' %}">
         <!-- Load js for filenames -->
         <script src="{% static 'grader/filename.js' %}" type="text/javascript" defer></script>
-        <!-- Load js for documentnames -->
-        <script src="{% static 'grader/showlist.js' %}" type="text/javascript" defer></script>
         <!-- Load js for handling export of csv -->
         <script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer></script>
         <!-- Load loading_modelling function to enable loading screen -->
@@ -22,6 +20,7 @@
             <input type="submit" value="Return to Home Page"/>
         </form>
         <br />
+
         
         <!-- Render the HTML from the markdown file-->
         {% if error_message %}
@@ -43,7 +42,10 @@
          {% endfor %}
          {% endif %}
 
+
         <div id="doc_field_form">
+        {% if created_docs %}
+        <p> My documents</p>
         <table style="width:100%">
         {% for x in created_docs %}
             <tr>
@@ -52,8 +54,12 @@
             </tr>
             {% endfor %}
         </table>
+        {% endif %}
         </div>
-        <div>
+
+        <div id="doc_field_form">
+        {% if shared_docs %}
+        <p> Shared documents</p>
         <table style="width:100%">
             {% for x in shared_docs %}
             <tr>
@@ -62,6 +68,7 @@
             </tr>
             {% endfor %}
         </table>
+        {% endif %}
     </div>
     </body>
 </html>
