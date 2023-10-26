@@ -177,15 +177,46 @@ input[type=submit]:hover {
     100% { transform: rotate(360deg); }
 }
 
-
 .button-container {
     display: flex;
-    gap: 50px;
-    padding: 10px;
+    gap: 50 px;
+    padding: 60 px;
     justify-content: center;
     align-items: center;
 
   }
+
+  .list-container {
+    display: flex;
+    gap: 50 px;
+    padding: 50 px;
+    justify-content: center ;
+    align-items: center;
+    
+  }
+.button-collapsed{
+    padding: 3px;
+    border: solid rgb(0, 0, 0);
+    background-color: #dddddd00;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    -ms-transform: rotate(-45deg); /* IE 9 */
+    -webkit-transform: rotate(-45deg); /* Chrome, Safari, Opera */
+    transform: rotate(-45deg);
+}
+
+  .button-expanded{
+    padding: 3px;
+    border: solid rgb(0, 0, 0);
+    background-color: #dddddd00;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    -ms-transform: rotate(45deg); /* IE 9 */
+    -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+    transform: rotate(45deg);
+  }
+
+
 
 .spinner-container{
     display: flex;
@@ -196,6 +227,9 @@ input[type=submit]:hover {
 
 }
 
+.docList{
+    display: none;
+}
 
 
 

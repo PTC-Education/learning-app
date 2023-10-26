@@ -1,22 +1,19 @@
-<!DOCTYPE html>
-<html lang="en-US">
-    <head>
-        {% load static %}
+{% load static %}
         <link rel="stylesheet" href="{% static 'grader/index.css' %}">
         <!-- Load js for url fields -->
-        <script src="{% static 'grader/url_fields.js' %}" type="text/javascript" defer></script>
+        <script src="{% static 'grader/url_fields.js' %}" type="text/javascript" defer=""></script>
         <!-- Load js for handling export of csv -->
-        <script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer></script>
+        <script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer=""></script>
         <!-- Load loading_modelling function to enable loading screen -->
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
-    </head>
-    <body id="main">
+    
+    
         <!-- Return to the home page -->
-        <br />
+        <br>
         <form action="{% url 'grader:index' user.os_user_id %}">
-            <input type="submit" value="Return to Home Page"/>
+            <input type="submit" value="Return to Home Page">
         </form>
-        <br />
+        <br>
 
         <div class="spinner-container">
             <div id="lists">
@@ -26,16 +23,16 @@
 
         <h3>Instructions:</h3>
         <p>If you are a student and working on an assignment go to  the Student resources page. If you are a teacher grading your students' work go to the Teacher resources page.</p>
-        <br />
+        <br>
 
         <!--The buttons to take you to student resources and teacher resources.-->
         <div class="button-container">
         <form action="{% url 'grader:filelist' user.os_user_id %}" onsubmit="loading_list()">
-            <input type="submit" value="Student resources" />
+            <input type="submit" value="Student resources">
         </form>
 
         <form action="{% url 'grader:classlist' user.os_user_id %}" onsubmit="loading_list()">
-            <input type="submit" value="Teacher resources"/>
+            <input type="submit" value="Teacher resources">
         </form>
         </div>
 
@@ -47,7 +44,7 @@
 
 
     <form action="{% url 'grader:listdocs' user.os_user_id %}" onsubmit="loading_list()">
-        <input type="submit" value="List documents "/>
+        <input type="submit" value="List documents ">
     </form>
 
     <div class="spinner-container">
@@ -57,7 +54,7 @@
     </div>
 
         <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
-            <input type="submit" value="Grade model"/>
+            <input type="submit" value="Grade model">
             <br>
             
 
@@ -67,13 +64,13 @@
                 {% if ref_urls %}
                     {% for url in ref_urls %}
                         {% if url != '' %}
-                            <input type="text" name="ref_url" id="referenceModel" value={{url|safe}} title="Copy/paste reference model" size="50" />
+                            <input type="text" name="ref_url" id="referenceModel" value="{{url|safe}}" title="Copy/paste reference model" size="50">
                         {% else %}
-                            <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL..." title="Copy/paste reference model" size="50" />
+                            <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL..." title="Copy/paste reference model" size="50">
                         {% endif %}
                     {% endfor %}
                 {% else %}
-                    <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL..." title="Copy/paste reference model" size="50" />
+                    <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL..." title="Copy/paste reference model" size="50">
                 {% endif %}
             </div>
         </form>
@@ -87,14 +84,14 @@
         {% if doc_time %}
         <h3>Time from document creation to last modified</h3>
             {{ doc_time|safe }}
-            <br /><br />
+            <br><br>
         {% endif %}
         <br>
 
         {% if ref_table %}
         <h3>Table of ref url props</h3>
             {{ ref_table|safe }}
-            <br /><br />
+            <br><br>
             <button type="button" onclick="tableToCSV()">download CSV</button>
         {% endif %}
         <br>
@@ -107,5 +104,4 @@
         </ul>
         {% endif %}
     </div>
-    </body>
-</html>
+    

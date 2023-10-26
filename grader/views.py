@@ -275,6 +275,25 @@ def filelist(request: HttpRequest, os_user_id: str):
         context=context
     )
     '''
+
+def test(request: HttpRequest, os_user_id: str): 
+    """ 
+    If the user wants to load instruction content on the app as HTML using a markdown file the view is called. This function will return an array of all markdown files and their contents
+    **Context:**
+    
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/grader.html`
+    """
+    print("I was called and I am happy")
+
+
+    
 def listdocs(request: HttpRequest, os_user_id: str): 
     """ 
     This function loads the list of document created, opened or shared by/with the users
@@ -306,26 +325,45 @@ def listdocs(request: HttpRequest, os_user_id: str):
             documentName=item["name"]
             documentID=item["id"]
             workspaceID=item["defaultWorkspace"]["id"]
-            elementID=item["defaultElementId"]
-            image_bytes=get_shadedviews_data(curr_user.os_domain, documentID,workspaceID,elementID, auth_token=curr_user.access_token)
-            if(image_bytes):
-                image_str=image_bytes.decode('utf8')
-                image_json=json.loads(image_str)
-                #append name of the document, document id,workspace id,  thumbnail of the user created document
-                image=image_json["images"][0]
+            elements_info=get_elements_info(curr_user.os_domain,documentID,workspaceID ,auth_token=curr_user.access_token) 
+            try:
+                element=[]
+                
 
-            else:
-                #if there are no shaded views add a default image of an empty
-                image= "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"
+                #grab elements and their information from all the tabs in the document
+                for eInfo in elements_info:
+                    image=""
+                    eType=eInfo["elementType"]
+                    eName=eInfo["name"]
+                    eID=eInfo["id"]
+                    print("eTYPE",eType)
+                    '''
+                    if(eType == "PARTSTUDIO"):
+                        image_bytes=get_shadedviews_partstudio_data(curr_user.os_domain, documentID,workspaceID,eID, auth_token=curr_user.access_token)
+                    elif(eType=="ASSEMBLY"):
+                        image_bytes=get_shadedviews_assembly_data(curr_user.os_domain, documentID,workspaceID,eID, auth_token=curr_user.access_token)
+
+
+                    if(image_bytes):
+                        image_str=image_bytes.decode('utf8')
+                        image_json=json.loads(image_str)
+                        image=image_json["images"][0]
+                    else:
+                        #if there are no shaded views add a default image of an empty
+                        image= "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"
+                    '''
+                    if(eType == "PARTSTUDIO" or eType == "ASSEMBLY") :
+                        element.append((eType,eName,eID))
+   
+            except:
+                print("ERROR")
 
             if(userID==os_user_id):
-                created_doc_info.append((documentName,documentID,workspaceID,elementID,image))
+                created_doc_info.append((documentName,documentID,workspaceID,element))
             else:
-                shared_doc_info.append((documentName,documentID,workspaceID,elementID,image))
-
- 
+                shared_doc_info.append((documentName,documentID,workspaceID,element))
     except:
-        print("Error in classes") #need better error message here
+        print("ERROR on main TRY") #need better error message here
 
     context={
             "user": curr_user, 
@@ -534,7 +572,7 @@ def get_blob_data(
     else: 
         return None
 
-def get_shadedviews_data(
+def get_shadedviews_partstudio_data(
     domain: str, did: str, wid:str, eid:str,  auth_token: str
 ) -> Any: 
     """ Get the image data from the given url
@@ -543,6 +581,27 @@ def get_shadedviews_data(
         os.path.join(
             domain, 
             "api/partstudios/d/{}/w/{}/e/{}/shadedviews?viewMatrix=0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0&outputHeight=50&outputWidth=50&pixelSize=0&edges=show&showAllParts=false&includeSurfaces=false&useAntiAliasing=false&includeWires=false".format(did,wid,eid)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.content
+    else: 
+        return None
+    
+def get_shadedviews_assembly_data(
+    domain: str, did: str, wid:str, eid:str,  auth_token: str
+) -> Any: 
+    """ Get the image data from the given url
+    """
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/assemblies/d/{}/w/{}/e/{}/shadedviews?viewMatrix=0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0&outputHeight=50&outputWidth=50&pixelSize=0&edges=show&showAllParts=false&includeSurfaces=false&useAntiAliasing=false&includeWires=false".format(did,wid,eid)
         ), 
         headers={
             "Content-Type": "application/json", 
