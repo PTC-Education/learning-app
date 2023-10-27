@@ -177,11 +177,21 @@ input[type=submit]:hover {
     100% { transform: rotate(360deg); }
 }
 
+.spinner-container{
+    display: flex;
+    gap: 50px;
+    padding: 10px;
+    justify-content: center;
+    align-items: center;
+
+}
+
 .button-container {
     display: flex;
     gap: 50 px;
-    padding: 60 px;
+    padding: 50 px;
     justify-content: center;
+    margin: 100 px;
     align-items: center;
 
   }
@@ -190,6 +200,7 @@ input[type=submit]:hover {
     display: flex;
     gap: 50 px;
     padding: 50 px;
+    margin: 100 px;
     justify-content: center ;
     align-items: center;
     
@@ -205,7 +216,7 @@ input[type=submit]:hover {
     transform: rotate(-45deg);
 }
 
-  .button-expanded{
+.button-expanded{
     padding: 3px;
     border: solid rgb(0, 0, 0);
     background-color: #dddddd00;
@@ -216,19 +227,28 @@ input[type=submit]:hover {
     transform: rotate(45deg);
   }
 
+.button-collapsed:hover{
+    background-color: yellow;
+  }
 
+.button-expanded:hover{
+    background-color: yellow;
+  }
 
-.spinner-container{
-    display: flex;
-    gap: 50px;
-    padding: 10px;
-    justify-content: center;
-    align-items: center;
-
-}
 
 .docList{
     display: none;
+}
+
+body {
+    color: #333;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+}
+
+
+table, th,td
+input[type=submit]:hover {
+    border: 1px solid black;
 }
 
 
