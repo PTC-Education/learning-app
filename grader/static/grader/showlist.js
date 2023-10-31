@@ -1,3 +1,4 @@
+/*
 function toggleView(divid,buttonid) {
   
   var x = document.getElementById(divid);
@@ -10,4 +11,16 @@ function toggleView(divid,buttonid) {
     document.getElementById(buttonid).className = "button-collapsed"
   }
 }
+*/
 
+/*
+
+function openReferenceOptions(tabName) {
+  var i;
+  var x = document.getElementsByClassName("gradetab");
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";  
+  }
+  document.getElementById(tabName).style.display = "block";  
+}
+*/

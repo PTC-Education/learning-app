@@ -55,7 +55,10 @@ def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     
     if os_user_id: 
         curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-        context['user'] = curr_user
+        context={
+        "user": curr_user, 
+        "urlgradetab" : True #to enable url text input
+        }
     if mass_props:
         context['mass_props'] = mass_props
     return render(request, "grader/generic_grader.html", context=context)
@@ -270,87 +273,6 @@ def filelist(request: HttpRequest, os_user_id: str):
         context=context
     )
     '''
-
-
-def listdocs(request: HttpRequest, os_user_id: str): 
-    """ 
-    This function loads the list of document created, opened or shared by/with the users
-    
-    **Context:**
-    
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/grader.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-
-    #get current element type - partstudio or assembly
-    current_element_Type=get_element_type(curr_user.os_domain,curr_user.did, curr_user.wid, curr_user.eid, auth_token=curr_user.access_token)[0]["elementType"]
- 
-    created_doc_info=[] # arry to store list of documents created by users
-    shared_doc_info=[] #arry to store list of documents shared with users
-    opened_doc_info=[] #arry to store list of documents opened by users
-    #get all documents in the user's recently opened list (perpahps 20? )
-    docsinfo=get_user_doc_list(curr_user.os_domain,auth_token=curr_user.access_token) 
-    items=docsinfo["items"]
-
-    try:
-        for item in items:
-            userID=item["createdBy"]["id"]
-            documentName=item["name"]
-            documentID=item["id"]
-            workspaceID=item["defaultWorkspace"]["id"]
-            elements_info=get_elements_info(curr_user.os_domain,documentID,workspaceID ,auth_token=curr_user.access_token) 
-            try:
-                element=[]
-                #grab elements and their information from all the tabs in the document
-                for eInfo in elements_info:
-                    image=""
-                    eType=eInfo["elementType"]
-                    eName=eInfo["name"]
-                    eID=eInfo["id"]
-
-                    if(eType == current_element_Type):
-                        element.append((eType,eName,eID))
-                        image_bytes=get_shadedviews_data(curr_user.os_domain, documentID,workspaceID,eID, eType, auth_token=curr_user.access_token)
-
-                        if(image_bytes):
-                            image_str=image_bytes.decode('utf8')
-                            image_json=json.loads(image_str)
-                            image=image_json["images"][0]
-                        else:
-                            #if there are no shaded views add a default image of an empty
-                            image= "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"
-                        
-
-   
-            except:
-                print("ERROR")
-
-            if(userID==os_user_id):
-                created_doc_info.append((documentName,documentID,workspaceID,element))
-            else:
-                shared_doc_info.append((documentName,documentID,workspaceID,element))
-    except:
-        print("ERROR on main TRY") #need better error message here
-
-    context={
-            "user": curr_user, 
-            "created_docs":created_doc_info,
-            "shared_docs":shared_doc_info,
-
-        }
-    return render(
-        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
-        context=context    )
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits a model, API calls are made to check if the 
@@ -370,7 +292,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
     :template:`grader/grader.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    ref_urls = request.GET.getlist('ref_url')
+    cs_ref_urls = request.GET.getlist('ref_url')
+    ref_urls = convert_cs_to_array(cs_ref_urls)
 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -385,8 +308,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
     if not user_mass_prop: # API error 
         return HttpResponse(curr_user.etype)
         # return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app in the part studio that you originally started this modelling question with ...")
+
+
     # Get info about the document the user currently has opened
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+    user_doc_name=user_doc_info["createdBy"]["name"]
+    user_user_name=user_doc_info['name']
+    user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
+
 
     # Set list of user_props [mass, vol, periphery, principleInertia]
     try:
@@ -413,67 +342,88 @@ def grade_model(request: HttpRequest, os_user_id: str):
     except:
         user_props = None
     
+    user_props.append(user_user_name)
+    user_props.append(user_doc_name)
+    user_props.append(user_doc_time)
+
     # Get info and mass props for all url's in ref doc list
-    ref_props = []
+    all_ref_props = []
     failed_urls = []
     for i, url in enumerate(ref_urls):
+        
         ref_url = get_ref_url_ids(url)
 
         #grab the element Type of reference URL 
         try:
             ref_url['eType']=get_element_type(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)[0]["elementType"]
+            print("ref_url",ref_url['eType'])
         except:
-            #print("Error with ref_url",ref_url['did'],ref_url['wid'], ref_url['eid'])
-            pass
+            print("Error with ref_url",ref_url['did'],ref_url['wid'], ref_url['eid'])
 
         try:
-
             #check the element type of reference and current document
-            if(ref_url['eType']==curr_user.etype):
-                print("Same type of document")
-            else:
-                print("Documents are different sir")
+            print("both element types",ref_url['eType'],curr_user.etype)
+            if(ref_url['eType']==curr_user.etype):     
+                ref_props=[]      
+                try:
+                    #Get the document info of the reference document for user, name of document,time
+                    doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+                    ref_user_name=doc_info["createdBy"]["name"]
+                    ref_doc_name = doc_info['name']
+                    ref_doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
 
-            mass_prop = get_mass_props(
+                    ref_mass_prop = get_mass_props(
                         curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], ref_url['eType'], 
                         massAsGroup=True, auth_token=curr_user.access_token
                     )
-            print("mass property",mass_prop)
-            if curr_user.etype == "PARTSTUDIO":
-                doc_mass = mass_prop['bodies']['-all-']['mass'][0]
-
-            elif curr_user.etype == "ASSEMBLY":
-                doc_mass = mass_prop['mass'][0]
-            # Round for display
-            if doc_mass < 0.1 or doc_mass > 99: 
-                doc_mass = '{:.2e}'.format(doc_mass)
-            else: 
-                doc_mass = round(doc_mass, 3)
-            
-            doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-            doc_name = doc_info['name']
-            doc_volume=1
-            doc_surface_area=1
-            #doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
-            #ref_props.append([doc_name, doc_time, doc_mass])
-            ref_props.append([doc_name, doc_mass, doc_volume, doc_surface_area])
+                    print("mass props", ref_mass_prop)
+                    if ref_url['eType'] == "PARTSTUDIO" :
+                        ref_props = [
+                                ref_mass_prop['bodies']['-all-']['mass'][0], 
+                                ref_mass_prop['bodies']['-all-']['volume'][0], 
+                                ref_mass_prop['bodies']['-all-']['periphery'][0],
+                                ref_mass_prop['bodies']['-all-']['principalInertia'][0]
+                            ]
+                    elif ref_url['eType']== "ASSEMBLY":
+                        ref_props = [
+                                ref_mass_prop['mass'][0], 
+                                ref_mass_prop['volume'][0], 
+                                ref_mass_prop['periphery'][0],
+                                ref_mass_prop['principalInertia'][0]
+                            ]
+                    for i, prop in enumerate(ref_props):
+                        if prop < 0.1 or prop > 99: 
+                            ref_props[i] = '{:.2e}'.format(ref_props[i])
+                        else: 
+                            ref_props[i] = round(ref_props[i], 3)
+                        pass
+                except:
+                    print("except hit")
+                    ref_props = None       
+            else:
+                ref_props=[False, False, False, False]
+            ref_props.append(ref_user_name)
+            ref_props.append(ref_doc_name)
+            ref_props.append(ref_doc_time)
+            all_ref_props.append(ref_props)
+            print("all ref properties",all_ref_props)
         except:
+            print("I was failed")
             failed_urls.append(url)
-    
+
     if len(failed_urls) == 0:
         failed_urls = None
 
-    ref_table = ref_table_create(ref_props)
+    ref_table = ref_table_create(all_ref_props)
     err_tol = 0.005
 
-    if len(ref_props)>0 and user_props:
+    if len(all_ref_props)>0 and user_props:
         check_symbols=[]
-        for i, ref_prop in enumerate(ref_props): 
-
+        for i, ref_prop in enumerate(all_ref_props): 
             # Check for accuracy 
             if (
-                float(ref_prop[2]) * (1 - err_tol) > float(user_props[0]) or 
-                float(user_props[0]) > float(ref_prop[2]) * (1 + err_tol)
+                float(ref_prop[0]) * (1 - err_tol) > float(user_props[0]) or 
+                float(user_props[0]) > float(ref_prop[0]) * (1 + err_tol)
             ): 
                 check_symbols.append("&#x2717;")
             else: 
@@ -482,22 +432,143 @@ def grade_model(request: HttpRequest, os_user_id: str):
     else:
         check_symbols=None
         
-    ref_table = ref_table_create(ref_props,check_symbols)
+    ref_table = ref_table_create(all_ref_props,check_symbols)
+    
 
-    user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
     context={
         "user": curr_user, 
-        "doc_time" : user_doc_time,
         "ref_table" : ref_table,
         "failed_urls" : failed_urls,
         "ref_urls" : ref_urls,
+        "urlgradetab": True
 
     }
     return render(
-        request, "grader/grader.html", 
+        request, "grader/generic_grader.html", 
         context=context
     )
+def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str): 
+    """ 
+    This function loads the list of document created, opened or shared by/with the users
+    
+    **Context:**
+    
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/grader.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
 
+    created_doc_info=[] # arry to store list of documents created by users
+    shared_doc_info=[] #arry to store list of documents shared with users
+    opened_doc_info=[] #arry to store list of documents opened by users
+    #get all documents in the user's recently opened list (perpahps 20? )
+    docsinfo=get_user_doc_list(curr_user.os_domain,auth_token=curr_user.access_token) 
+    items=docsinfo["items"]
+
+    try:
+        for item in items:
+            userID=item["createdBy"]["id"]
+            documentName=item["name"]
+            documentID=item["id"]
+            workspaceID=item["defaultWorkspace"]["id"]
+            
+
+            if(userID==os_user_id):
+                created_doc_info.append((documentName,documentID,workspaceID))
+            else:
+                shared_doc_info.append((documentName,documentID,workspaceID))
+
+
+    except:
+        print("ERROR on main TRY") #need better error message here
+
+    if (did=="None" and wid=="None"):
+        did=curr_user.did
+        wid=curr_user.wid
+
+    elements_info=get_elements_info(curr_user.os_domain,did,wid ,auth_token=curr_user.access_token) 
+
+    try:
+        element=[]
+        eType_present=False #check if the element type is present
+        #grab elements and their information from all the tabs in the document
+        for eInfo in elements_info:
+            image=""
+            eType=eInfo["elementType"]
+            eName=eInfo["name"]
+            eid=eInfo["id"]
+
+            if(eType == curr_user.etype):
+                eType_present=True  # indicate the etype is present
+                image_bytes=get_shadedviews_image_data(curr_user.os_domain, did,wid,eid, eType, auth_token=curr_user.access_token)
+                if(image_bytes):
+                    image_str=image_bytes.decode('utf8')
+                    image_json=json.loads(image_str)
+                    image=image_json["images"][0]
+                else:
+                    #if there are no shaded views add a default image of an empty
+                    image= "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAhGVYSWZNTQAqAAAACAAFARIAAwAAAAEAAQAAARoABQAAAAEAAABKARsABQAAAAEAAABSASgAAwAAAAEAAgAAh2kABAAAAAEAAABaAAAAAAAAAEgAAAABAAAASAAAAAEAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAMqADAAQAAAABAAAAMgAAAACG8cKoAAAACXBIWXMAAAsTAAALEwEAmpwYAAABWWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNi4wLjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyI+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgoZXuEHAAAN4klEQVRoBcVZe4xcV3k/r/ua9+z7vevYix2cpCQobYFWKqAkIkFUkXCUoCAEspoqVZEiEZVWSAz/QAVVkYrUFiVtKbQKsoMQIg8CuDwUhZQ0EJLYTpzd2F5nX96dnffc17nn8H13dtZjZ3c93t0qR5rdO/eee873O9/3/b7HEPLODdre+qv//fx04dHnelrf9cb99vNu/rNuJhUKBZi3sw02Xz9eS+OzR3/w4oH3Xj8wTLiv4rnx3c3f2u5ut0BgE6ph4B9K8LPDEb8Pa+Hr//7Ub979nutHex3L8AjJ7XDF1mvi6m9r+sBXf3ngwJC3QCltdM5vCQUQaUuwzmebXeP89bnsv37y8uEDUz1JRzCv5kp7s/nXcq8LIFT3pn/1AalS5uf/5fliX1acDMvu8t8+eKIGQsnOzVqC4p23A7sE4pvGYz/5kxumJzOmMExfEtmVVXTus9l1F0CO8A/94eBvXF/3z85VRq/flxlJpwYzP3j2XlWt3V1bcknp4Z/NV8g37vQ7NRMLHmNqmWT87Mgx5/EHbzp8aH8f9fwgjKRkQpMdesXlcLoAcli7QSQOTmSLhw7mlhprnkkNSlOpXqoimZ32ovxPx1JR+e6TzZXVsPzc+eXydx6+o9EG1dbERwpPZR68ff+hscGMBhARpWTHfnY5hNa3LoCcjDf0FRXNFV8IAWYTG1QIPk+kMBgZ6HFots9Mjg3R9MHrsmN3/8+r3nIlrCyXSRkAlRHEQx87+K6xoYx0myFljDB4d0800QbVBZDW1DAMiRCXb94+1RCm0IgDKEJ6+1Ikn7fN0SAaDqXqG3v6d9melNUjuFhbLXk1x2Shw4SSnDI0LQmaMYhBPLe+Kw3tiaMh1CgiDIFJGVKltUpYRqPW9HvfPZGf3D+adxxBx1WoDpZr4XUL1cZgsdR0goBo0+IhtVU06KRiDRW+9KUdAepaIy29bP03ZQnpRXDOAIYyIc8ulid6s3a/YwpfAkrbFJHjEKoUTcowSvtRpBqu7zc9WvVD6b+wNB8DgOAbB0b0Ldyt7Wtb79x6sidAUAMz89X86GCiQmQULlW9yaF8otcwWSClYjB0LF2Em+qICxalTIMkbWWpiAzUPCJuu3k8vOvJU3NvLJZrhaNvVQBAPPtqANrPdw0kUipaLbvjSyvura+frwaTY8nSYNZmmpEKKEJzIcANUBOKwQccvWXN8BrKgKA0aIuMD2VFb9oaGB1PjDzxfD6o10/XLiyslb/1w/nyyeP3BG2Bt/q/IyBSSmrbjgrCQC8W/etGe1LpnpTzxlKxeXCkPzEEZiF9P8pHKvQBQ0Nw1rQM4QtDRJQoAEViUCAUMhjgUxTIRBvUCfKZZNSTTSK15yYGnb7x0ZR373HyEsxt5WJbILlmIFISanOhqm6TVqrB/vH+lCNB8Ho9mJwaTnkRUZoqSg3OqabMloo4YF666fuB9lnT4KxhCu4BKEkjRTkBLkZEMGQkGYQYBhwPZ0FkLp2U1Tpy4hFQ6vEtILRuXxMQ1IRl21Gp7gm3Hu4fG0gaTRD93ELl5oOTmRo8h7Nml/ITTSMDRDAsgzimNsAM84FUedePwsgjLme0AezWBIOLBGVSOEIpn3IQnaJgXgQMKEhXvtIVEA7xA8koZdnhQrFhh5HaPzKQZm7TYy+8VvrT6bFkjRGwDkoEnG5noKOxPYAtgflo8A/pWJwok3KtVAZgZ7wwkJ6nJRxO3bQN36Bcpm0O/CcZjyhgxQzgCMDatUYOa7BXlgS+P7vSTEAOf91QTwJihg6qnu45MJqsjA4mV8NQCby5lf7XnRz9A6w9AqtjEjARxzIJZzJBeWIY0CYrbhiUKqombKPamzYAYgR5xD0tvtuGkrsJiIwbVnhuoZEFEj0wkLch6El0UObYPOzPW2UEsRWATe+3mAu1RRWoBanW5DSEDCDqy5pOX84etBg5UK767yo31fiRwo+wekQ3wjogPiyMM+uxBjQGDzfd6Iqb//H0K3+2fzQ7lUkJjG1gFQockkXVRpgSnIyAuQCy7ta6YmlwKaLBZ2BhspBJGnVkNJgDZkgwVeBrFY9CnvxGJLW7XKzXzy+US4UHzlQIeQBZYGNseZKIFtH/xdd/NDyQc6byWUsGQYSngbFgSxPaWHl3FzQEdZlwZoxTlXPMwHEcNtCX7pne39976/9OyFr1lcbiUqn80InZEvnWp71NNdIG8Y/Hnhu9Yd/AVCJhTaZMzjrpA/n//1Ej8TFwzkmp4mrTYGcgBYraKjBNMEkgAteVtOF77OXXStUrfaRlb6CJr3//t1N/dGhkIps2/RDKB7Tn3R3yLt82DHAS9BOkR0KAOcNU2o5cn/gLsnSuw7QwSWs50r8+/tvpGw/19yUd02tAzEARGOc6Age51gEpCvIUwZT9Wt/daj6uqQPfPD170b/ng8+eRH9pAUFaW2eDR5548fobD/ZnbcOEZHZ3m+OGK8tLaRSof3Cottv1cB1cE2KPde5srX7vHYdPwS3IWTXFXCB2arix0dkAED5uKoQBTn1ZfwHXescGgmi4gX1mbq306Ttuei0WZF1+gcxEyOWdjb04OdwE10FNtK/jjXf4BypjjSBeOrO88ld//t6Z1jKXLEl87tvPJD+wb+LQgcm4sxHsFYi2vHuxHpbYjWrT/vXJxcWH7nvfufW1N3wav4sRkZ9KJ4VZr3kK6lHGwKexBI0nIz28kwPIxTC5LtZ865WZ6tm/ue99Cx2ucFks489875GVb/u3rN6Sc/x6SKnvK0sIbgjGmbAERHFJIq17bUjfIPpiJI4H0KD2Q2XC9zRMBofbGT3DOlBUaliA1CyTBx3raABBV9ea4tjPL7zwD3/5/sUOEG873k1iwzeNL//nezLjg6l8b8ZMc0Ed0+DTPVlbg7SQibdwQGxXVW/vUxRI4zhkDgqCIa3WfTHzVvnsZ+686Rdvk/yKGxtxBNHiM3D+8O8+RYpwiR961+efyN3/4cl8qFXG4swEVFjVwWlZEfVCTM0BEr65N6MFgrCVYoMqTt6cGEyVCSmAnIVt6XMjSCF7tRgMMjYAtQ5MP/n3Hy3l0saF3oxzxlfRzFrNW1qrBc1izWOQehkwD4u8GBxAAVDXiAqmg/D4GuZwCmxZXFz1QPtqZt9AHpTuQ7fs6ke1oZHO82wDat07BjUrFyaEzIG80xRKAC+4F8MgFMWyNxKlrUykgOEphQoVEHGuoEaESgp2h1p8w6k6N7h0DZ5FWcMNVdI0vCjS5nLZDx2bzQ5mMj7kUQbjAjTR6nZeeu3tV5sCuXzaKa3EzRr5S0vKfGgpWlAMpTMcymtSdBxzHnI7As2GBETRBOg1ATW5YAI6iAAKwy6ovdUOujxfAwvQHLSrbNOcs2yul9YafjZhzmIOVfc8ARkv1HTdkUgXQE5CNY0NB0M1sW0KgEL4bkGxIAEieAhPWCKwBKtB0KrKUHFPRrbyaKJJZQJqccuE2hFjAYBEuwNiAmCQVZRqgUw75pwJ7DS/Wm/2ZZJvJhJQq3sSVCw0di1xPnyuOroAclyVm18gmZphJ5IWFNIiAqHQluGsoTMHNhRBbx3YJvY3YBudNowm7N4AUAx+OzC9MErogEB9TGwL2ytghlU3aGaTxgUGtjh3sVod7U+dMw2Dep4bd1GuKvkVE8Aorj4edz9UPJQhzRBabW4QWtBcswyDU19qCwTLQt8KEmMoENDGYAA+qBciZFCCZYwJnRJoA9VgQtX1pHpr1a0Zgi5B/DFXyu7acF/iPHAu2OGlBh6ugyl7rRHqx/7txDIhp7bVTBcagRWh0/fwcXIRruBzjBceHctOD+fSAQ/tqeEs/LLAoVMvwOYZNh5RhpiJ8D/YEtTlEolAqUBxN1Dnp4cS5yXhZrXu2kN9iQaWtDh3N6M7ILADnjJuBGYRFY6SNbhc+8RXnqjen08aILsFzzOWxSyLQ0ZgAHNBp0JjfQ8TIfHRTU+axYq3Mj6ceAsKWBN/qervsxsREAiuu9vR9SJIyW1aho55/N6tQ6M6mzNrA/3OfNKx3ghCPVP2g4WVktssV0PqBdIQYGBuIK1S3V/YN5SdUxFkc+s/8uwVCDyEroF0nljhi1+M7RVaGUR7jAd+ZGAd3ZtPuCOZ5HJPzpplBnvdlfrC7HzJPTVXOp9LWEUIoNgQi+scBNMG1Ln2Tq93BKRzs5AAJW+csGSBjgwUti9vS+itVR458eYzRz/yByd++n/FmV+/urg0N1/xi6t1AxgNeIByDNt7AaprH+kUfrtrSDUUUBmbPbfGv/vj2deeLtxZRf+CATkTwQ/55NeeSb5/cjDX32fkcik7kUpZ3LbBr4DaNdhnu3hA1tpur85newoET1ZwKl6fLaqP//PLrwDbuesg0JDizgb6Gf7q+x2IMyDIPPnrp6yvfXA0O+TAT4/5ZCrn2KbtCA1kjPFKW9D57xR4q+u9AQL2AQQMuoiM07Nr4X23PfsqdjY2QODuSBaXpMCkFBlQ4+/zD3+jTe0FUXj09szEVCqXd+xMfz5h+zLoipr3BIjQQtVkYM+cqzXuv+0wtGdanY1Y0EvCd16hrW18R8D4Be7JwtFCTO34tfBPz6dFVkEX5hiGo435m13sGgiUkwqSV+vUzMXqZ+68Bdsz6L0gU6tHttmmV97rnNsBShc++8dVmIufq45dslaZuH5ov3R6vrgBovVTyrbpxHZSIagNYOhX69ra7h18tjsgkcVePH1x8ehGewb1370mriZc7Fddavb3B4v94zS/hzAAAAAASUVORK5CYII="
+                element.append((eType,eName,image,did,wid,eid))
+    except:
+        print("ERROR")
+    
+    if not eType_present:
+        element.append((curr_user.etype,eName,eid,image))
+
+    context={
+            "user": curr_user, 
+            "created_docs":created_doc_info,
+            "shared_docs":shared_doc_info,
+            "elements":element,
+            "doclisttab" :True
+
+
+        }
+    return render(
+        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        context=context    )  
+
+
+def upload_csv(request: HttpRequest, os_user_id: str): 
+    """ 
+    When a user submits a model, API calls are made to check if the 
+    model is dimensionally correct and placed in proper orientation. 
+    
+    **Context:**
+    
+    View to get time to completion and mass props compared to reference model
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    - ``ref_urls``: the reference element for the model to be compared to
+    
+    **Template:**
+    
+    :template:`grader/grader.html`
+    """
+    print("valled")
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    ref_urls = request.GET.getlist('csvfile')
+    print("Ths is what was uploaded",ref_urls)
+    context={
+            "user": curr_user, 
+            "doclisttab" :True
+
+
+        }
+
+    return render(
+    request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+    context=context    )  
 #################### Helper API calls ####################
 
 def get_mass_props(
@@ -510,7 +581,6 @@ def get_mass_props(
         elementType="partstudios"
     elif(eType=="ASSEMBLY"):
         elementType="assemblies"
-    print("parameters",elementType, did, wvm, wvmid, eid)
     response = requests.get(
         os.path.join(
             domain, 
@@ -571,7 +641,7 @@ def get_blob_data(
         return response.content
     else: 
         return None
-def get_shadedviews_data(
+def get_shadedviews_image_data(
     domain: str, did: str, wid:str, eid:str, eType:str,  auth_token: str
 ) -> Any: 
     """ Get the image data from the given url
@@ -581,7 +651,6 @@ def get_shadedviews_data(
         elementType="partstudios"
     elif(eType=="ASSEMBLY"):
         elementType="assemblies"
-
     response = requests.get(
         os.path.join(
             domain, 
@@ -742,18 +811,24 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) 
                 <th>Surface Area</th>
                 <th>Volume</th>
                 <th>Check</th>
+                <th>User name</th>
+                <th>Elapsed Time</th>
             </tr>
         '''
+
         for i, item in enumerate(ref_props): 
-            ref_table += f'''
-            <tr>
-                <td>{item[0]}</td>
-                <td>{item[1]}</td>
-                <td>{item[2]}</td>
-                <td>{item[3]}</td>
-                <td>{checks[i]}</td>
-            </tr>
-            '''
+            if item:
+                ref_table += f'''
+                <tr>
+                    <td>{item[5]}</td>
+                    <td>{item[1]}</td>
+                    <td>{item[2]}</td>
+                    <td>{item[3]}</td>
+                    <td>{checks[i]}</td>
+                    <td>{item[4]}</td>
+                    <td>{item[6]}</td>
+                </tr>
+                '''
         return ref_table + "</table>"
     else:
         ref_table = '''
@@ -763,17 +838,23 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) 
                 <th>Mass</th>
                 <th>Surface Area</th>
                 <th>Volume</th>
+                <th>User name</th>
+                <th>Elapsed Time</th>
             </tr>
         '''
+
         for i, item in enumerate(ref_props): 
-            ref_table += f'''
-            <tr>
-                <td>{item[0]}</td>
-                <td>{item[1]}</td>
-                <td>{item[2]}</td>
-                <td>{item[3]}</td>
-            </tr>
-            '''
+            if item:
+                ref_table += f'''
+                <tr>
+                    <td>{item[5]}</td>
+                    <td>{item[1]}</td>
+                    <td>{item[2]}</td>
+                    <td>{item[3]}</td>
+                    <td>{item[4]}</td>
+                    <td>{item[6]}</td>
+                </tr>
+                '''
         return ref_table + "</table>"
 
 def elapsed_time(start_time: str, stop_time: str):
@@ -796,4 +877,14 @@ def get_ref_url_ids(ref_url: str):
         return ref
     except:
         return None
+    
+def convert_cs_to_array(cs_ref_urls: str): #converts all the comma separated urls to array of urls
+    ref_urls=[]
+    try:
+        for cs_ref_url in cs_ref_urls:
+            for url in cs_ref_url.split(","):
+                ref_urls.append(url)
+    except:
+        return None
+    return ref_urls
     

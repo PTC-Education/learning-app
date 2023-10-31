@@ -14,6 +14,12 @@
     </head>
 
     <body>
+
+        <div class="spinner-container">
+            <div id="lists">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
     </br>
         <!-- Return to the home page -->
         <form id="index" action="{% url 'grader:index' user.os_user_id %}">
@@ -43,59 +49,59 @@
          {% endif %}
 
 
+
+
          <!-- List of my Documents here-->
-         <div class="button-container">
-            <button id="myDocs" class="button-collapsed" onclick="toggleView('myDocumentsList','myDocs')"></button>
+        <div class= "row">
+            <div  class="column" style="background-color:#aaa;">
                 My documents
-        </div>
+                    <div>
+                        {% if created_docs %}
+                            {% for document in created_docs %}
+                            <div > <!-- keeps button and name on one line -->
+                                <form  action="{% url 'grader:listdocs' user.os_user_id document.1 document.2%}" onsubmit="loading_list()">
+                                    <button class="document-names" type="submit" value={{document.0|safe}}>{{document.0|safe}} </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        </br>
+                    </div>
 
-        <div id="myDocumentsList" class="docList" >
-            <table>
-            {% if created_docs %}
-                {% for document in created_docs %}
-                    <tr>
-                        <th><input type="button" name="filename" id="fname" value={{document.0|safe}} size="50" /> <!--Name of the document --></th>
-                        <th> 
-                        {% for elements in document.3 %}
-                            <tr>
-                                <th><input type="button" name="filename" id="fname" value={{element.1|safe}} size="50" /> <!--Name of the element --></th>
-                                <th><img src="data:image/png;base64,{{element.3}}"></th>
-                            </tr>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            {% endif %}
-            </table>
-        </div>
+                Opened documents
 
-
-
-        <!-- List of recent Documents here-->
-        <div class="button-container">
-            <button id="recentDocbutton" class="button-collapsed" onclick="toggleView('recentDocumentsList','recentDocbutton')"></button>
-            Recent documents
-        </div>
-
-        <div id="recentDocumentsList" class="docList" >
-            {% if shared_docs %}
-                {% for document in shared_docs %}
-                <div class="list-container"> <!-- keeps button and name on one line -->
-                    <button id='{{document.1|safe}}' class="button-collapsed" onclick="toggleView('{{document.2|safe}}','{{document.1|safe}}')"></button>
-                    <p>{{document.0|safe}} <!--Name of the document --></p>
+                    <div>
+                        {% if shared_docs %}
+                            {% for document in shared_docs %}
+                            <div> <!-- keeps button and name on one line -->
+                                <form action="{% url 'grader:listdocs' user.os_user_id document.1 document.2%}" onsubmit="loading_list()">
+                                    <button class="document-names" type="submit" value={{document.0|safe}}>{{document.0|safe}} </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        </br>
+                    </div>
                 </div>
+            <div class="column" style="background-color:#bbb;">
+                {% if elements %}
+                    {{elements.0.0}}
+                    {% for element in elements %}
                     </br>
-                    <div id={{document.2|safe}} class="docList" >
-                        {% for elements in document.3 %}
-                        <input type="button" name="filename" id="fname" value={{elements.1|safe}} size="50" /> <!--Name of the element -->
-                        <img src="data:image/png;base64,{{element.3}}">   
-                        <input type="button" name="filename" id="fname" value={{elements.0|safe}} size="50" /> <!--Name of the element -->
-        
+                    <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
+                        <input type="text" style="display:none;" name="ref_url" id="referenceModel" value="documents/{{element.3}}/w/{{element.4}}/e/{{element.5}}" title="Copy/paste reference model" size="50"/>
+                    <button>
+                        <img src="data:image/png;base64,{{element.2}}" alt="" />
+                        <h3>&nbsp;&nbsp;&nbsp;&nbsp;{{element.1|safe}}</h3>
+                    </button>
+                    </form>
 
                     </br>
                     {% endfor %}
-                    </div>
-                {% endfor %}
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
+ 
+
     </body>
 </html>

@@ -10,8 +10,9 @@ urlpatterns = [
     path('grader/<str:os_user_id>/', views.grader, name='grader'),
     path('generic_grader/<str:os_user_id>/', views.generic_grader, name='generic_grader'),
     path('filelist/<str:os_user_id>/', views.filelist, name='filelist'),
-    path('listdocs/<str:os_user_id>/', views.listdocs, name='listdocs'),
+    path('listdocs/<str:os_user_id>/<str:did>/<str:wid>/', views.listdocs, name='listdocs'),
     path('classlist/<str:os_user_id>/', views.classlist, name='classlist'),
+    path('upload_csv/<str:os_user_id>/', views.upload_csv, name='upload_csv'),
     path('grade/<str:os_user_id>/<str:ref_url>/', views.grade_model, name="grade"), 
     path('grade/<str:os_user_id>/', views.grade_model, name="grade")
 ]

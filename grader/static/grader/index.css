@@ -205,40 +205,8 @@ input[type=submit]:hover {
     align-items: center;
     
   }
-.button-collapsed{
-    padding: 3px;
-    border: solid rgb(0, 0, 0);
-    background-color: #dddddd00;
-    border-width: 0 2px 2px 0;
-    display: inline-block;
-    -ms-transform: rotate(-45deg); /* IE 9 */
-    -webkit-transform: rotate(-45deg); /* Chrome, Safari, Opera */
-    transform: rotate(-45deg);
-}
-
-.button-expanded{
-    padding: 3px;
-    border: solid rgb(0, 0, 0);
-    background-color: #dddddd00;
-    border-width: 0 2px 2px 0;
-    display: inline-block;
-    -ms-transform: rotate(45deg); /* IE 9 */
-    -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
-    transform: rotate(45deg);
-  }
-
-.button-collapsed:hover{
-    background-color: yellow;
-  }
-
-.button-expanded:hover{
-    background-color: yellow;
-  }
 
 
-.docList{
-    display: none;
-}
 
 body {
     color: #333;
@@ -246,15 +214,51 @@ body {
 }
 
 
-table, th,td
+table, th,td,tr
 input[type=submit]:hover {
     border: 1px solid black;
 }
 
 
+.documentlist{
+    color: #333;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+}
 
 
+/*For document and element list*/
+/* Create two equal columns that floats next to each other */
+.column {
+    float: left;
+    width: 45%;
+    padding: 2px;
+    height: 500px;
+    overflow:auto;
+    
+  }
+  
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
 
+  button.document-names{
+    display: block;
+    width: 100%;
+    border: none;
+    background-color: #ddd;
+    padding: 2px 2px;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+}
 
+button.document-names:hover {
+    background-color: #bbb;
+}
 
-
+button.documentname{
+    width:100%
+}
