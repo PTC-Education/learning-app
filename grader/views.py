@@ -312,10 +312,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
     # Get info about the document the user currently has opened
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
-    user_doc_name=user_doc_info["createdBy"]["name"]
     user_user_name=user_doc_info['name']
+    user_doc_name=user_doc_info["createdBy"]["name"]
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
-
 
     # Set list of user_props [mass, vol, periphery, principleInertia]
     try:
@@ -349,34 +348,24 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # Get info and mass props for all url's in ref doc list
     all_ref_props = []
     failed_urls = []
-    for i, url in enumerate(ref_urls):
-        
+    for i, url in enumerate(ref_urls): 
         ref_url = get_ref_url_ids(url)
 
         #grab the element Type of reference URL 
         try:
             ref_url['eType']=get_element_type(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)[0]["elementType"]
-            print("ref_url",ref_url['eType'])
         except:
-            print("Error with ref_url",ref_url['did'],ref_url['wid'], ref_url['eid'])
+            ref_url['eType']="Error"
 
         try:
             #check the element type of reference and current document
-            print("both element types",ref_url['eType'],curr_user.etype)
+            ref_props=[]  
             if(ref_url['eType']==curr_user.etype):     
-                ref_props=[]      
                 try:
-                    #Get the document info of the reference document for user, name of document,time
-                    doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-                    ref_user_name=doc_info["createdBy"]["name"]
-                    ref_doc_name = doc_info['name']
-                    ref_doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
-
                     ref_mass_prop = get_mass_props(
                         curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], ref_url['eType'], 
                         massAsGroup=True, auth_token=curr_user.access_token
                     )
-                    print("mass props", ref_mass_prop)
                     if ref_url['eType'] == "PARTSTUDIO" :
                         ref_props = [
                                 ref_mass_prop['bodies']['-all-']['mass'][0], 
@@ -398,40 +387,50 @@ def grade_model(request: HttpRequest, os_user_id: str):
                             ref_props[i] = round(ref_props[i], 3)
                         pass
                 except:
-                    print("except hit")
                     ref_props = None       
+
+                #Get the document info of the reference document for user, name of document,time
+                doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+                ref_user_name=doc_info["createdBy"]["name"]
+                ref_doc_name = doc_info['name']
+                ref_doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+                ref_props.append(ref_user_name)
+                ref_props.append(ref_doc_name)
+                ref_props.append(ref_doc_time)
+                type_match=True
+
             else:
-                ref_props=[False, False, False, False]
-            ref_props.append(ref_user_name)
-            ref_props.append(ref_doc_name)
-            ref_props.append(ref_doc_time)
-            all_ref_props.append(ref_props)
-            print("all ref properties",all_ref_props)
+                type_match=False 
+
+            all_ref_props.append((ref_props,type_match))
         except:
-            print("I was failed")
+            print("failed")
             failed_urls.append(url)
 
     if len(failed_urls) == 0:
         failed_urls = None
 
-    ref_table = ref_table_create(all_ref_props)
+    #ref_table = ref_table_create(all_ref_props)
     err_tol = 0.005
 
+    print("all ref properties",all_ref_props)
     if len(all_ref_props)>0 and user_props:
         check_symbols=[]
         for i, ref_prop in enumerate(all_ref_props): 
-            # Check for accuracy 
-            if (
-                float(ref_prop[0]) * (1 - err_tol) > float(user_props[0]) or 
-                float(user_props[0]) > float(ref_prop[0]) * (1 + err_tol)
-            ): 
-                check_symbols.append("&#x2717;")
-            else: 
-                check_symbols.append("&#x2713;")
-
+            if(ref_prop[1]): #only when type_match=True 
+                # Check for accuracy 
+                if (
+                    float(ref_prop[0][0]) * (1 - err_tol) > float(user_props[0]) or 
+                    float(user_props[0]) > float(ref_prop[0][0]) * (1 + err_tol)
+                ): 
+                    check_symbols.append("&#x2717;")
+                else: 
+                    check_symbols.append("&#x2713;")
+            else:
+                check_symbols.append("&#x0270c;")
     else:
         check_symbols=None
-        
+      
     ref_table = ref_table_create(all_ref_props,check_symbols)
     
 
@@ -817,45 +816,34 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) 
         '''
 
         for i, item in enumerate(ref_props): 
-            if item:
+            if item[1]:
+                print("item",item)
                 ref_table += f'''
                 <tr>
-                    <td>{item[5]}</td>
-                    <td>{item[1]}</td>
-                    <td>{item[2]}</td>
-                    <td>{item[3]}</td>
+                    <td>{item[0][5]}</td>
+                    <td>{item[0][1]}</td>
+                    <td>{item[0][2]}</td>
+                    <td>{item[0][3]}</td>
                     <td>{checks[i]}</td>
-                    <td>{item[4]}</td>
-                    <td>{item[6]}</td>
+                    <td>{item[0][4]}</td>
+                    <td>{item[0][6]}</td>
                 </tr>
                 '''
-        return ref_table + "</table>"
-    else:
-        ref_table = '''
-        <table>
-            <tr>
-                <th>Document name</th>
-                <th>Mass</th>
-                <th>Surface Area</th>
-                <th>Volume</th>
-                <th>User name</th>
-                <th>Elapsed Time</th>
-            </tr>
-        '''
-
-        for i, item in enumerate(ref_props): 
-            if item:
+            else:
                 ref_table += f'''
                 <tr>
-                    <td>{item[5]}</td>
-                    <td>{item[1]}</td>
-                    <td>{item[2]}</td>
-                    <td>{item[3]}</td>
-                    <td>{item[4]}</td>
-                    <td>{item[6]}</td>
+                    <td>Mismatched Element</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+   
                 </tr>
                 '''
         return ref_table + "</table>"
+
 
 def elapsed_time(start_time: str, stop_time: str):
     createdAt = datetime.strptime(start_time.replace("T"," ").split("+")[0],'%Y-%m-%d %H:%M:%S.%f')
