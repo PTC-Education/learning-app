@@ -353,8 +353,11 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
         #grab the element Type of reference URL 
         try:
-            ref_url['eType']=get_element_type(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)[0]["elementType"]
+            eType=get_element_type(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)
+            ref_url['eType']=eType[0]["elementType"]
+            ref_element_name=eType[0]["name"]
         except:
+            print("Error  milan")
             ref_url['eType']="Error"
 
         try:
@@ -389,18 +392,20 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 except:
                     ref_props = None       
 
-                #Get the document info of the reference document for user, name of document,time
-                doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-                ref_user_name=doc_info["createdBy"]["name"]
-                ref_doc_name = doc_info['name']
-                ref_doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
-                ref_props.append(ref_user_name)
-                ref_props.append(ref_doc_name)
-                ref_props.append(ref_doc_time)
                 type_match=True
 
             else:
                 type_match=False 
+
+            #Get the document info of the reference document for user, name of document,time
+            doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+            ref_user_name=doc_info["createdBy"]["name"]
+            ref_doc_name = doc_info['name']
+            ref_doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+            ref_props.append(ref_element_name)
+            ref_props.append(ref_user_name)
+            ref_props.append(ref_doc_time)
+            ref_props.append(ref_doc_name)
 
             all_ref_props.append((ref_props,type_match))
         except:
@@ -427,7 +432,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 else: 
                     check_symbols.append("&#x2713;")
             else:
-                check_symbols.append("&#x0270c;")
+                check_symbols.append("&#10071;")
     else:
         check_symbols=None
       
@@ -805,7 +810,7 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) 
         ref_table = '''
         <table>
             <tr>
-                <th>Document name</th>
+                <th>Tab name</th>
                 <th>Mass</th>
                 <th>Surface Area</th>
                 <th>Volume</th>
@@ -817,28 +822,28 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) 
 
         for i, item in enumerate(ref_props): 
             if item[1]:
-                print("item",item)
                 ref_table += f'''
                 <tr>
-                    <td>{item[0][5]}</td>
+                    <td>{item[0][4]}</td>
+                    <td>{item[0][0]}</td>
                     <td>{item[0][1]}</td>
                     <td>{item[0][2]}</td>
-                    <td>{item[0][3]}</td>
                     <td>{checks[i]}</td>
-                    <td>{item[0][4]}</td>
+                    <td>{item[0][5]}</td>
                     <td>{item[0][6]}</td>
                 </tr>
                 '''
             else:
                 ref_table += f'''
                 <tr>
-                    <td>Mismatched Element</td>
+
+                    <td>{item[0][0]}</td>
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
+                    <td>{checks[i]}</td>
+                    <td>{item[0][1]}</td>
+                    <td>{item[0][2]}</td>
    
                 </tr>
                 '''
