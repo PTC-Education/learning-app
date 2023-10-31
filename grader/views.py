@@ -362,16 +362,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
         try:
             #check the element type of reference and current document
-            print("both element types",ref_url['eType'],curr_user.etype)
             if(ref_url['eType']==curr_user.etype):     
                 ref_props=[]      
                 try:
-                    #Get the document info of the reference document for user, name of document,time
-                    doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-                    ref_user_name=doc_info["createdBy"]["name"]
-                    ref_doc_name = doc_info['name']
-                    ref_doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
-
                     ref_mass_prop = get_mass_props(
                         curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], ref_url['eType'], 
                         massAsGroup=True, auth_token=curr_user.access_token
@@ -402,13 +395,17 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     ref_props = None       
             else:
                 ref_props=[False, False, False, False]
+            #Get the document info of the reference document for user, name of document,time
+            doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+            ref_user_name=doc_info["createdBy"]["name"]
+            ref_doc_name = doc_info['name']
+            ref_doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
             ref_props.append(ref_user_name)
             ref_props.append(ref_doc_name)
             ref_props.append(ref_doc_time)
             all_ref_props.append(ref_props)
             print("all ref properties",all_ref_props)
         except:
-            print("I was failed")
             failed_urls.append(url)
 
     if len(failed_urls) == 0:
