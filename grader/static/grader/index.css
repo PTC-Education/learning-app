@@ -2,6 +2,8 @@
 body {
     color: #333;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    padding-left: 5%;
+    padding-right: 5%;
 }
     
 h3 {
@@ -148,14 +150,21 @@ input[type=submit]:hover {
 
 /* Loader */
 .loader {
-    border: 16px solid #f3f3f3;
+    position: relative;
+}
+.loader:after {
+    content: " ";
+    z-index: 10;
+    display: block;
+    position: absolute;
+    border: 10px solid #f3f3f3;
     border-radius: 50%;
-    border-top: 16px solid #3498db;
-    width: 120px;
-    height: 120px;
+    border-top: 10px solid #3498db;
+    width: 80px;
+    height: 80px;
     -webkit-animation: spin 2s linear infinite; /* Safari */
     animation: spin 2s linear infinite;
-}
+  }
 
 /* Loader in Safari */
 @-webkit-keyframes spin {
@@ -168,16 +177,6 @@ input[type=submit]:hover {
     100% { transform: rotate(360deg); }
 }
 
-
-.button-container {
-    display: flex;
-    gap: 50px;
-    padding: 10px;
-    justify-content: center;
-    align-items: center;
-
-  }
-
 .spinner-container{
     display: flex;
     gap: 50px;
@@ -187,11 +186,79 @@ input[type=submit]:hover {
 
 }
 
+.button-container {
+    display: flex;
+    gap: 50 px;
+    padding: 50 px;
+    justify-content: center;
+    margin: 100 px;
+    align-items: center;
+
+  }
+
+  .list-container {
+    display: flex;
+    gap: 50 px;
+    padding: 50 px;
+    margin: 100 px;
+    justify-content: center ;
+    align-items: center;
+    
+  }
 
 
 
+body {
+    color: #333;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+}
 
 
+table, th,td,tr
+input[type=submit]:hover {
+    border: 1px solid black;
+}
 
 
+.documentlist{
+    color: #333;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+}
 
+
+/*For document and element list*/
+/* Create two equal columns that floats next to each other */
+.column {
+    float: left;
+    width: 45%;
+    padding: 2px;
+    height: 500px;
+    overflow:auto;
+    
+  }
+  
+  /* Clear floats after the columns */
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  button.document-names{
+    display: block;
+    width: 100%;
+    border: none;
+    background-color: #ddd;
+    padding: 2px 2px;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+}
+
+button.document-names:hover {
+    background-color: #bbb;
+}
+
+button.documentname{
+    width:100%
+}

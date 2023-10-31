@@ -1,43 +1,49 @@
 <!DOCTYPE html>
 <html lang="en-US">
-    <head>
-        {% load static %}
-        <link rel="stylesheet" href="{% static 'grader/index.css' %}">
-        <!-- Load loading_index function to enable loading screen -->
-        <script src="{% static 'grader/loading.js' %}" type="text/javascript
+
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'grader/index.css' %}">
+    <!-- Load loading_index function to enable loading screen -->
+    <script src="{% static 'grader/loading.js' %}" type="text/javascript
         "></script>
-    </head>
-    <body>
-        <!-- Load app logo at the top of the page -->
-        <div id="logo">
-            <img id="app_logo" src="{% static 'grader/images/teacherstudents.svg' %}" alt="app_logo"/>
-        </div>
-        <!-- Print out error message if any -->
-        <div>
-            {% if error_message %}
-                <p id="err_msg"><strong>{{ error_message }}</strong></p>
-            {% endif %}
-        </div>
+</head>
 
-        <!-- General instructions -->
+<body>
+    <!-- Load app logo at the top of the page -->
+    <div id="logo">
+        <img id="app_logo" src="{% static 'grader/images/teacherstudents.svg' %}" alt="app_logo" />
+    </div>
+    <!-- Print out error message if any -->
+    <div>
+        {% if error_message %}
+        <p id="err_msg"><strong>{{ error_message }}</strong></p>
+        {% endif %}
+    </div>
 
-            <h3>Instructions:</h3>
-            <p>Auto grader instrucitons here.</p>
-            <!-- Go to auto grader -->
-            <br />
-            <div class="button-container">
-            <form action="{% url 'grader:generic_grader' user.os_user_id %}">
-                <input type="submit" value="Generic Grader"/>
-            </form>
-            <form action="{% url 'grader:grader' user.os_user_id %}">
-                <input type="submit" value="Science Olympiad Grader"/>
-            </form>
-             </div>
+    <!-- General instructions -->
 
-        <!-- Disclaimer -->
-        <div>
-            <p id="disclaimer"><a href="{% url 'grader:home' user.os_user_id %}#details">Detailed Instructions</a> | <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOcFJo3V05CMtQSAXmmiF22xdfsdaob7_tBCTCDEwZVdVRwA/viewform?usp=sf_link">Feedback</a></p>
-        </div>
+    <h3>Instructions:</h3>
+    <p>Auto grader instrucitons here. hello!</p>
+    <!-- Go to auto grader -->
+    <br />
+    <div class="button-container">
+        <form action="{% url 'grader:generic_grader' user.os_user_id %}">
+            <input type="submit" value="Generic Grader" />
+        </form>
+        <form action="{% url 'grader:grader' user.os_user_id %}">
+            <input type="submit" value="Science Olympiad Grader" />
+        </form>
+    </div>
 
-    </body>
+    <!-- Disclaimer -->
+    <div>
+        <p id="disclaimer"><a href="{% url 'grader:index' user.os_user_id %}#details">Detailed Instructions</a> | <a
+                href="https://docs.google.com/forms/d/e/1FAIpQLSeOcFJo3V05CMtQSAXmmiF22xdfsdaob7_tBCTCDEwZVdVRwA/viewform?usp=sf_link">Feedback</a>
+        </p>
+    </div>
+
+
+</body>
+
 </html>
