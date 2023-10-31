@@ -294,7 +294,17 @@ def grade_model(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     cs_ref_urls = request.GET.getlist('ref_url')
     ref_urls = convert_cs_to_array(cs_ref_urls)
+    print("ref_urls",ref_urls)
+    if(ref_urls ==['']):
+        print("This was called")
+        context={ 
+        "user": curr_user, 
+        "urlgradetab" :True,
+        "error_message" : "URL not detected. Please copy and paste a valid Onshape URL and try again",
+        }
+        return render(request, "grader/generic_grader.html",context=context )
 
+    print("This was never aclled ")
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
@@ -348,6 +358,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # Get info and mass props for all url's in ref doc list
     all_ref_props = []
     failed_urls = []
+    
+
     for i, url in enumerate(ref_urls): 
         ref_url = get_ref_url_ids(url)
 
@@ -357,7 +369,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
             ref_url['eType']=eType[0]["elementType"]
             ref_element_name=eType[0]["name"]
         except:
-            print("Error  milan")
+            print("Error with eType, perhaps blank refURL")
             ref_url['eType']="Error"
 
         try:
@@ -417,7 +429,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
     #ref_table = ref_table_create(all_ref_props)
     err_tol = 0.005
-
+    url_checks=[]
     print("all ref properties",all_ref_props)
     if len(all_ref_props)>0 and user_props:
         check_symbols=[]
@@ -436,9 +448,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     else:
         check_symbols=None
       
-    ref_table = ref_table_create(all_ref_props,check_symbols)
-    
-
+    ref_table = ref_table_create(all_ref_props,check_symbols,ref_urls)
     context={
         "user": curr_user, 
         "ref_table" : ref_table,
@@ -533,7 +543,6 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
             "shared_docs":shared_doc_info,
             "elements":element,
             "doclisttab" :True
-
 
         }
     return render(
@@ -804,7 +813,7 @@ def md_HTML_create(blob: Iterable[Any]=None) -> Union[bool, str]:
     mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
     return mdHTMLtext
 
-def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) -> Union[bool, str]: 
+def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, ref_urls: Iterable[Any]=None,) -> Union[bool, str]: 
     
     if checks:
         ref_table = '''
@@ -817,11 +826,12 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) 
                 <th>Check</th>
                 <th>User name</th>
                 <th>Elapsed Time</th>
+                <th>URL<th>
             </tr>
         '''
 
         for i, item in enumerate(ref_props): 
-            if item[1]:
+            if item[1]: #if the element type is matched - the match = True is saved in item[1] item[0] has all other values 0-mass, 1, volume, 2 surface area, 3, interia, 4, tab name, 5 username, 6 time between creation and edit
                 ref_table += f'''
                 <tr>
                     <td>{item[0][4]}</td>
@@ -831,9 +841,11 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) 
                     <td>{checks[i]}</td>
                     <td>{item[0][5]}</td>
                     <td>{item[0][6]}</td>
+                    <td>{ref_urls[i]}</td>
                 </tr>
                 '''
-            else:
+            else:#if the element type is not matched -  0, tab name, 1 username, 2 time between creation and edit
+           
                 ref_table += f'''
                 <tr>
 
@@ -844,6 +856,7 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None) 
                     <td>{checks[i]}</td>
                     <td>{item[0][1]}</td>
                     <td>{item[0][2]}</td>
+                    <td>{ref_urls[i]}</td>
    
                 </tr>
                 '''

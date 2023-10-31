@@ -83,20 +83,21 @@
                 <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
                     <br>
                         <div id="url_field_form">
-                            <!-- Input reference model you want to compare 
+                            <!-- Input reference model you want to compare
                             {% if ref_urls %}
                                 {% for url in ref_urls %}
                                     {% if url != '' %}
-                                        <input type="text" name="ref_url" id="referenceModel" value="{{url|safe}}" title="Copy/paste reference model" size="50">
+                                        <input type="text" name="ref_url" id="referenceModel" value="{{url|safe}}" title="Copy/paste reference model" size="80"> 
                                     {% else %}
-                                        <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL..." title="Copy/paste reference model" size="50">
+                                        <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL..." title="Copy/paste reference model" size="80">
                                     {% endif %}
                                 {% endfor %}
                             {% else %}
-                                <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL..." title="Copy/paste reference model" size="50">
+                            <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs" title="Copy/paste reference model" size="80">      
+                            
                             {% endif %}
-                            -->
-                            <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs" title="Copy/paste reference model" size="50">
+                        -->
+                        <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs" title="Copy/paste reference model" size="80">  
                         </div>
                         <input type="submit" value="Grade model">
                 </form>
@@ -167,8 +168,12 @@
             </div>
             {% endif %}
         </div>
-
- 
+        
+        <div>
+            {% if error_message %}
+            <p id="err_msg"><strong>{{ error_message }}</strong></p>
+            {% endif %}
+        </div>
         <div id="grades">
         
             {% if doc_time %}
