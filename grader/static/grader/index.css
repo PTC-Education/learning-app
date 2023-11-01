@@ -264,3 +264,10 @@ button.document-names:hover {
 button.documentname{
     width:100%
 }
+
+button.blue-button{
+    background-color: rgb(49, 60, 255);
+    border-radius:5px;
+    color: #ffffff; 
+    padding: 10px;
+}

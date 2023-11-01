@@ -293,10 +293,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     cs_ref_urls = request.GET.getlist('ref_url')
-    ref_urls = convert_cs_to_array(cs_ref_urls)
-    print("ref_urls",ref_urls)
-    if(ref_urls ==['']):
-        print("This was called")
+    ref_urls = convert_cs_to_array(cs_ref_urls) 
+    if(ref_urls ==['']): #check blank url field
         context={ 
         "user": curr_user, 
         "urlgradetab" :True,
@@ -428,6 +426,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
         failed_urls = None
 
     #ref_table = ref_table_create(all_ref_props)
+    #grab the error from the user
+
+
     err_tol = 0.005
     url_checks=[]
     print("all ref properties",all_ref_props)
@@ -435,16 +436,35 @@ def grade_model(request: HttpRequest, os_user_id: str):
         check_symbols=[]
         for i, ref_prop in enumerate(all_ref_props): 
             if(ref_prop[1]): #only when type_match=True 
+                check_symbol=[] # 0 - mass ,1 - Surface Area, 2 - Volume
                 # Check for accuracy 
                 if (
                     float(ref_prop[0][0]) * (1 - err_tol) > float(user_props[0]) or 
                     float(user_props[0]) > float(ref_prop[0][0]) * (1 + err_tol)
                 ): 
-                    check_symbols.append("&#x2717;")
+                    check_symbol.append("&#x2717;")
                 else: 
-                    check_symbols.append("&#x2713;")
+                    check_symbol.append("&#x2713;")
+
+                if (
+                    float(ref_prop[0][1]) * (1 - err_tol) > float(user_props[1]) or 
+                    float(user_props[1]) > float(ref_prop[0][1]) * (1 + err_tol)
+                ): 
+                    check_symbol.append("&#x2717;")
+                else: 
+                    check_symbol.append("&#x2713;")
+                
+                if (
+                    float(ref_prop[0][2]) * (1 - err_tol) > float(user_props[2]) or 
+                    float(user_props[2]) > float(ref_prop[0][2]) * (1 + err_tol)
+                ): 
+                    check_symbol.append("&#x2717;")
+                else: 
+                    check_symbol.append("&#x2713;")
+
+                check_symbols.append(check_symbol)
             else:
-                check_symbols.append("&#10071;")
+                check_symbols.append("Type Mismatch")
     else:
         check_symbols=None
       
@@ -821,8 +841,8 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, 
             <tr>
                 <th>Tab name</th>
                 <th>Mass</th>
-                <th>Surface Area</th>
                 <th>Volume</th>
+                <th>Periphery</th>
                 <th>Check</th>
                 <th>User name</th>
                 <th>Elapsed Time</th>
@@ -835,9 +855,9 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, 
                 ref_table += f'''
                 <tr>
                     <td>{item[0][4]}</td>
-                    <td>{item[0][0]}</td>
-                    <td>{item[0][1]}</td>
-                    <td>{item[0][2]}</td>
+                    <td>{item[0][0]}{checks[i][0]}</td>
+                    <td>{item[0][1]}{checks[i][1]}</td>
+                    <td>{item[0][2]}{checks[i][2]}</td>
                     <td>{checks[i]}</td>
                     <td>{item[0][5]}</td>
                     <td>{item[0][6]}</td>
