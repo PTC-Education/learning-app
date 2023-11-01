@@ -841,7 +841,7 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, 
                     <td>{checks[i]}</td>
                     <td>{item[0][5]}</td>
                     <td>{item[0][6]}</td>
-                    <td>{ref_urls[i]}</td>
+                    <td><a href={ref_urls[i]} target="_blank"> Document link </a></td>
                 </tr>
                 '''
             else:#if the element type is not matched -  0, tab name, 1 username, 2 time between creation and edit
@@ -856,7 +856,7 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, 
                     <td>{checks[i]}</td>
                     <td>{item[0][1]}</td>
                     <td>{item[0][2]}</td>
-                    <td>{ref_urls[i]}</td>
+                    <td><a href={ref_urls[i]} target="_blank"> Document link </a></td>
    
                 </tr>
                 '''
