@@ -10,7 +10,7 @@ function readSlider(slider){
     console.log(data);
     for (let i = 0; i < data.length; i++) {
       for (let j=0;j<data[i].length; j++){
-        pass
+        console.log("important")
       //console.log(data[i][j])
       }
     }
