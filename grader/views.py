@@ -302,7 +302,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
         }
         return render(request, "grader/generic_grader.html",context=context )
 
-    print("This was never aclled ")
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
@@ -570,6 +569,41 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
         context=context    )  
 
 
+
+def enable_csv(request: HttpRequest, os_user_id: str): 
+    """ 
+    When a user submits a model, API calls are made to check if the 
+    model is dimensionally correct and placed in proper orientation. 
+    
+    **Context:**
+    
+    View to get time to completion and mass props compared to reference model
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    - ``ref_urls``: the reference element for the model to be compared to
+    
+    **Template:**
+    
+    :template:`grader/grader.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+    context={
+        "user": curr_user, 
+        "uploadtab":True
+        }
+    
+    print(context)
+    print("Enable uploaded")
+    return render(
+        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        context=context
+   
+    )
+
 def upload_csv(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits a model, API calls are made to check if the 
@@ -588,20 +622,22 @@ def upload_csv(request: HttpRequest, os_user_id: str):
     
     :template:`grader/grader.html`
     """
-    print("valled")
+    print("great")
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    ref_urls = request.GET.getlist('csvfile')
-    print("Ths is what was uploaded",ref_urls)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+    print("called")
+    csvfile = request.FILES["csvfile"]
+    cs_ref_urls=csvfile.read().decode("utf-8")
     context={
-            "user": curr_user, 
-            "doclisttab" :True
-
-
+        "user": curr_user, 
+        "ref_urls" :cs_ref_urls,
+        "urlgradetab" : True
         }
 
     return render(
-    request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
-    context=context    )  
+        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        context=context    )  
 #################### Helper API calls ####################
 
 def get_mass_props(
