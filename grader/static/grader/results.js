@@ -1,6 +1,7 @@
 var slidercontainer = document.getElementById('errorvalue');
 
 function readSlider(slider){
+  console.log("this is me");
   var slider = document.getElementById(slider);
   console.log("directly from slider",slider.value);
   var resulttable= document.getElementById('resulttable');
@@ -9,7 +10,8 @@ function readSlider(slider){
     console.log(data);
     for (let i = 0; i < data.length; i++) {
       for (let j=0;j<data[i].length; j++){
-      console.log(data[i][j])
+        pass
+      //console.log(data[i][j])
       }
     }
 

@@ -300,7 +300,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
         }
         return render(request, "grader/generic_grader.html",context=context )
 
-    print("This was never aclled ")
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
@@ -421,7 +420,18 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
     if len(failed_urls) == 0:
         failed_urls = None
-
+    zipped_url_props=zip(all_ref_props,ref_urls)
+    context={
+    "user": curr_user, 
+    "failed_urls" : failed_urls,
+    "user_props":user_props,
+    "zipped_url_props":zipped_url_props,
+    "urlgradetab": True,
+    }
+    return render(
+        request, "grader/generic_grader.html", 
+        context=context
+    )
     err_tol = 0.005
 
     if len(all_ref_props)>0 and user_props:
@@ -565,23 +575,14 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
 
 def upload_csv(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits a model, API calls are made to check if the 
-    model is dimensionally correct and placed in proper orientation. 
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
+    Upload a list of documents using a csv file. The urls must be separated by commas
+ 
     
     **Arguments:**
-    
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
-    
     **Template:**
-    
     :template:`grader/grader.html`
     """
-    print("valled")
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     ref_urls = request.GET.getlist('csvfile')
     print("Ths is what was uploaded",ref_urls)
