@@ -7,6 +7,7 @@
         <!-- Load loading_modelling function to enable loading screen -->
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
         <script src="{% static 'grader/showlist.js' %}" type="text/javascript"></script>
+        <script src="{% static 'grader/results.js' %}" type="text/javascript"></script>
     
     
         <!-- Return to the home page -->
@@ -175,21 +176,23 @@
             {% endif %}
         </div>
         <div id="grades">
-        
-            {% if doc_time %}
-                <h3>Time from document creation to last modified</h3>
-                    {{ doc_time|safe }}
-                    <br><br>
-                {% endif %}
-                <br>
-
             {% if ref_table %}
-            <h3>Results</h3>
-                {{ ref_table|safe }}
+                <!--SLider-->
+                
+                <div class="slidecontainer" id="errorvalue">
+                    <input type="range" min="1" max="100" value="50" class="slider" id="myRange" onchange="readSlider('myRange')">
+
+                <h3>Results</h3>
+                <div class="milan" id="milantable">
+                    {{ ref_table|safe }}
+            </div>
                 <br><br>
                 <button type="button" class="blue-button" onclick="tableToCSV()">Export</button>
+                </div>
             {% endif %}
-            <br>
+                
+                <br>
+
             {% if failed_urls %}
             <p>We failed to get information from the following reference URLs</p>
             <ul>
@@ -199,4 +202,5 @@
             </ul>
             {% endif %}
         </div>
+
     
