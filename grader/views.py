@@ -337,12 +337,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     user_mass_prop['periphery'][0],
                     user_mass_prop['principalInertia'][0]
                 ]
+        '''
         for i, prop in enumerate(user_props):
             if prop < 0.1 or prop > 99: 
                 user_props[i] = '{:.2e}'.format(user_props[i])
             else: 
                 user_props[i] = round(user_props[i], 3)
             pass
+        '''
     except:
         user_props = None
     
@@ -390,12 +392,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
                                 ref_mass_prop['periphery'][0],
                                 ref_mass_prop['principalInertia'][0]
                             ]
+                    '''
                     for i, prop in enumerate(ref_props):
                         if prop < 0.1 or prop > 99: 
                             ref_props[i] = '{:.2e}'.format(ref_props[i])
                         else: 
                             ref_props[i] = round(ref_props[i], 3)
                         pass
+                        '''
                 except:
                     ref_props = None       
 
