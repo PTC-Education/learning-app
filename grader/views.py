@@ -11,9 +11,7 @@ from django.utils import timezone
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
 
-
 from .models import * 
-
 import markdown
 
 # Create your views here.
@@ -339,12 +337,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     user_mass_prop['periphery'][0],
                     user_mass_prop['principalInertia'][0]
                 ]
+        '''
         for i, prop in enumerate(user_props):
             if prop < 0.1 or prop > 99: 
                 user_props[i] = '{:.2e}'.format(user_props[i])
             else: 
                 user_props[i] = round(user_props[i], 3)
             pass
+        '''
     except:
         user_props = None
     
@@ -392,49 +392,56 @@ def grade_model(request: HttpRequest, os_user_id: str):
                                 ref_mass_prop['periphery'][0],
                                 ref_mass_prop['principalInertia'][0]
                             ]
+                    '''
                     for i, prop in enumerate(ref_props):
                         if prop < 0.1 or prop > 99: 
                             ref_props[i] = '{:.2e}'.format(ref_props[i])
                         else: 
                             ref_props[i] = round(ref_props[i], 3)
                         pass
+                        '''
                 except:
                     ref_props = None       
 
-                type_match=True
+                type_match_check=True
 
             else:
-                type_match=False 
+                type_match_check=False 
 
             #Get the document info of the reference document for user, name of document,time
-            doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-            ref_user_name=doc_info["createdBy"]["name"]
-            ref_doc_name = doc_info['name']
-            ref_doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+            ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+            ref_user_name=ref_doc_info["createdBy"]["name"]
+            ref_doc_name = ref_doc_info['name']
+            ref_doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
             ref_props.append(ref_element_name)
             ref_props.append(ref_user_name)
             ref_props.append(ref_doc_time)
             ref_props.append(ref_doc_name)
-
-            all_ref_props.append((ref_props,type_match))
+            all_ref_props.append((ref_props,type_match_check))
         except:
             print("failed")
             failed_urls.append(url)
 
     if len(failed_urls) == 0:
         failed_urls = None
-
-    #ref_table = ref_table_create(all_ref_props)
-    #grab the error from the user
-
-
+    zipped_url_props=zip(all_ref_props,ref_urls)
+    context={
+    "user": curr_user, 
+    "failed_urls" : failed_urls,
+    "user_props":user_props,
+    "zipped_url_props":zipped_url_props,
+    "urlgradetab": True,
+    }
+    return render(
+        request, "grader/generic_grader.html", 
+        context=context
+    )
     err_tol = 0.005
-    url_checks=[]
-    print("all ref properties",all_ref_props)
+
     if len(all_ref_props)>0 and user_props:
         check_symbols=[]
         for i, ref_prop in enumerate(all_ref_props): 
-            if(ref_prop[1]): #only when type_match=True 
+            if(ref_prop[1]): #only when type_match_check=True 
                 check_symbol=[] # 0 - mass ,1 - Surface Area, 2 - Volume
                 # Check for accuracy 
                 if (
@@ -466,8 +473,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 check_symbols.append("Type Mismatch")
     else:
         check_symbols=None
-      
-    ref_table = ref_table_create(all_ref_props,check_symbols,ref_urls)
+
+    ref_table = ref_table_create(user_props, all_ref_props,check_symbols,ref_urls)
     context={
         "user": curr_user, 
         "ref_table" : ref_table,
@@ -480,6 +487,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
         request, "grader/generic_grader.html", 
         context=context
     )
+
 def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str): 
     """ 
     This function loads the list of document created, opened or shared by/with the users
@@ -572,20 +580,12 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
 
 def enable_csv(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits a model, API calls are made to check if the 
-    model is dimensionally correct and placed in proper orientation. 
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
+    Upload a list of documents using a csv file. The urls must be separated by commas
+ 
     
     **Arguments:**
-    
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
-    
     **Template:**
-    
     :template:`grader/grader.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
@@ -869,11 +869,11 @@ def md_HTML_create(blob: Iterable[Any]=None) -> Union[bool, str]:
     mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
     return mdHTMLtext
 
-def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, ref_urls: Iterable[Any]=None,) -> Union[bool, str]: 
+def ref_table_create(user_props:Iterable[Any]=None, ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, ref_urls: Iterable[Any]=None,) -> Union[bool, str]: 
     
     if checks:
         ref_table = '''
-        <table>
+        <table id="resulttable">
             <tr>
                 <th>Tab name</th>
                 <th>Mass</th>
@@ -884,20 +884,30 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, 
                 <th>Elapsed Time</th>
                 <th>URL<th>
             </tr>
-        '''
+            <tr class= "userrow">
+                <td>{}</td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>-</td>
+                <td>{}</td>
+                <td>{}</td>
+                <td>-</td>
+            </tr>
 
+            '''.format(user_props[4],user_props[0],user_props[1],user_props[2],user_props[5],user_props[6])
         for i, item in enumerate(ref_props): 
             if item[1]: #if the element type is matched - the match = True is saved in item[1] item[0] has all other values 0-mass, 1, volume, 2 surface area, 3, interia, 4, tab name, 5 username, 6 time between creation and edit
                 ref_table += f'''
                 <tr>
                     <td>{item[0][4]}</td>
-                    <td>{item[0][0]}{checks[i][0]}</td>
-                    <td>{item[0][1]}{checks[i][1]}</td>
-                    <td>{item[0][2]}{checks[i][2]}</td>
+                    <td>{item[0][0]}</td>
+                    <td>{item[0][1]}</td>
+                    <td>{item[0][2]}</td>
                     <td>{checks[i]}</td>
                     <td>{item[0][5]}</td>
                     <td>{item[0][6]}</td>
-                    <td><a href={ref_urls[i]} target="_blank"> Document link </a></td>
+                    <td><a href={ref_urls[i]} target='_blank'> Document link </a></td>
                 </tr>
                 '''
             else:#if the element type is not matched -  0, tab name, 1 username, 2 time between creation and edit
@@ -912,11 +922,11 @@ def ref_table_create(ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, 
                     <td>{checks[i]}</td>
                     <td>{item[0][1]}</td>
                     <td>{item[0][2]}</td>
-                    <td><a href={ref_urls[i]} target="_blank"> Document link </a></td>
+                    <td><a href={ref_urls[i]} target='_blank'> Document link </a></td>
    
                 </tr>
                 '''
-        return ref_table + "</table>"
+        return ref_table + '</table>'
 
 
 def elapsed_time(start_time: str, stop_time: str):

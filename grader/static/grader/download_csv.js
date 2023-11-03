@@ -42,7 +42,7 @@ function downloadCSVFile(csv_data) {
     var temp_link = document.createElement('a');
  
     // Download csv file
-    temp_link.download = "GfG.csv";
+    temp_link.download = "Report.csv";
     var url = window.URL.createObjectURL(CSVFile);
     temp_link.href = url;
  

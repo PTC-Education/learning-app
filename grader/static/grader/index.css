@@ -214,12 +214,29 @@ body {
 }
 
 
-table, th,td,tr
-input[type=submit]:hover {
-    border: 1px solid rgb(5, 97, 25);
-    font-size:11px;
 
-}
+table {
+    table-layout: fixed;
+    width: 100%;
+    border: 1px solid rgb(5, 97, 25);
+  }
+  
+  th,
+  td {
+    border: 1px solid black;
+    width: 100%;
+    overflow: hidden;
+    font-size:11px;
+  }
+  th:hover,
+  td:hover {
+
+    white-space: wrap;
+    background-color: #bbb;
+    color:red;
+  }
+  
+
 
 
 .documentlist{
@@ -271,3 +288,4 @@ button.blue-button{
     color: #ffffff; 
     padding: 10px;
 }
+
