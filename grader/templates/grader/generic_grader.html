@@ -177,63 +177,87 @@
         </div>
         <div id="grades">
             <div class="slidecontainer" id="errorvalue">
-                <input type="range" min="0.1" max="5" value="0.5" class="slider" id="myRange" onchange="readSlider('myRange')" >
+                
+                <input type="range" min="0.1" max="5.1" value="0.4" class="slider" id="myRange" onchange="compute_error('myRange')" >
+                <p>Tolerance: <span id="slider_value"></span>  %</p>
                 <h3>Results</h3> 
                 
                 <table id="resulttable">
                     <tr>
+                        <th>User name</th>
                         <th>Tab name</th>
-                        <th>Mass</th>
+                    <!--<th>Mass</th>-->
                         <th>Volume</th>
                         <th>Periphery</th>
                         <th>Check</th>
-                        <th>User name</th>
                         <th>Elapsed Time</th>
-                        <th>URL<th>
+                        <th>URL</tr>
                     </tr>
                     {% if user_props %}
-                    <tr>
-                        <th>{{user_props.4}}</th>
-                        <th>{{user_props.0}}</th>
-                        <th>{{user_props.1}}</th>
-                        <th>{{user_props.2}}</th>
-                        <th>-</th>
-                        <th>{{user_props.5}}</th>
-                        <th>{{user_props.6}}</th>
-                    </tr>
+                        <tr>
+                            <th>{{user_props.5}}</th>
+                            <th>{{user_props.4}}</th>
+                        <!--<th>{{user_props.0}}</th>-->
+                            <th>{{user_props.1}}</th>
+                            <th>{{user_props.2}}</th>
+                            <th>-</th>
+                            <th>{{user_props.6}}</th>
+                        <!--<th> <input type="checkbox" id="reference_check" name="ref" value="refdoc" checked>
+                                <label for="ref"> Ref doc?</label><br></th>-->
+                        </tr>
                     {% endif %}
                     {% if zipped_url_props %}
-                    
-                       {% for ref_props,ref_url in zipped_url_props %}
-                        {% if ref_props.1 %}
-                            <tr> 
-                                <th>{{ref_props.0.4}}</th>
-                                <th>{{ref_props.0.0}}</th>
-                                <th>{{ref_props.0.1}}</th>
-                                <th>{{ref_props.0.2}}</th>
-                                <th> - </th>
-                                <th>{{ref_props.0.5}}</th>
-                                <th>{{ref_props.0.6}}</th>
-                                <th><a href="{{ ref_url }}"target='_blank'>Document Link</a></th>
-                            </tr>
-                        {% else %}
-                            <tr> 
-                                <th>{{ref_props.0.0}}</th>
-                                <th> - </th>
-                                <th> - </th>
-                                <th> - </th>
-                                <th> - </th>
-                                <th>{{ref_props.0.1}} </th>
-                                <th>{{ref_props.0.2}}</th>
-                                <th><a href="{{ ref_url }}"target='_blank'>Document Link</a></th>
-                            </tr>
+                        {% for ref_props,ref_url in zipped_url_props %}
+                            {% if ref_props.1 %}
+                                <tr> 
+                                    <th>{{ref_props.0.5}}</th>
+                                    <th>{{ref_props.0.4}}</th>
+                                <!--<th>{{ref_props.0.0}}</th>-->
+                                    <th>{{ref_props.0.1}}</th>
+                                    <th>{{ref_props.0.2}}</th>
+                                    <th> - </th>
+                                    <th>{{ref_props.0.6}}</th>
+                                    <th><a href="{{ ref_url }}"target='_blank'>Document Link</a></th>
+                                </tr>
+                                <tr> 
+                                    <th>-</th>
+                                    <th>-</th>
+                                <!--<th>{{ref_props.0.0}}</th>-->
+                                    <th>-</th>
+                                    <th>-</th>
+                                    <th> - </th>
+                                    <th>-</th>
+                                    <th>-</th>
+                                </tr>
+                            {% else %}
+                                <tr> 
+                                    <th>{{ref_props.0.1}} </th>
+                                    <th>{{ref_props.0.0}}</th>
+                                <!--<th> - </th>-->
+                                    <th> - </th>
+                                    <th> - </th>
+                                    <th> - </th>
+                                    <th>{{ref_props.0.2}}</th>
+                                    <th><a href="{{ ref_url }}"target='_blank'>Document Link</a></th>
+                                </tr>
+                                <tr> 
+                                    <th>-</th>
+                                    <th>-</th>
+                                <!--<th>{{ref_props.0.0}}</th>-->
+                                    <th>-</th>
+                                    <th>-</th>
+                                    <th> - </th>
+                                    <th>-</th>
+                                    <th>-</th>
+                                </tr>
                             {% endif %}
                         {% endfor %}
-
-                    <button type="button" class="blue-button" onclick="tableToCSV()">Export CSV</button>
-                    {% endif %}
-                <script> readSlider('myRange') </script> 
+                    {% endif %}               
+                <script> compute_error('myRange') </script> 
                 </table>
+
+                <button type="button" class="blue-button" onclick="tableToCSV()">Export CSV</button>
+ 
                 <br><br>
                 
             </div>
