@@ -6,7 +6,7 @@
         <script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer=""></script>
         <!-- Load loading_modelling function to enable loading screen -->
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
-        <script src="{% static 'grader/showlist.js' %}" type="text/javascript"></script>
+        <script src="{% static 'grader/filename.js' %}" type="text/javascript"></script>
     
     
         <!-- Return to the home page -->
@@ -23,7 +23,7 @@
         <h4>Instructions:</h4>
         <p> Compare your model with a reference model. Choose one of the following ways to link the reference document.
         <ul>
-            <li>Copy and paste the URL of the reference document.</li>
+            <li>Copy and paste the URL or comma separated list of URLs of the reference document(s) .</li>
             <li>Find the reference document from the document list.</li>
         </ul>
             
@@ -69,11 +69,11 @@
                 </form>
 
                 <!--Button for uploading csv-->
-                <!--
-                <form action="{% url 'grader:upload_csv' user.os_user_id %}">
-                    <input type="file" name="csvfile" onchange="this.form.submit()" /> 
+               
+                <form action="{% url 'grader:enable_csv' user.os_user_id %}">
+                    <input type="submit" value="Upload CSV" /> 
                 </form>
-            -->
+        
             </div>
 
 
@@ -97,9 +97,14 @@
                             
                             {% endif %}
                         -->
-                        <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs" title="Copy/paste reference model" size="80">  
+                        {% if ref_urls %}
+                        <input type="text" name="ref_url" id="referenceModel" value="{{ref_urls|safe}}" title="Copy/paste reference model" size="70"> 
+                        {% else %}
+                        <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs" title="Copy/paste reference model" size="70"> 
                         </div>
+                        {% endif %}
                         <input type="submit" value="Grade model">
+
                 </form>
             </div>
             {% endif %}
@@ -164,7 +169,16 @@
 
             {% if uploadtab %}
             <div id="upload" class="gradetab">
-                <h2>To be updated</h2>
+                <form action="{% url 'grader:upload_csv' user.os_user_id %}" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
+                    <div class="form-group">
+                            <input type="file" name="csvfile" id="csvfile" required="True" class="form-control">
+                    </div>                    
+                    <div class="form-group">                    
+                        <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button>
+                    </div> 
+                
+                </form>
+
             </div>
             {% endif %}
         </div>
@@ -187,7 +201,7 @@
             <h3>Results</h3>
                 {{ ref_table|safe }}
                 <br><br>
-                <button type="button" onclick="tableToCSV()">download CSV</button>
+                <button type="button" class="blue-button" onclick="tableToCSV()">Export</button>
             {% endif %}
             <br>
             {% if failed_urls %}
