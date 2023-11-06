@@ -337,14 +337,15 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     user_mass_prop['periphery'][0],
                     user_mass_prop['principalInertia'][0]
                 ]
-        '''
+        
+
         for i, prop in enumerate(user_props):
             if prop < 0.1 or prop > 99: 
-                user_props[i] = '{:.2e}'.format(user_props[i])
+                user_props[i] = '{:.6f}'.format(user_props[i])
             else: 
                 user_props[i] = round(user_props[i], 3)
             pass
-        '''
+
     except:
         user_props = None
     
@@ -392,14 +393,20 @@ def grade_model(request: HttpRequest, os_user_id: str):
                                 ref_mass_prop['periphery'][0],
                                 ref_mass_prop['principalInertia'][0]
                             ]
-                    '''
+
+                    image_bytes=get_shadedviews_image_data(curr_user.os_domain, ref_url['did'],ref_url['wid'], ref_url['eid'], ref_url['eType'], auth_token=curr_user.access_token)
+                    if(image_bytes):
+                        image_str=image_bytes.decode('utf8')
+                        image_json=json.loads(image_str)
+                        image=image_json["images"][0]
+
                     for i, prop in enumerate(ref_props):
                         if prop < 0.1 or prop > 99: 
-                            ref_props[i] = '{:.2e}'.format(ref_props[i])
+                            ref_props[i] = '{:.6f}'.format(ref_props[i])
                         else: 
                             ref_props[i] = round(ref_props[i], 3)
                         pass
-                        '''
+                    
                 except:
                     ref_props = None       
 
@@ -417,23 +424,26 @@ def grade_model(request: HttpRequest, os_user_id: str):
             ref_props.append(ref_user_name)
             ref_props.append(ref_doc_time)
             ref_props.append(ref_doc_name)
+            ref_props.append(url)
+            ref_props.append(image)
             all_ref_props.append((ref_props,type_match_check))
         except:
             print("failed")
             failed_urls.append(url)
-
+    print("RE F urls", ref_urls)
     if len(failed_urls) == 0:
         failed_urls = None
-    zipped_url_props=zip(all_ref_props,ref_urls)
+    #zipped_url_props=zip(all_ref_props,ref_urls)
     context={
     "user": curr_user, 
     "failed_urls" : failed_urls,
     "user_props":user_props,
-    "zipped_url_props":zipped_url_props,
+    "all_ref_props":all_ref_props,
+    #"zipped_url_props":zipped_url_props,
     "urlgradetab": True,
     }
     return render(
-        request, "grader/generic_grader.html", 
+        request, "grader/results.html", 
         context=context
     )
     err_tol = 0.005
@@ -715,11 +725,13 @@ def get_shadedviews_image_data(
 ) -> Any: 
     """ Get the image data from the given url
     """
+    print("test")
     elementType=""
     if(eType=="PARTSTUDIO"):
         elementType="partstudios"
     elif(eType=="ASSEMBLY"):
         elementType="assemblies"
+   
     response = requests.get(
         os.path.join(
             domain, 
@@ -731,6 +743,7 @@ def get_shadedviews_image_data(
             "Authorization" : "Bearer " + auth_token
         }
     )
+
     if response.ok: 
         return response.content
     else: 
