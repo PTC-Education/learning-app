@@ -79,9 +79,11 @@
     font-weight: 700;
     vertical-align: top;
 
-
 }
 
+td.symbols{
+    font-size: 50px;
+}
 ul{
     list-style: none;
     display: inline-block;
@@ -97,6 +99,7 @@ ul{
     font-weight: 600;
 
 }
+
 
 .slidecontainer {
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
