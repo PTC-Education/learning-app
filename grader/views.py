@@ -221,8 +221,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
         )
 
     if not user_mass_prop: # API error 
-        return HttpResponse(curr_user.etype)
-        # return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app in the part studio that you originally started this modelling question with ...")
+        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
 
     # Get info about the document the user currently has opened
@@ -234,14 +233,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # Set list of user_props [mass, vol, periphery, principleInertia]
     #TO FIX: rename PARTSTUDIO - partstudios and ASSEMBLY - assemblies
     try:
-        if curr_user.etype == "PARTSTUDIO":
+        if curr_user.etype == "partstudios":
             user_props = [
                     user_mass_prop['bodies']['-all-']['mass'][0], 
                     user_mass_prop['bodies']['-all-']['volume'][0], 
                     user_mass_prop['bodies']['-all-']['periphery'][0],
                     user_mass_prop['bodies']['-all-']['principalInertia'][0]
                 ]
-        elif curr_user.etype == "ASSEMBLY":
+        elif curr_user.etype == "assemblies":
             user_props = [
                     user_mass_prop['mass'][0], 
                     user_mass_prop['volume'][0], 
@@ -286,47 +285,42 @@ def grade_model(request: HttpRequest, os_user_id: str):
         try:
             #check the element type of reference and current document
             ref_props=[]  
-            if(ref_url['eType']==curr_user.etype):   
-                try:
-                    ref_mass_prop = get_mass_props(
-                        curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], ref_url['eType'], 
-                        massAsGroup=True, auth_token=curr_user.access_token
-                    )
-                    if ref_url['eType'] == "PARTSTUDIO" :
-                        ref_props = [
-                                ref_mass_prop['bodies']['-all-']['mass'][0], 
-                                ref_mass_prop['bodies']['-all-']['volume'][0], 
-                                ref_mass_prop['bodies']['-all-']['periphery'][0],
-                                ref_mass_prop['bodies']['-all-']['principalInertia'][0]
-                            ]
-                    elif ref_url['eType']== "ASSEMBLY":
-                        ref_props = [
-                                ref_mass_prop['mass'][0], 
-                                ref_mass_prop['volume'][0], 
-                                ref_mass_prop['periphery'][0],
-                                ref_mass_prop['principalInertia'][0]
-                            ]
-                    #TO FIX: find better way of getting the thumbnail of the element
-                    image_bytes=get_shadedviews_image_data(curr_user.os_domain, ref_url['did'],ref_url['wid'], ref_url['eid'], ref_url['eType'], auth_token=curr_user.access_token)
-                    if(image_bytes):
-                        image_str=image_bytes.decode('utf8')
-                        image_json=json.loads(image_str)
-                        image=image_json["images"][0]
 
-                    for i, prop in enumerate(ref_props):
-                        if prop < 0.1 or prop > 99: 
-                            ref_props[i] = '{:.6f}'.format(ref_props[i])
-                        else: 
-                            ref_props[i] = round(ref_props[i], 3)
-                        pass
-                    
-                except:
-                    ref_props = None       
+            try:
+                ref_mass_prop = get_mass_props(
+                    curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.etype, 
+                    massAsGroup=True, auth_token=curr_user.access_token
+                )
+                if curr_user.etype == "partstudios":
+                    ref_props = [
+                            ref_mass_prop['bodies']['-all-']['mass'][0], 
+                            ref_mass_prop['bodies']['-all-']['volume'][0], 
+                            ref_mass_prop['bodies']['-all-']['periphery'][0],
+                            ref_mass_prop['bodies']['-all-']['principalInertia'][0]
+                        ]
+                elif curr_user.etype == "assemblies":
+                    ref_props = [
+                            ref_mass_prop['mass'][0], 
+                            ref_mass_prop['volume'][0], 
+                            ref_mass_prop['periphery'][0],
+                            ref_mass_prop['principalInertia'][0]
+                        ]
+                #TO FIX: find better way of getting the thumbnail of the element
+                image_bytes=get_shadedviews_image_data(curr_user.os_domain, ref_url['did'],ref_url['wid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
+                if(image_bytes):
+                    image_str=image_bytes.decode('utf8')
+                    image_json=json.loads(image_str)
+                    image=image_json["images"][0]
 
-                type_match_check=True
-
-            else:
-                type_match_check=False 
+                for i, prop in enumerate(ref_props):
+                    if prop < 0.1 or prop > 99: 
+                        ref_props[i] = '{:.6f}'.format(ref_props[i])
+                    else: 
+                        ref_props[i] = round(ref_props[i], 3)
+                    pass
+                
+            except:
+                ref_props = None
 
             #Get the document info of the reference document for user, name of document,time
             ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
@@ -339,7 +333,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
             ref_props.append(ref_doc_name)
             ref_props.append(url)
             ref_props.append(image)
-            all_ref_props.append((ref_props,type_match_check))
+            all_ref_props.append((ref_props))
         except:
             print("failed")
             failed_urls.append(url)
@@ -415,6 +409,10 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
         for eInfo in elements_info:
             image=""
             eType=eInfo["elementType"]
+            if eType == "PARTSTUDIO":
+                eType = "partstudios"
+            elif eType == "ASSEMBLY":
+                eType = "assemblies"
             eName=eInfo["name"]
             eid=eInfo["id"]
 
@@ -508,20 +506,16 @@ def upload_csv(request: HttpRequest, os_user_id: str):
 #################### Helper API calls ####################
 
 def get_mass_props(
-    domain: str, did: str, wvm: str, wvmid: str, eid: str, eType: str, auth_token: str, massAsGroup=True
+    domain: str, did: str, wvm: str, wvmid: str, eid: str, etype: str, auth_token: str, massAsGroup=True
 ) -> Any: 
     """ Get the mass and geometry properties of the given element 
     """
-    elementType=eType
-    if(eType=="PARTSTUDIO"):
-        elementType="partstudios"
-    elif(eType=="ASSEMBLY"):
-        elementType="assemblies"
+    
     response = requests.get(
         os.path.join(
             domain, 
             "api/{}/d/{}/{}/{}/e/{}/massproperties".format(
-            elementType, did, wvm, wvmid, eid
+            etype, did, wvm, wvmid, eid
         )
         ), 
         headers={
@@ -578,21 +572,15 @@ def get_blob_data(
     else: 
         return None
 def get_shadedviews_image_data(
-    domain: str, did: str, wid:str, eid:str, eType:str,  auth_token: str
+    domain: str, did: str, wid:str, eid:str, etype:str,  auth_token: str
 ) -> Any: 
     """ Get the image data from the given url
     """
 
-    elementType=eType
-    if(eType=="PARTSTUDIO"):
-        elementType="partstudios"
-    elif(eType=="ASSEMBLY"):
-        elementType="assemblies"
-   
     response = requests.get(
         os.path.join(
             domain, 
-            "api/{}/d/{}/w/{}/e/{}/shadedviews?viewMatrix=0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0&outputHeight=50&outputWidth=50&pixelSize=0&edges=show&showAllParts=false&includeSurfaces=false&useAntiAliasing=false&includeWires=false".format(elementType,did,wid,eid)
+            "api/{}/d/{}/w/{}/e/{}/shadedviews?viewMatrix=0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0&outputHeight=50&outputWidth=50&pixelSize=0&edges=show&showAllParts=false&includeSurfaces=false&useAntiAliasing=false&includeWires=false".format(etype,did,wid,eid)
         ), 
         headers={
             "Content-Type": "application/json", 
