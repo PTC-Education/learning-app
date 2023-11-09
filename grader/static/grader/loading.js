@@ -1,3 +1,5 @@
+//TO FIX : make calls with the div class name as argument
+
 function loading_index() {
     var lists = document.getElementsByClassName("info_list"); 
     for (var i = 0; i < lists.length; i++) {

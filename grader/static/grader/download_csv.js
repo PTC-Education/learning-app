@@ -1,3 +1,6 @@
+
+//TO FIX : make the final csv downloadable and rightly formatted
+
 function tableToCSV() {
 
 	// Variable to store the final csv data

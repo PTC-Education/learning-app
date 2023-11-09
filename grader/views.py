@@ -124,7 +124,7 @@ def index(request: HttpRequest, os_user_id: str):
 
 def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
-    The auto grader page for checking a model's mass properties and time completion. 
+    The auto grader page for checking a model's mass properties and time completion, will potentially be renamed SciOly. 
 
     **Arguments:**
         
@@ -146,7 +146,7 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
 
 def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
-    Returns HTML page for generic grading. Indicates- there will be other special graders .
+    The auto grader page for checking a model's mass properties and time completion. This will be used by all users.
 
     **Arguments:**
         
@@ -154,7 +154,7 @@ def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
 
     **Template:**
 
-    :template:`grader/grader.html`
+    :template:`grader/generic_grader.html`
     """
     context = {"user": None,
                "time": None} 
@@ -170,11 +170,10 @@ def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     return render(request, "grader/generic_grader.html", context=context)
 
 
-
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits a model, API calls are made to check if the 
-    model is dimensionally correct and placed in proper orientation. 
+    When a user submits url(s) API calls are made to grab property details of all documents (reference - the doc the app is opened in and the url(s) inputtd)
+    Returns  properties of  reference document as well as user requested document(s) 
     
     **Context:**
     
@@ -187,16 +186,18 @@ def grade_model(request: HttpRequest, os_user_id: str):
     
     **Template:**
     
-    :template:`grader/grader.html`
+    :template:`grader/results.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
-    #grad reference urls , possibly in a csv format, from the grader HTML page
+    #grab reference urls , possibly in a csv format, from the generic_grader.html
     cs_ref_urls = request.GET.getlist('ref_url')
 
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
 
+
+    #TO FIX: detect incorrectly formatted Onshape urls
 
     if(ref_urls ==['']): #check blank url field
         context={ 
@@ -231,6 +232,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
 
     # Set list of user_props [mass, vol, periphery, principleInertia]
+    #TO FIX: rename PARTSTUDIO - partstudios and ASSEMBLY - assemblies
     try:
         if curr_user.etype == "PARTSTUDIO":
             user_props = [
@@ -284,7 +286,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
         try:
             #check the element type of reference and current document
             ref_props=[]  
-            if(ref_url['eType']==curr_user.etype):     
+            if(ref_url['eType']==curr_user.etype):   
                 try:
                     ref_mass_prop = get_mass_props(
                         curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], ref_url['eType'], 
@@ -344,14 +346,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
     print("RE F urls", ref_urls)
     if len(failed_urls) == 0:
         failed_urls = None
-    #zipped_url_props=zip(all_ref_props,ref_urls)
+
     context={
     "user": curr_user, 
     "failed_urls" : failed_urls,
     "user_props":user_props,
     "all_ref_props":all_ref_props,
-    #"zipped_url_props":zipped_url_props,
-    "urlgradetab": True,
+    "urlgradetab": True, #shows the correct tab in generic_grader.html 
     }
     return render(
         request, "grader/results.html", 
@@ -443,7 +444,7 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
 
         }
     return render(
-        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        request, "grader/generic_grader.html",  
         context=context    )  
 
 
