@@ -451,9 +451,8 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
 
 def enable_csv(request: HttpRequest, os_user_id: str): 
 
-    # TO FIX: embedd csv upload on URL field tab. 
     """ 
-    Upload a list of documents using a csv file. The urls must be separated by commas
+    Detects the click of upload csv button show the upload csv tab
  
     
     **Arguments:**
@@ -466,11 +465,9 @@ def enable_csv(request: HttpRequest, os_user_id: str):
         curr_user.refresh_oauth_token() 
     context={
         "user": curr_user, 
-        "uploadtab":True
+        "uploadtab":True #upload csv tab enabled
         }
-    
-    print(context)
-    print("Enable uploaded")
+
     return render(
         request, "grader/generic_grader.html",  
         context=context
@@ -480,33 +477,27 @@ def upload_csv(request: HttpRequest, os_user_id: str):
 
     # TO FIX: embedd csv upload on URL field tab. 
     """ 
-    When a user submits a model, API calls are made to check if the 
-    model is dimensionally correct and placed in proper orientation. 
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
+    Funtion to upload csv file containing urls for grading. reads and returns the comma separated list of urls to the url grade tab
     
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
     
     **Template:**
     
-    :template:`grader/grader.html`
+    :template:`grader/generic_grader.html`
     """
-    print("great")
+
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
     csvfile = request.FILES["csvfile"]
     cs_ref_urls=csvfile.read().decode("utf-8")
-    context={
+    context={ 
         "user": curr_user, 
-        "ref_urls" :cs_ref_urls,
-        "urlgradetab" : True
+        "ref_urls" : cs_ref_urls,
+        "urlgradetab" : True  # enable the url grade tab
         }
 
     return render(
