@@ -372,7 +372,7 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
     
     **Template:**
     
-    :template:`grader/grader.html`
+    :template:`grader/generic_grader.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -440,7 +440,7 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
             "created_docs":created_doc_info,
             "shared_docs":shared_doc_info,
             "elements":element,
-            "doclisttab" :True
+            "doclisttab" :True # to enable the doc list tab 
 
         }
     return render(
