@@ -16,7 +16,6 @@ from .models import *
 
 # Create your views here.
 
-
 def login(request: HttpRequest): 
     """ 
     When the app extension is first opened, this view should be called. 
@@ -47,9 +46,7 @@ def login(request: HttpRequest):
     user.did = request.GET.get('did')
     user.wid = request.GET.get('wvmid')
     user.eid = request.GET.get('eid')
-
-    #TO FIX- Find better ways to get the element type of the current document
-    user.etype = get_element_type(user.os_domain ,user.did, user.wid, user.eid, auth_token=user.access_token)[0]["elementType"]
+    user.etype = request.GET.get('etype')
     user.save() 
     
 
