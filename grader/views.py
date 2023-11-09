@@ -521,7 +521,7 @@ def get_mass_props(
 ) -> Any: 
     """ Get the mass and geometry properties of the given element 
     """
-    elementType=""
+    elementType=eType
     if(eType=="PARTSTUDIO"):
         elementType="partstudios"
     elif(eType=="ASSEMBLY"):
@@ -591,8 +591,8 @@ def get_shadedviews_image_data(
 ) -> Any: 
     """ Get the image data from the given url
     """
-    print("test")
-    elementType=""
+
+    elementType=eType
     if(eType=="PARTSTUDIO"):
         elementType="partstudios"
     elif(eType=="ASSEMBLY"):
@@ -677,10 +677,12 @@ def get_class_list(
         return response.json() 
     else:   
         return None
+
+
 def get_element_type(
     domain: str, did: str, wvm: str, eid: str, auth_token: str
 ) -> Any: 
-    """ Get the mass and geometry properties of the given element 
+    """ Get information about element 
     """
     response = requests.get(
         os.path.join(
@@ -721,7 +723,11 @@ def get_ref_url_ids(ref_url: str):
     except:
         return None
     
-def convert_cs_to_array(cs_ref_urls: str): #converts all the comma separated urls to array of urls
+def convert_cs_to_array(cs_ref_urls: str): 
+    
+    #converts all the comma separated urls to array of urls
+
+    #TO FIX: check for empty or ill formatted urls before returning the ref_urls
     ref_urls=[]
     try:
         for cs_ref_url in cs_ref_urls:
