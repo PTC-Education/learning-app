@@ -12,54 +12,10 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
 
 from .models import * 
-import markdown
+
 
 # Create your views here.
 
-def grader(request: HttpRequest, os_user_id: str, mass_props=None):
-    """ 
-    The auto grader page for checking a model's mass properties and time completion. 
-
-    **Arguments:**
-        
-    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-
-    **Template:**
-
-    :template:`grader/grader.html`
-    """
-    context = {"user": None,
-               "time": None} 
-    if os_user_id: 
-        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-        context['user'] = curr_user
-    if mass_props:
-        context['mass_props'] = mass_props
-    return render(request, "grader/grader.html", context=context)
-def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
-    """ 
-    The auto grader page for checking a model's mass properties and time completion. 
-
-    **Arguments:**
-        
-    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-
-    **Template:**
-
-    :template:`grader/grader.html`
-    """
-    context = {"user": None,
-               "time": None} 
-    
-    if os_user_id: 
-        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-        context={
-        "user": curr_user, 
-        "urlgradetab" : True #to enable url text input
-        }
-    if mass_props:
-        context['mass_props'] = mass_props
-    return render(request, "grader/generic_grader.html", context=context)
 def login(request: HttpRequest): 
     """ 
     When the app extension is first opened, this view should be called. 
@@ -102,6 +58,7 @@ def login(request: HttpRequest):
             os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
         )
     )
+
 def authorize(request: HttpRequest): 
     """ 
     When the user authorizes the OAuth integration, Onshape's OAuth authorization page will redirect the user to this page, as registered as the redirect URL. 
@@ -144,6 +101,8 @@ def authorize(request: HttpRequest):
     user.save() 
 
     return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
+
+
 def index(request: HttpRequest, os_user_id: str): 
     """ 
     The index view of the app. 
@@ -161,120 +120,60 @@ def index(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     context = {"user": curr_user}
     return render(request, "grader/index.html", context=context)
-def classlist(request: HttpRequest, os_user_id: str): 
+
+
+def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
-    This function loads the list of classes the user has created.
-    
-    **Context:**
-    
-    
+    The auto grader page for checking a model's mass properties and time completion, will potentially be renamed SciOly. 
+
     **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
     **Template:**
-    
+
     :template:`grader/grader.html`
     """
+    context = {"user": None,
+               "time": None} 
+    if os_user_id: 
+        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+        context['user'] = curr_user
+    if mass_props:
+        context['mass_props'] = mass_props
+    return render(request, "grader/grader.html", context=context)
 
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
 
-    classes=[] # to store the names of classes
-    assignments=[] #array to store assisgnments within the classes
-    #get all elements in the document
-    classinfo=get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
-    items=classinfo["items"]
-
-    try:
-        for item in items:
-            if(item["resourceType"]=="classroom"):
-                classes.append([item["name"],item["id"]])
-   
-    except:
-        print("Error in classes") #need better error message here
-    context={
-            "user": curr_user, 
-            "classes":classes,
-        }
-    return render(
-        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
-        context=context
-   
-    )
-def filelist(request: HttpRequest, os_user_id: str): 
+def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
-    If the user wants to load instruction content on the app as HTML using a markdown file the view is called. This function will return an array of all markdown files and their contents
-    **Context:**
-    
-    
+    The auto grader page for checking a model's mass properties and time completion. This will be used by all users.
+
     **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
     **Template:**
-    
-    :template:`grader/grader.html`
+
+    :template:`grader/generic_grader.html`
     """
-    mdHTMLtext='Empty'
-
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    blobs=[] # to store the blob from the markdowns imported on the document
-    markdown_file_names=[] #array to store all markdown files in the document
-    #get all elements in the document
-    elements_info=get_elements_info(curr_user.os_domain, curr_user.did,curr_user.wid ,auth_token=curr_user.access_token) 
-    try:
-        for element_info in elements_info:
-            #if(element_info['name'] == "instruction.md"): 
-            if(element_info["dataType"] == "text/x-markdown"): #check if the element is a markdown file
-                filename=element_info["name"]
-                filecontent_in_md=get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)
-                filecontent_in_HTML=md_HTML_create(filecontent_in_md)
-                blobs.append([filename,filecontent_in_HTML])
-   
-    except:
-        print("Error") #need better error message here
-    context={
-            "user": curr_user, 
-            "filenames":markdown_file_names, # all markdown file names with the context
-            "blobs":blobs                     #all markdown contents   
-        }
-    return render(
-        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
-        context=context
-   
-    )
-
-    #saving the snippet below for instruction.html to render markdown files to HTML
-    '''
+    context = {"user": None,
+               "time": None} 
     
+    if os_user_id: 
+        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
         context={
-            "user": curr_user, 
-            "error_message":"Error"
+        "user": curr_user, 
+        "urlgradetab" : True #to enable url text input
         }
-    if mdHTMLtext=='Empty':
-        context={
-            "user": curr_user, 
-            "error_message":"No supporting markdownfile found. Upload instruction.md "
-        }
-    else:
-        context={
-            "user": curr_user, 
-            "mdHTMLtext":mdHTMLtext
-        }
-    return render(
-        request, "grader/instruction.html", 
-        context=context
-    )
-    '''
+    if mass_props:
+        context['mass_props'] = mass_props
+    return render(request, "grader/generic_grader.html", context=context)
+
+
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits a model, API calls are made to check if the 
-    model is dimensionally correct and placed in proper orientation. 
+    When a user submits url(s) API calls are made to grab property details of all documents (reference - the doc the app is opened in and the url(s) inputtd)
+    Returns  properties of  reference document as well as user requested document(s) 
     
     **Context:**
     
@@ -287,11 +186,19 @@ def grade_model(request: HttpRequest, os_user_id: str):
     
     **Template:**
     
-    :template:`grader/grader.html`
+    :template:`grader/results.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    #grab reference urls , possibly in a csv format, from the generic_grader.html
     cs_ref_urls = request.GET.getlist('ref_url')
+
+    #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
+
+
+    #TO FIX: detect incorrectly formatted Onshape urls
+
     if(ref_urls ==['']): #check blank url field
         context={ 
         "user": curr_user, 
@@ -300,11 +207,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
         }
         return render(request, "grader/generic_grader.html",context=context )
 
+
+
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
     
     # Get mass props of model the user currently has opened
+    #TO DO : rename user to reference and ref to user 
     user_mass_prop = get_mass_props(
             curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.etype, 
             massAsGroup=True, auth_token=curr_user.access_token
@@ -321,6 +231,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
 
     # Set list of user_props [mass, vol, periphery, principleInertia]
+    #TO FIX: rename PARTSTUDIO - partstudios and ASSEMBLY - assemblies
     try:
         if curr_user.etype == "partstudios":
             user_props = [
@@ -337,7 +248,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     user_mass_prop['principalInertia'][0]
                 ]
         
-
+        # TO FIX : check the user's configuration for precision and units
+        # Make rounding off based on the user's settings
         for i, prop in enumerate(user_props):
             if prop < 0.1 or prop > 99: 
                 user_props[i] = '{:.6f}'.format(user_props[i])
@@ -348,6 +260,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     except:
         user_props = None
     
+    #Append user related information along with mass properties
     user_props.append(user_user_name)
     user_props.append(user_doc_name)
     user_props.append(user_doc_time)
@@ -366,12 +279,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
             ref_url['eType']=eType[0]["elementType"]
             ref_element_name=eType[0]["name"]
         except:
-            print("Error with eType, perhaps blank refURL")
+            print("Error with eType, perhaps blank ref URL")
             ref_url['eType']="Error"
 
         try:
             #check the element type of reference and current document
             ref_props=[]  
+
             try:
                 ref_mass_prop = get_mass_props(
                     curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.etype, 
@@ -391,7 +305,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
                             ref_mass_prop['periphery'][0],
                             ref_mass_prop['principalInertia'][0]
                         ]
-
+                #TO FIX: find better way of getting the thumbnail of the element
                 image_bytes=get_shadedviews_image_data(curr_user.os_domain, ref_url['did'],ref_url['wid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
                 if(image_bytes):
                     image_str=image_bytes.decode('utf8')
@@ -426,68 +340,16 @@ def grade_model(request: HttpRequest, os_user_id: str):
     print("RE F urls", ref_urls)
     if len(failed_urls) == 0:
         failed_urls = None
-    #zipped_url_props=zip(all_ref_props,ref_urls)
+
     context={
     "user": curr_user, 
     "failed_urls" : failed_urls,
     "user_props":user_props,
     "all_ref_props":all_ref_props,
-    #"zipped_url_props":zipped_url_props,
-    "urlgradetab": True,
+    "urlgradetab": True, #shows the correct tab in generic_grader.html 
     }
     return render(
         request, "grader/results.html", 
-        context=context
-    )
-    err_tol = 0.005
-
-    if len(all_ref_props)>0 and user_props:
-        check_symbols=[]
-        for i, ref_prop in enumerate(all_ref_props): 
-            if(ref_prop[1]): #only when type_match_check=True 
-                check_symbol=[] # 0 - mass ,1 - Surface Area, 2 - Volume
-                # Check for accuracy 
-                if (
-                    float(ref_prop[0][0]) * (1 - err_tol) > float(user_props[0]) or 
-                    float(user_props[0]) > float(ref_prop[0][0]) * (1 + err_tol)
-                ): 
-                    check_symbol.append("&#x2717;")
-                else: 
-                    check_symbol.append("&#x2713;")
-
-                if (
-                    float(ref_prop[0][1]) * (1 - err_tol) > float(user_props[1]) or 
-                    float(user_props[1]) > float(ref_prop[0][1]) * (1 + err_tol)
-                ): 
-                    check_symbol.append("&#x2717;")
-                else: 
-                    check_symbol.append("&#x2713;")
-                
-                if (
-                    float(ref_prop[0][2]) * (1 - err_tol) > float(user_props[2]) or 
-                    float(user_props[2]) > float(ref_prop[0][2]) * (1 + err_tol)
-                ): 
-                    check_symbol.append("&#x2717;")
-                else: 
-                    check_symbol.append("&#x2713;")
-
-                check_symbols.append(check_symbol)
-            else:
-                check_symbols.append("Type Mismatch")
-    else:
-        check_symbols=None
-
-    ref_table = ref_table_create(user_props, all_ref_props,check_symbols,ref_urls)
-    context={
-        "user": curr_user, 
-        "ref_table" : ref_table,
-        "failed_urls" : failed_urls,
-        "ref_urls" : ref_urls,
-        "urlgradetab": True
-
-    }
-    return render(
-        request, "grader/generic_grader.html", 
         context=context
     )
 
@@ -504,7 +366,7 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
     
     **Template:**
     
-    :template:`grader/grader.html`
+    :template:`grader/generic_grader.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -576,75 +438,71 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
             "created_docs":created_doc_info,
             "shared_docs":shared_doc_info,
             "elements":element,
-            "doclisttab" :True
+            "doclisttab" :True # to enable the doc list tab 
 
         }
     return render(
-        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        request, "grader/generic_grader.html",  
         context=context    )  
 
 
 
 def enable_csv(request: HttpRequest, os_user_id: str): 
+
     """ 
-    Upload a list of documents using a csv file. The urls must be separated by commas
+    Detects the click of upload csv button show the upload csv tab
  
     
     **Arguments:**
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
     **Template:**
-    :template:`grader/grader.html`
+    :template:`grader/generic_grader.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
     context={
         "user": curr_user, 
-        "uploadtab":True
+        "uploadtab":True #upload csv tab enabled
         }
-    
-    print(context)
-    print("Enable uploaded")
+
     return render(
-        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        request, "grader/generic_grader.html",  
         context=context
-   
     )
 
 def upload_csv(request: HttpRequest, os_user_id: str): 
+
+    # TO FIX: embedd csv upload on URL field tab. 
     """ 
-    When a user submits a model, API calls are made to check if the 
-    model is dimensionally correct and placed in proper orientation. 
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
+    Funtion to upload csv file containing urls for grading. reads and returns the comma separated list of urls to the url grade tab
     
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
     
     **Template:**
     
-    :template:`grader/grader.html`
+    :template:`grader/generic_grader.html`
     """
-    print("great")
+
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
-    print("called")
+
     csvfile = request.FILES["csvfile"]
     cs_ref_urls=csvfile.read().decode("utf-8")
-    context={
+    context={ 
         "user": curr_user, 
-        "ref_urls" :cs_ref_urls,
-        "urlgradetab" : True
+        "ref_urls" : cs_ref_urls,
+        "urlgradetab" : True  # enable the url grade tab
         }
 
     return render(
-        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        request, "grader/generic_grader.html", 
         context=context    )  
+
+
 #################### Helper API calls ####################
 
 def get_mass_props(
@@ -652,6 +510,7 @@ def get_mass_props(
 ) -> Any: 
     """ Get the mass and geometry properties of the given element 
     """
+    
     response = requests.get(
         os.path.join(
             domain, 
@@ -717,6 +576,7 @@ def get_shadedviews_image_data(
 ) -> Any: 
     """ Get the image data from the given url
     """
+
     response = requests.get(
         os.path.join(
             domain, 
@@ -796,10 +656,12 @@ def get_class_list(
         return response.json() 
     else:   
         return None
+
+
 def get_element_type(
     domain: str, did: str, wvm: str, eid: str, auth_token: str
 ) -> Any: 
-    """ Get the mass and geometry properties of the given element 
+    """ Get information about element 
     """
     response = requests.get(
         os.path.join(
@@ -818,114 +680,6 @@ def get_element_type(
         return None
 
 #################### Other helper functions ####################
-
-def part_mass_check(user_prop: Iterable[Any], ref_prop: Iterable[Any]=None, check_symbols: Iterable[Any]=None
-) -> Union[bool, str]: 
-    
-    if ref_prop:
-        mass_msg = '''
-        <table>
-            <tr>
-                <th>Properties</th>
-                <th>User Values</th>
-                <th>Ref Values</th>
-                <th>Check</th>
-            </tr>
-        '''
-        prop_name = ["Mass (kg)", "Volume (m^3)", "Surface Area (m^2)", "Principal Inertia Min (kg.m^2)"]
-        for i, item in enumerate(prop_name): 
-            mass_msg += f'''
-            <tr>
-                <td>{item}</td>
-                <td>{user_prop[i]}</td>
-                <td>{ref_prop[i]}</td>
-                <td>{check_symbols[i]}</td>
-            </tr>
-            '''
-        return mass_msg + "</table>"
-    else:
-        mass_msg = '''
-        <table>
-            <tr>
-                <th>Properties</th>
-                <th>User Values</th>
-            </tr>
-        '''
-        prop_name = ["Mass (kg)", "Volume (m^3)", "Surface Area (m^2)", "Principal Inertia Min (kg.m^2)"]
-        for i, item in enumerate(prop_name): 
-            mass_msg += f'''
-            <tr>
-                <td>{item}</td>
-                <td>{user_prop[i]}</td>
-            </tr>
-            '''
-        return mass_msg + "</table><br><small>Reference URL can't be accessed or is a different element type</small>"
-
-def md_HTML_create(blob: Iterable[Any]=None) -> Union[bool, str]: 
-    
-    mdHTMLtext=''
-    mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
-    return mdHTMLtext
-
-def ref_table_create(user_props:Iterable[Any]=None, ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, ref_urls: Iterable[Any]=None,) -> Union[bool, str]: 
-    
-    if checks:
-        ref_table = '''
-        <table id="resulttable">
-            <tr>
-                <th>Tab name</th>
-                <th>Mass</th>
-                <th>Volume</th>
-                <th>Periphery</th>
-                <th>Check</th>
-                <th>User name</th>
-                <th>Elapsed Time</th>
-                <th>URL<th>
-            </tr>
-            <tr class= "userrow">
-                <td>{}</td>
-                <td>{}</td>
-                <td>{}</td>
-                <td>{}</td>
-                <td>-</td>
-                <td>{}</td>
-                <td>{}</td>
-                <td>-</td>
-            </tr>
-
-            '''.format(user_props[4],user_props[0],user_props[1],user_props[2],user_props[5],user_props[6])
-        for i, item in enumerate(ref_props): 
-            if item[1]: #if the element type is matched - the match = True is saved in item[1] item[0] has all other values 0-mass, 1, volume, 2 surface area, 3, interia, 4, tab name, 5 username, 6 time between creation and edit
-                ref_table += f'''
-                <tr>
-                    <td>{item[0][4]}</td>
-                    <td>{item[0][0]}</td>
-                    <td>{item[0][1]}</td>
-                    <td>{item[0][2]}</td>
-                    <td>{checks[i]}</td>
-                    <td>{item[0][5]}</td>
-                    <td>{item[0][6]}</td>
-                    <td><a href={ref_urls[i]} target='_blank'> Document link </a></td>
-                </tr>
-                '''
-            else:#if the element type is not matched -  0, tab name, 1 username, 2 time between creation and edit
-           
-                ref_table += f'''
-                <tr>
-
-                    <td>{item[0][0]}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>{checks[i]}</td>
-                    <td>{item[0][1]}</td>
-                    <td>{item[0][2]}</td>
-                    <td><a href={ref_urls[i]} target='_blank'> Document link </a></td>
-   
-                </tr>
-                '''
-        return ref_table + '</table>'
-
 
 def elapsed_time(start_time: str, stop_time: str):
     createdAt = datetime.strptime(start_time.replace("T"," ").split("+")[0],'%Y-%m-%d %H:%M:%S.%f')
@@ -948,7 +702,11 @@ def get_ref_url_ids(ref_url: str):
     except:
         return None
     
-def convert_cs_to_array(cs_ref_urls: str): #converts all the comma separated urls to array of urls
+def convert_cs_to_array(cs_ref_urls: str): 
+    
+    #converts all the comma separated urls to array of urls
+
+    #TO FIX: check for empty or ill formatted urls before returning the ref_urls
     ref_urls=[]
     try:
         for cs_ref_url in cs_ref_urls:
