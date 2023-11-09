@@ -1,7 +1,6 @@
 {% load static %}
         <link rel="stylesheet" href="{% static 'grader/index.css' %}">
-        <!-- Load js for url fields -->
-        <script src="{% static 'grader/url_fields.js' %}" type="text/javascript" defer=""></script>
+
         <!-- Load js for handling export of csv -->
         <script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer=""></script>
         <!-- Load loading_modelling function to enable loading screen -->
@@ -70,25 +69,11 @@
                 <form action="{% url 'grader:grade' user.os_user_id %}" onsubmit="loading_grades()">
                     <br>
                         <div id="url_field_form">
-                            <!-- Input reference model you want to compare
                             {% if ref_urls %}
-                                {% for url in ref_urls %}
-                                    {% if url != '' %}
-                                        <input type="text" name="ref_url" id="referenceModel" value="{{url|safe}}" title="Copy/paste reference model" size="80"> 
-                                    {% else %}
-                                        <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL..." title="Copy/paste reference model" size="80">
-                                    {% endif %}
-                                {% endfor %}
+                                <input type="text" name="ref_url" id="referenceModel" value="{{ref_urls|safe}}" title="Copy/paste reference model" size="70"> 
                             {% else %}
-                            <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs" title="Copy/paste reference model" size="80">      
-                            
-                            {% endif %}
-                        -->
-                        {% if ref_urls %}
-                        <input type="text" name="ref_url" id="referenceModel" value="{{ref_urls|safe}}" title="Copy/paste reference model" size="70"> 
-                        {% else %}
-                        <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs" title="Copy/paste reference model" size="70"> 
-                        </div>
+                                <input type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs" title="Copy/paste reference model" size="70"> 
+                            </div>
                         {% endif %}
                         <input type="submit" value="Grade model">
 
@@ -98,7 +83,7 @@
             
             {% if doclisttab %}
             <div id="doclist" class="gradetab">
-                    <!-- List of my Documents here-->
+                <!-- List of my Documents here-->
                 <div class= "row">
                     <div  class="column">
                         <div>
@@ -175,7 +160,7 @@
         </ul>
         {% endif %}
     </div>
-    <!-- hello-->
+
 
     
     
