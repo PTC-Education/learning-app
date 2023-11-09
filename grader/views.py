@@ -15,7 +15,6 @@ from .models import *
 import markdown
 
 # Create your views here.
-
 def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
     The auto grader page for checking a model's mass properties and time completion. 
@@ -36,9 +35,11 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     if mass_props:
         context['mass_props'] = mass_props
     return render(request, "grader/grader.html", context=context)
+
+
 def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
-    The auto grader page for checking a model's mass properties and time completion. 
+    Returns HTML page for generic grading. Indicates- there will be other special graders .
 
     **Arguments:**
         
@@ -60,6 +61,8 @@ def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     if mass_props:
         context['mass_props'] = mass_props
     return render(request, "grader/generic_grader.html", context=context)
+
+
 def login(request: HttpRequest): 
     """ 
     When the app extension is first opened, this view should be called. 
@@ -90,6 +93,8 @@ def login(request: HttpRequest):
     user.did = request.GET.get('did')
     user.wid = request.GET.get('wvmid')
     user.eid = request.GET.get('eid')
+
+    #TO FIX- Find better ways to get the element type of the current document
     user.etype = get_element_type(user.os_domain ,user.did, user.wid, user.eid, auth_token=user.access_token)[0]["elementType"]
     user.save() 
     
@@ -144,6 +149,7 @@ def authorize(request: HttpRequest):
     user.save() 
 
     return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
+
 def index(request: HttpRequest, os_user_id: str): 
     """ 
     The index view of the app. 
@@ -161,9 +167,10 @@ def index(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     context = {"user": curr_user}
     return render(request, "grader/index.html", context=context)
+
 def classlist(request: HttpRequest, os_user_id: str): 
     """ 
-    This function loads the list of classes the user has created.
+    This function returns the list of classes the user has created.
     
     **Context:**
     
@@ -174,23 +181,25 @@ def classlist(request: HttpRequest, os_user_id: str):
     
     **Template:**
     
-    :template:`grader/grader.html`
+    :template:
     """
 
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
-    classes=[] # to store the names of classes
-    assignments=[] #array to store assisgnments within the classes
-    #get all elements in the document
+    classes=[]          # to store the names of classes
+    assignments=[]      #array to store assisgnments within the classes
+
+
+    #get information about classrooms created by the user
     classinfo=get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
     items=classinfo["items"]
 
     try:
         for item in items:
             if(item["resourceType"]=="classroom"):
-                classes.append([item["name"],item["id"]])
+                classes.append([item["name"],item["id"]]) # Append all classroom names and id 
    
     except:
         print("Error in classes") #need better error message here
@@ -199,13 +208,15 @@ def classlist(request: HttpRequest, os_user_id: str):
             "classes":classes,
         }
     return render(
-        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        # Instead of rendering a new html file find a way to integrate this to the generic_grader.html to show available classes to grade
+        request, "grader/showlist.html", 
         context=context
    
     )
 def filelist(request: HttpRequest, os_user_id: str): 
     """ 
-    If the user wants to load instruction content on the app as HTML using a markdown file the view is called. This function will return an array of all markdown files and their contents
+    Returns markdown files found in the user document. The files are converted to HTML and appeneded in an array. 
+
     **Context:**
     
     
@@ -217,15 +228,17 @@ def filelist(request: HttpRequest, os_user_id: str):
     
     :template:`grader/grader.html`
     """
+
     mdHTMLtext='Empty'
 
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
-    blobs=[] # to store the blob from the markdowns imported on the document
-    markdown_file_names=[] #array to store all markdown files in the document
-    #get all elements in the document
+    blobs=[]    # to store the blob from the markdowns imported on the document
+    markdown_file_names=[]  #array to store all markdown files in the document
+    
+    #get information about all the elements in the document
     elements_info=get_elements_info(curr_user.os_domain, curr_user.did,curr_user.wid ,auth_token=curr_user.access_token) 
     try:
         for element_info in elements_info:
@@ -244,33 +257,12 @@ def filelist(request: HttpRequest, os_user_id: str):
             "blobs":blobs                     #all markdown contents   
         }
     return render(
-        request, "grader/showlist.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        # this might have some usage in learning center portion of the app. 
+        request, "grader/showlist.html",  
         context=context
-   
     )
 
-    #saving the snippet below for instruction.html to render markdown files to HTML
-    '''
-    
-        context={
-            "user": curr_user, 
-            "error_message":"Error"
-        }
-    if mdHTMLtext=='Empty':
-        context={
-            "user": curr_user, 
-            "error_message":"No supporting markdownfile found. Upload instruction.md "
-        }
-    else:
-        context={
-            "user": curr_user, 
-            "mdHTMLtext":mdHTMLtext
-        }
-    return render(
-        request, "grader/instruction.html", 
-        context=context
-    )
-    '''
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits a model, API calls are made to check if the 
@@ -290,8 +282,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
     :template:`grader/grader.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    #grad reference urls , possibly in a csv format, from the grader HTML page
     cs_ref_urls = request.GET.getlist('ref_url')
+
+    #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
+
+
     if(ref_urls ==['']): #check blank url field
         context={ 
         "user": curr_user, 
@@ -300,11 +298,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
         }
         return render(request, "grader/generic_grader.html",context=context )
 
+
+
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
     
     # Get mass props of model the user currently has opened
+    #TO DO : rename user to reference and ref to user 
     user_mass_prop = get_mass_props(
             curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.etype, 
             massAsGroup=True, auth_token=curr_user.access_token
@@ -338,7 +339,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     user_mass_prop['principalInertia'][0]
                 ]
         
-
+        # TO FIX : check the user's configuration for precision and units
+        # Make rounding off based on the user's settings
         for i, prop in enumerate(user_props):
             if prop < 0.1 or prop > 99: 
                 user_props[i] = '{:.6f}'.format(user_props[i])
@@ -349,6 +351,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     except:
         user_props = None
     
+    #Append user related information along with mass properties
     user_props.append(user_user_name)
     user_props.append(user_doc_name)
     user_props.append(user_doc_time)
@@ -367,7 +370,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
             ref_url['eType']=eType[0]["elementType"]
             ref_element_name=eType[0]["name"]
         except:
-            print("Error with eType, perhaps blank refURL")
+            print("Error with eType, perhaps blank ref URL")
             ref_url['eType']="Error"
 
         try:
@@ -393,7 +396,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
                                 ref_mass_prop['periphery'][0],
                                 ref_mass_prop['principalInertia'][0]
                             ]
-
+                    #TO FIX: find better way of getting the thumbnail of the element
                     image_bytes=get_shadedviews_image_data(curr_user.os_domain, ref_url['did'],ref_url['wid'], ref_url['eid'], ref_url['eType'], auth_token=curr_user.access_token)
                     if(image_bytes):
                         image_str=image_bytes.decode('utf8')
