@@ -12,9 +12,119 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
 
 from .models import * 
-import markdown
+
 
 # Create your views here.
+
+
+def login(request: HttpRequest): 
+    """ 
+    When the app extension is first opened, this view should be called. 
+
+    **Context:**
+    
+    If new user, redirects the user to initiate Onshape's OAuth authorization. Once authenticated, the user will be redirected back to :view:`grader.views.authorize`.  
+    
+    - A new :model:`grader.AuthUser` model will be created for the new user with the user's ``os_user_id``. 
+    
+    - If the user already exists, new Onshape working environment IDs will be recorded. 
+    
+    """
+    if request.GET.get("wvm") != 'w': 
+        return HttpResponse("Please relaunch this app in the main workspace or create a branch from the left panel to start modelling ...")
+
+    user_id = request.GET.get('userId')
+    try: 
+        user = AuthUser.objects.get(os_user_id=user_id)
+        # Refresh token if needed 
+        if user.expires_at < timezone.now() + timedelta(hours=1): 
+            user.refresh_oauth_token() 
+    except ObjectDoesNotExist: 
+        # Create a new user 
+        user = AuthUser(os_user_id=user_id)
+    
+    user.os_domain = request.GET.get('server')
+    user.did = request.GET.get('did')
+    user.wid = request.GET.get('wvmid')
+    user.eid = request.GET.get('eid')
+
+    #TO FIX- Find better ways to get the element type of the current document
+    user.etype = get_element_type(user.os_domain ,user.did, user.wid, user.eid, auth_token=user.access_token)[0]["elementType"]
+    user.save() 
+    
+
+    return redirect(
+        os.path.join(
+            os.environ['OAUTH_URL'], 
+            "oauth/authorize"
+        ) + "?response_type=code&client_id={}".format(
+            os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
+        )
+    )
+
+def authorize(request: HttpRequest): 
+    """ 
+    When the user authorizes the OAuth integration, Onshape's OAuth authorization page will redirect the user to this page, as registered as the redirect URL. 
+    
+    Once all necessary registration of the returned tokens is done by the app, the user will be redirected to :view:`grader.views.index`. 
+    """
+    try: 
+        auth_code = request.GET.get('code')
+    except MultiValueDictKeyError: 
+        return HttpResponse(
+            "User authentication failed!\nError: " + str(
+                request.GET.get('error')
+            )
+        )
+    
+    # Use the authorization code to get access token and refresh token 
+    token_response = requests.post(
+        os.path.join(
+            os.environ['OAUTH_URL'], 
+            "oauth/token"
+        ) + "?grant_type=authorization_code&code={}&client_id={}&client_secret={}".format(
+            auth_code.replace('=', '%3D'), 
+            os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
+            os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
+        ), 
+        headers={'Content-Type': "application/x-www-form-urlencoded"}
+    ).json() 
+    
+    # Use the sessioninfo API request to get the user's info 
+    # for backend data storage 
+    sess_response = requests.get(
+        "https://cad.onshape.com/api/users/sessioninfo", 
+        headers={"Authorization": "Bearer " + token_response['access_token']}
+    ).json() 
+
+    user = AuthUser.objects.get(os_user_id=sess_response['id'])
+    user.access_token = token_response['access_token']
+    user.refresh_token = token_response['refresh_token']
+    user.expires_at = timezone.now() + timedelta(seconds=token_response['expires_in'])
+    user.save() 
+
+    return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
+
+
+def index(request: HttpRequest, os_user_id: str): 
+    """ 
+    The index view of the app. 
+    
+    **Context:**
+    
+    **Arguments:**
+    
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    
+    **Template:**
+    
+    :template:`grader/index.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    context = {"user": curr_user}
+    return render(request, "grader/index.html", context=context)
+
+
 def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
     The auto grader page for checking a model's mass properties and time completion. 
@@ -63,205 +173,6 @@ def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     return render(request, "grader/generic_grader.html", context=context)
 
 
-def login(request: HttpRequest): 
-    """ 
-    When the app extension is first opened, this view should be called. 
-
-    **Context:**
-    
-    If new user, redirects the user to initiate Onshape's OAuth authorization. Once authenticated, the user will be redirected back to :view:`grader.views.authorize`.  
-    
-    - A new :model:`grader.AuthUser` model will be created for the new user with the user's ``os_user_id``. 
-    
-    - If the user already exists, new Onshape working environment IDs will be recorded. 
-    
-    """
-    if request.GET.get("wvm") != 'w': 
-        return HttpResponse("Please relaunch this app in the main workspace or create a branch from the left panel to start modelling ...")
-
-    user_id = request.GET.get('userId')
-    try: 
-        user = AuthUser.objects.get(os_user_id=user_id)
-        # Refresh token if needed 
-        if user.expires_at < timezone.now() + timedelta(hours=1): 
-            user.refresh_oauth_token() 
-    except ObjectDoesNotExist: 
-        # Create a new user 
-        user = AuthUser(os_user_id=user_id)
-    
-    user.os_domain = request.GET.get('server')
-    user.did = request.GET.get('did')
-    user.wid = request.GET.get('wvmid')
-    user.eid = request.GET.get('eid')
-
-    #TO FIX- Find better ways to get the element type of the current document
-    user.etype = get_element_type(user.os_domain ,user.did, user.wid, user.eid, auth_token=user.access_token)[0]["elementType"]
-    user.save() 
-    
-
-    return redirect(
-        os.path.join(
-            os.environ['OAUTH_URL'], 
-            "oauth/authorize"
-        ) + "?response_type=code&client_id={}".format(
-            os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
-        )
-    )
-def authorize(request: HttpRequest): 
-    """ 
-    When the user authorizes the OAuth integration, Onshape's OAuth authorization page will redirect the user to this page, as registered as the redirect URL. 
-    
-    Once all necessary registration of the returned tokens is done by the app, the user will be redirected to :view:`grader.views.index`. 
-    """
-    try: 
-        auth_code = request.GET.get('code')
-    except MultiValueDictKeyError: 
-        return HttpResponse(
-            "User authentication failed!\nError: " + str(
-                request.GET.get('error')
-            )
-        )
-    
-    # Use the authorization code to get access token and refresh token 
-    token_response = requests.post(
-        os.path.join(
-            os.environ['OAUTH_URL'], 
-            "oauth/token"
-        ) + "?grant_type=authorization_code&code={}&client_id={}&client_secret={}".format(
-            auth_code.replace('=', '%3D'), 
-            os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
-            os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
-        ), 
-        headers={'Content-Type': "application/x-www-form-urlencoded"}
-    ).json() 
-    
-    # Use the sessioninfo API request to get the user's info 
-    # for backend data storage 
-    sess_response = requests.get(
-        "https://cad.onshape.com/api/users/sessioninfo", 
-        headers={"Authorization": "Bearer " + token_response['access_token']}
-    ).json() 
-
-    user = AuthUser.objects.get(os_user_id=sess_response['id'])
-    user.access_token = token_response['access_token']
-    user.refresh_token = token_response['refresh_token']
-    user.expires_at = timezone.now() + timedelta(seconds=token_response['expires_in'])
-    user.save() 
-
-    return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
-
-def index(request: HttpRequest, os_user_id: str): 
-    """ 
-    The index view of the app. 
-    
-    **Context:**
-    
-    **Arguments:**
-    
-    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
-    
-    **Template:**
-    
-    :template:`grader/index.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    context = {"user": curr_user}
-    return render(request, "grader/index.html", context=context)
-
-def classlist(request: HttpRequest, os_user_id: str): 
-    """ 
-    This function returns the list of classes the user has created.
-    
-    **Context:**
-    
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:
-    """
-
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    classes=[]          # to store the names of classes
-    assignments=[]      #array to store assisgnments within the classes
-
-
-    #get information about classrooms created by the user
-    classinfo=get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
-    items=classinfo["items"]
-
-    try:
-        for item in items:
-            if(item["resourceType"]=="classroom"):
-                classes.append([item["name"],item["id"]]) # Append all classroom names and id 
-   
-    except:
-        print("Error in classes") #need better error message here
-    context={
-            "user": curr_user, 
-            "classes":classes,
-        }
-    return render(
-        # Instead of rendering a new html file find a way to integrate this to the generic_grader.html to show available classes to grade
-        request, "grader/showlist.html", 
-        context=context
-   
-    )
-def filelist(request: HttpRequest, os_user_id: str): 
-    """ 
-    Returns markdown files found in the user document. The files are converted to HTML and appeneded in an array. 
-
-    **Context:**
-    
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/grader.html`
-    """
-
-    mdHTMLtext='Empty'
-
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    blobs=[]    # to store the blob from the markdowns imported on the document
-    markdown_file_names=[]  #array to store all markdown files in the document
-    
-    #get information about all the elements in the document
-    elements_info=get_elements_info(curr_user.os_domain, curr_user.did,curr_user.wid ,auth_token=curr_user.access_token) 
-    try:
-        for element_info in elements_info:
-            #if(element_info['name'] == "instruction.md"): 
-            if(element_info["dataType"] == "text/x-markdown"): #check if the element is a markdown file
-                filename=element_info["name"]
-                filecontent_in_md=get_blob_data(curr_user.os_domain, curr_user.did,curr_user.wid,element_info['id'] ,auth_token=curr_user.access_token)
-                filecontent_in_HTML=md_HTML_create(filecontent_in_md)
-                blobs.append([filename,filecontent_in_HTML])
-   
-    except:
-        print("Error") #need better error message here
-    context={
-            "user": curr_user, 
-            "filenames":markdown_file_names, # all markdown file names with the context
-            "blobs":blobs                     #all markdown contents   
-        }
-    return render(
-        # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
-        # this might have some usage in learning center portion of the app. 
-        request, "grader/showlist.html",  
-        context=context
-    )
 
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
@@ -449,57 +360,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
         request, "grader/results.html", 
         context=context
     )
-    err_tol = 0.005
-
-    if len(all_ref_props)>0 and user_props:
-        check_symbols=[]
-        for i, ref_prop in enumerate(all_ref_props): 
-            if(ref_prop[1]): #only when type_match_check=True 
-                check_symbol=[] # 0 - mass ,1 - Surface Area, 2 - Volume
-                # Check for accuracy 
-                if (
-                    float(ref_prop[0][0]) * (1 - err_tol) > float(user_props[0]) or 
-                    float(user_props[0]) > float(ref_prop[0][0]) * (1 + err_tol)
-                ): 
-                    check_symbol.append("&#x2717;")
-                else: 
-                    check_symbol.append("&#x2713;")
-
-                if (
-                    float(ref_prop[0][1]) * (1 - err_tol) > float(user_props[1]) or 
-                    float(user_props[1]) > float(ref_prop[0][1]) * (1 + err_tol)
-                ): 
-                    check_symbol.append("&#x2717;")
-                else: 
-                    check_symbol.append("&#x2713;")
-                
-                if (
-                    float(ref_prop[0][2]) * (1 - err_tol) > float(user_props[2]) or 
-                    float(user_props[2]) > float(ref_prop[0][2]) * (1 + err_tol)
-                ): 
-                    check_symbol.append("&#x2717;")
-                else: 
-                    check_symbol.append("&#x2713;")
-
-                check_symbols.append(check_symbol)
-            else:
-                check_symbols.append("Type Mismatch")
-    else:
-        check_symbols=None
-
-    ref_table = ref_table_create(user_props, all_ref_props,check_symbols,ref_urls)
-    context={
-        "user": curr_user, 
-        "ref_table" : ref_table,
-        "failed_urls" : failed_urls,
-        "ref_urls" : ref_urls,
-        "urlgradetab": True
-
-    }
-    return render(
-        request, "grader/generic_grader.html", 
-        context=context
-    )
 
 def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str): 
     """ 
@@ -592,6 +452,8 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
 
 
 def enable_csv(request: HttpRequest, os_user_id: str): 
+
+    # TO FIX: embedd csv upload on URL field tab. 
     """ 
     Upload a list of documents using a csv file. The urls must be separated by commas
  
@@ -599,7 +461,7 @@ def enable_csv(request: HttpRequest, os_user_id: str):
     **Arguments:**
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
     **Template:**
-    :template:`grader/grader.html`
+    :template:`grader/generic_grader.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -612,12 +474,13 @@ def enable_csv(request: HttpRequest, os_user_id: str):
     print(context)
     print("Enable uploaded")
     return render(
-        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        request, "grader/generic_grader.html",  
         context=context
-   
     )
 
 def upload_csv(request: HttpRequest, os_user_id: str): 
+
+    # TO FIX: embedd csv upload on URL field tab. 
     """ 
     When a user submits a model, API calls are made to check if the 
     model is dimensionally correct and placed in proper orientation. 
@@ -639,7 +502,7 @@ def upload_csv(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
-    print("called")
+
     csvfile = request.FILES["csvfile"]
     cs_ref_urls=csvfile.read().decode("utf-8")
     context={
@@ -649,8 +512,10 @@ def upload_csv(request: HttpRequest, os_user_id: str):
         }
 
     return render(
-        request, "grader/generic_grader.html",  # need to render this page with a list of available markdown files , users should be able to select and open the file of their choice
+        request, "grader/generic_grader.html", 
         context=context    )  
+
+
 #################### Helper API calls ####################
 
 def get_mass_props(
@@ -836,114 +701,6 @@ def get_element_type(
         return None
 
 #################### Other helper functions ####################
-
-def part_mass_check(user_prop: Iterable[Any], ref_prop: Iterable[Any]=None, check_symbols: Iterable[Any]=None
-) -> Union[bool, str]: 
-    
-    if ref_prop:
-        mass_msg = '''
-        <table>
-            <tr>
-                <th>Properties</th>
-                <th>User Values</th>
-                <th>Ref Values</th>
-                <th>Check</th>
-            </tr>
-        '''
-        prop_name = ["Mass (kg)", "Volume (m^3)", "Surface Area (m^2)", "Principal Inertia Min (kg.m^2)"]
-        for i, item in enumerate(prop_name): 
-            mass_msg += f'''
-            <tr>
-                <td>{item}</td>
-                <td>{user_prop[i]}</td>
-                <td>{ref_prop[i]}</td>
-                <td>{check_symbols[i]}</td>
-            </tr>
-            '''
-        return mass_msg + "</table>"
-    else:
-        mass_msg = '''
-        <table>
-            <tr>
-                <th>Properties</th>
-                <th>User Values</th>
-            </tr>
-        '''
-        prop_name = ["Mass (kg)", "Volume (m^3)", "Surface Area (m^2)", "Principal Inertia Min (kg.m^2)"]
-        for i, item in enumerate(prop_name): 
-            mass_msg += f'''
-            <tr>
-                <td>{item}</td>
-                <td>{user_prop[i]}</td>
-            </tr>
-            '''
-        return mass_msg + "</table><br><small>Reference URL can't be accessed or is a different element type</small>"
-
-def md_HTML_create(blob: Iterable[Any]=None) -> Union[bool, str]: 
-    
-    mdHTMLtext=''
-    mdHTMLtext =  markdown.markdown(blob.decode('utf-8'), extensions=['md_in_html'])
-    return mdHTMLtext
-
-def ref_table_create(user_props:Iterable[Any]=None, ref_props: Iterable[Any]=None, checks: Iterable[Any]=None, ref_urls: Iterable[Any]=None,) -> Union[bool, str]: 
-    
-    if checks:
-        ref_table = '''
-        <table id="resulttable">
-            <tr>
-                <th>Tab name</th>
-                <th>Mass</th>
-                <th>Volume</th>
-                <th>Periphery</th>
-                <th>Check</th>
-                <th>User name</th>
-                <th>Elapsed Time</th>
-                <th>URL<th>
-            </tr>
-            <tr class= "userrow">
-                <td>{}</td>
-                <td>{}</td>
-                <td>{}</td>
-                <td>{}</td>
-                <td>-</td>
-                <td>{}</td>
-                <td>{}</td>
-                <td>-</td>
-            </tr>
-
-            '''.format(user_props[4],user_props[0],user_props[1],user_props[2],user_props[5],user_props[6])
-        for i, item in enumerate(ref_props): 
-            if item[1]: #if the element type is matched - the match = True is saved in item[1] item[0] has all other values 0-mass, 1, volume, 2 surface area, 3, interia, 4, tab name, 5 username, 6 time between creation and edit
-                ref_table += f'''
-                <tr>
-                    <td>{item[0][4]}</td>
-                    <td>{item[0][0]}</td>
-                    <td>{item[0][1]}</td>
-                    <td>{item[0][2]}</td>
-                    <td>{checks[i]}</td>
-                    <td>{item[0][5]}</td>
-                    <td>{item[0][6]}</td>
-                    <td><a href={ref_urls[i]} target='_blank'> Document link </a></td>
-                </tr>
-                '''
-            else:#if the element type is not matched -  0, tab name, 1 username, 2 time between creation and edit
-           
-                ref_table += f'''
-                <tr>
-
-                    <td>{item[0][0]}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>{checks[i]}</td>
-                    <td>{item[0][1]}</td>
-                    <td>{item[0][2]}</td>
-                    <td><a href={ref_urls[i]} target='_blank'> Document link </a></td>
-   
-                </tr>
-                '''
-        return ref_table + '</table>'
-
 
 def elapsed_time(start_time: str, stop_time: str):
     createdAt = datetime.strptime(start_time.replace("T"," ").split("+")[0],'%Y-%m-%d %H:%M:%S.%f')

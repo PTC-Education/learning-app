@@ -7,10 +7,8 @@
         <!-- Load loading_modelling function to enable loading screen -->
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
 
-        <script src="{% static 'grader/showlist.js' %}" type="text/javascript"></script>
         <script src="{% static 'grader/results.js' %}" type="text/javascript"></script>
 
-        <script src="{% static 'grader/filename.js' %}" type="text/javascript"></script>
 
     
     
@@ -34,22 +32,6 @@
             
             Note: <i> If you are a part of the science olympiad community click on the <b>Science Olympiad</b> button.</i>
         </p>
-  
-        <!--The buttons to take you to student resources and teacher resources.-->
-        <!--
-            This is disabled until we have clear idea on how to manage the learning center contents.
-        <div class="button-container">
-        <form action="{% url 'grader:filelist' user.os_user_id %}" onsubmit="loading_list()">
-            <input type="submit" value="Student resources">
-        </form>
-
-        This is disabled until we have the ablility to make  API calls to access the C&A is 
-        <form action="{% url 'grader:classlist' user.os_user_id %}" onsubmit="loading_list()">
-            <input type="submit" value="Teacher resources">
-        </form>
-        </div>
-
-        -->
 
         <!-- Grade model -->
 
