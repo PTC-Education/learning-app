@@ -145,8 +145,8 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
 
 
 
-#Test - Nov 14 - start
-def comp(request: HttpRequest, os_user_id: str , usertype:str):
+
+def comparewithurl(request: HttpRequest, os_user_id: str , usertype:str):
     """ 
    This function will open the url input html customized for single url and multiurl+upload csv function. 
 
@@ -167,7 +167,7 @@ def comp(request: HttpRequest, os_user_id: str , usertype:str):
         "user": curr_user, 
         "usertype":usertype,
         }
-    return render(request, "grader/compare.html", context=context)
+    return render(request, "grader/urlinput.html", context=context)
 
 
 
