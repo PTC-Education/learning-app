@@ -32,9 +32,11 @@
         <div class="dropdown">
             <button class="select">Self-Check</button>
             <div class="dropdown-content">
-                <form action="{% url 'grader:generic_grader' user.os_user_id %}"onsubmit="loading_grades()">
+                <!--Load url page for single file comparison-->
+                <form action="{% url 'grader:comp' user.os_user_id 'student'%}"onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Compare model properties to reference">
                 </form>
+                <!--Load url page for best practices check-->
                 <form action="{% url 'grader:grader' user.os_user_id %}"onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Check best practices">
                 </form>
@@ -44,9 +46,11 @@
         <div class="dropdown">
             <button class="select">Compare models from a list</button>
                 <div class="dropdown-content">
-                    <form action="{% url 'grader:generic_grader' user.os_user_id %}" onsubmit="loading_grades()">
+                    <!--Load url page for multi file comparison-->
+                    <form action="{% url 'grader:comp' user.os_user_id 'educator'%}"onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Grade list of URLs">
                 </form>
+                <!--Load url page for group comparison through classes and assignments-->
                     <form action="{% url 'grader:generic_grader' user.os_user_id %}" onsubmit="loading_grades()">
                         <input class="options" type="submit" value="Grade from C&A submission list">
                     </form>

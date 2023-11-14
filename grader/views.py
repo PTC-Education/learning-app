@@ -144,6 +144,41 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     return render(request, "grader/grader.html", context=context)
 
 
+
+#Test - Nov 14 - start
+def comp(request: HttpRequest, os_user_id: str , usertype:str):
+    """ 
+   This function will open the url input html customized for single url and multiurl+upload csv function. 
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/compare.html`
+    """
+    context = { "user": None, 
+                "who":None} 
+    
+    if os_user_id: 
+        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+        context={
+        "user": curr_user, 
+        "usertype":usertype,
+        }
+    return render(request, "grader/compare.html", context=context)
+
+
+
+
+
+
+
+#test nov 14- end
+
+
+
 def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
     The auto grader page for checking a model's mass properties and time completion. This will be used by all users.
