@@ -15,11 +15,22 @@
             </div>
         </div>
         
-
         <div class="instructions">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
-        </div>
+            <h3>
+                Instuctions:
+            </h3>
+                    {% if usertype == "student" %}
+                        Enter the URL of the Onshape document you want to compare. Make sure the URL is properly formatted. 
+                    {% elif usertype == "educator" %}
+                        Make sure you have opened the app from the tab you want to use as an answer key within your reference document. You can enter the URLs of your students' Onshape documents in one of the following ways.
+                        <ul>
+                            <li>Copy and paste one Onshape URL at a time.</li>
+                            <li>Copy and paste multiple Onshape URLs that are either separated by comma or a space.</li>
+                            <li>Upload a CSV file containing Onshape URLs.</li>
+                        </ul>
 
+                    {% endif %}
+        </div>
         {% if usertype == "educator" %}
             <div class="URLinput-DIV">
                 <div class="twoButtonsonEdge">

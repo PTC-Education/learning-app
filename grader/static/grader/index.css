@@ -135,7 +135,17 @@ ol {
 }
 
 
-
+.instructions{
+    width: 90%;
+    color: #000;
+    background-color: white;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 350;
+    line-height: normal;
+    margin-bottom:50px;
+}
 
 
 /* Style the submit button of forms - generic*/ 
