@@ -33,7 +33,20 @@ function toggle(urldivID,csvdivID) {
       
   }
 }
+//Function to validate the urlfield 
+//Returns false if empty
+function validateForm() {
+  document.getElementById('urlError').innerHTML=" "; //empty the error message when a new url is submitted
+  var x = document.forms["studenturl"]["url"].value;
+  let regex = /https:\/\/[A-Za-z]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
+  if (!regex.test(x)){
+    document.getElementById('urlError').innerHTML="Faulty urls detected. Please make sure the urls are correct." //show the error message
+    document.forms["studenturl"]["url"].value="";
+    return false;   
 
+      }
+
+}
 
 
 //Function to read contents of uploaded file - CSV file or Space separated file
@@ -57,13 +70,16 @@ function readfilecontent(){
 function show_url_as_buttons(){
   let urllist = document.forms["urlform"]["url"].value; //get the value in the text field
   parse_list_of_url(urllist);
+  document.forms["urlform"]["url"].value=""; //make text box empty
 }
 
 //Function to parse the list of url from the input form and display as closable buttons in list with id = urlButtonContainer
 
 function parse_list_of_url(urllist){
-  var urlarray=urllist.split(/,\s*|\s+/);                      //split the url based on space and commas
-  uniqueUrls = [...new Set(urlarray)];                //get the unique urls
+
+  document.getElementById('urlError').innerHTML=" ";   //empty the error message when a new url is submitted
+  var urlarray=urllist.split(/,\s*|\s+/);              //split the url based on space and commas
+  uniqueUrls = [...new Set(urlarray)];                 //get the unique urls
 
   for (let i=0; i<uniqueUrls.length; i++){        //iterate over all the unique urls
     if(!uniqueUrls[i]== ""){                      //only if the url is not blank , might or might not need this
@@ -71,6 +87,9 @@ function parse_list_of_url(urllist){
       let regex = /https:\/\/[A-Za-z]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
       if (regex.test(uniqueUrls[i])){
         addURLasbutton(uniqueUrls[i]);                        //add the valid onshape url as a button 
+      }
+      else{
+        document.getElementById('urlError').innerHTML="At least one faulty url was detected. Please make sure all the urls are correctly formatted."
       }
     } 
   }

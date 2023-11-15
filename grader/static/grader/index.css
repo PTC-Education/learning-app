@@ -134,19 +134,83 @@ ol {
     content: '\2212'; 
 }
 
-/* Style the submit button of forms */ 
+
+
+
+
+/* Style the submit button of forms - generic*/ 
 input[type=submit] {
     padding: 10px 10px;
     cursor: pointer;
-    background-color: #ddd;
+    background-color: #CCCCCC;
     border: 0 none;
     border-radius: 5px;
-    margin-bottom: 1em;
+    margin-bottom: 5px;
 }
 
 input[type=submit]:hover {
-    background-color: #bbb;
+    background-color: #ebebeb;
 }
+
+
+
+
+/* Style the submit button of forms  - for Grade button specific*/ 
+input.gradeButton[type=submit] {
+    padding: 10px 10px;
+    cursor: pointer;
+    background-color: #1651B0;
+    border: 0 none;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    margin-left: 10px;
+}
+
+input.gradeButton[type=submit]:hover {
+    background-color: #769fcc;
+}
+
+
+
+/* Style the submit button of forms - for loading the urls  */ 
+input.submiturl-button[type=submit] {
+    color: var(--charles, #1651B0);
+    font-size: 16px;
+    padding-left: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    border: none;
+    background: none;
+}
+
+input.submiturl-button[type=submit]:hover {
+    cursor:pointer;
+}
+
+
+.options{
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    background: #CCCCCC;
+    text-align: center;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    border-radius: 4px;
+    margin-left: 10px;
+    padding: 10px 30px 10px 30px;
+    justify-content: center;
+    border: 0; 
+    z-index: -10;
+
+}
+
+.options:hover{
+    background-color: #ebebeb;
+    cursor: pointer;
+}
+  
 
 /* Loader */
 .loader {
@@ -362,7 +426,7 @@ body{
       padding:10px;
       justify-content: center;
       align-items: center;
-      height:200px;
+      height:auto;
       margin: 0 auto;
       border-radius: 3px;
       background: #FFF;
@@ -434,13 +498,13 @@ body{
     
     
     
-    ul {
+    ul.closeable_button {
       list-style-type: none;
       padding: 0;
       margin: 0;
     }
     
-    ul li {
+    ul.closeable_button li {
       width: fit-content;
       border: 1px solid #ddd;
       background-color: #f6f6f6;
@@ -524,7 +588,14 @@ body{
       font-weight: 500;
     }
     
-    
+    .urlError{
+        color: red;
+        font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        font-style: italic;
+
+    }
     
     
     .urlfield {
@@ -545,7 +616,6 @@ body{
       padding: 10px;
       border-radius: 4px;
       margin-top: 5px;
-      margin-bottom: 25px;
       border-radius: 4px;
       justify-content: center;
       border: 1px solid #9AA5AF;
@@ -557,23 +627,7 @@ body{
     
     
     
-    .submiturl-button{
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-      color: var(--charles, #1651B0);
-      font-size: 16px;
-      padding-left: 20px;
-      font-style: normal;
-      font-weight: 600;
-      line-height: normal;
-      border: none;
-      background: none;
-      
-      }
-      
-      .submiturl-button:hover{
-          cursor:pointer;
-      }
-    
+
     
     
     .file-UPLOAD{

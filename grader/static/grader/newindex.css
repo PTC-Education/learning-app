@@ -25,8 +25,10 @@ button.select{
     border: 0; 
 
 }
-.select:hover{
+.select:active{
     cursor: pointer; 
+    background: #4CAF50;
+
 }
 
 .select-container{
@@ -35,29 +37,7 @@ button.select{
     justify-content: center;
 }
 
-.options{
-    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    color: var(--zakim, #333);
-    background: #999;
-    text-align: center;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: normal;
-    border-radius: 4px;
-    margin-left: 10px;
-    padding: 10px 30px 10px 30px;
-    justify-content: center;
-    border: 0; 
-    z-index: -10;
 
-}
-
-.options:hover{
-    background-color: #333;
-    color:white;
-    cursor: pointer;
-}
 
 
 
