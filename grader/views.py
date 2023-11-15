@@ -199,8 +199,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
     if(ref_urls ==['']): #check blank url field
         context={ 
         "user": curr_user, 
-        "urlgradetab" :True,
-        "error_message" : "URL not detected. Please copy and paste a valid Onshape URL and try again",
+        "urlgradetab": True,
+        "error_message": "URL not detected. Please copy and paste a valid Onshape URL and try again",
         }
         return render(request, "grader/generic_grader.html",context=context )
 
@@ -209,7 +209,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
         curr_user.refresh_oauth_token() 
     
     # Get mass props of model the user currently has opened
-    #TO DO : rename user to reference and ref to user 
     mass_props = get_mass_props(
             curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.etype, 
             massAsGroup=False, auth_token=curr_user.access_token
@@ -242,7 +241,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
                                     ] 
                                     for i in range(len(user_props[0]))
                                 ], key=lambda x : x[1])
-            print(user_props)
+
         elif curr_user.etype == "assemblies":
             # assemblies user_props = [mass, vol, periphery, principalInertia]
             user_props = [[
@@ -278,7 +277,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
     ## Initialize arrays for ref docs
     all_ref_props = [] # 3D array - each 2D array corresponds to one URL
-    # First element of each is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
+    # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
     # Rest is model props [[mass, vol, periphery, principalInertia, partName],[...]] (without partName for assemblies)
     failed_urls = [] # Array of all URLs that we failed to get info from
     # Get info and mass props for all url's in ref doc list
@@ -298,7 +297,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 partId_to_name = {} 
                 for item in part_list: 
                     partId_to_name[item['partId']] = item['name']
-
                 # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
                 ref_props = [
                                 [prt['mass'][0] for prt in mass_props['bodies'].values()], 
@@ -356,11 +354,11 @@ def grade_model(request: HttpRequest, os_user_id: str):
         failed_urls = None
 
     context={
-    "user": curr_user, 
-    "etype": curr_user.etype,
-    "failed_urls": failed_urls,
-    "user_props": user_props,
-    "all_ref_props": all_ref_props
+        "user": curr_user, 
+        "etype": curr_user.etype,
+        "failed_urls": failed_urls,
+        "user_props": user_props,
+        "all_ref_props": all_ref_props
     }
     return render(
         request, "grader/basic_results.html", 
