@@ -95,7 +95,7 @@ function parse_list_of_url(urllist){
         addURLasbutton(uniqueUrls[i]);                        //add the valid onshape url as a button 
       }
       else{
-        document.getElementById('urlError').innerHTML="At least one faulty url was detected. Please make sure all the urls are correctly formatted."
+        document.getElementById('urlError').innerHTML="At least one faulty url was detected. Please make sure all the urls are formatted correctly."
       }
     } 
   }
