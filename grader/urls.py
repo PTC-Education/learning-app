@@ -14,5 +14,5 @@ urlpatterns = [
     path('upload_csv/<str:os_user_id>/csv', views.upload_csv, name='upload_csv'),
     path('grade/<str:os_user_id>/<str:ref_url>/', views.grade_model, name="grade"), 
     path('grade/<str:os_user_id>/', views.grade_model, name="grade"),
-    path('comparewithurl/<str:os_user_id>/<str:usertype>/', views.comparewithurl, name="comparewithurl"),
+    path('urlinputpage/<str:os_user_id>/<str:usertype>/', views.urlinputpage, name="urlinputpage"),
 ]

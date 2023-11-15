@@ -38,7 +38,7 @@
                     <label for="csvfile"  class="file-UPLOAD" title="Click to select csv file with Onshape URLs to grade ">
                         <img src="{% static 'grader/images/Upload.png' %}"/>
                     </label>
-                    <input type="file" name="csvfile" id="csvfile"  required="True" onchange="readfilecontent()"/>                     
+                    <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
                 </div>   
                 <div>
                     <p class="urlError" id="urlError">
@@ -55,12 +55,13 @@
                 </div>     
                 <div class="selectedURL-DIV">
                     <form  action="{% url 'grader:grade' user.os_user_id %}">
-                        <input name="url" class="gradeButton" type="submit" value="Grade model" />
+                        <input name="url" id="gradeButton" class="gradeButton" type="submit" value="Grade model" />
                         <ul class="closeable_button" id="urlButtonContainer">
                         </ul>    
                     </form>
                 </div>
             </div>
+            <script>checkURLs_for_enabling_grade_button(); </script> <!--Run function to disable Grade button on load-->
         {% elif usertype == "student" %}
             <div class="URLinput-DIV">
                 <div class="twoButtonsonEdge">
@@ -83,6 +84,7 @@
                 </div>
             </div>        
         {% endif %}
+
  
 
 

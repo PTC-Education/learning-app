@@ -146,37 +146,29 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
 
 
 
-def comparewithurl(request: HttpRequest, os_user_id: str , usertype:str):
+def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
     """ 
-   This function will open the url input html customized for single url and multiurl+upload csv function. 
+   This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
 
     **Arguments:**
         
     - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+    - ``usertype:str``: type of user , options are student and educator
 
     **Template:**
 
-    :template:`grader/compare.html`
+    :template:`grader/urlinput.html`
     """
     context = { "user": None, 
-                "who":None} 
+                "usertype": None} 
     
     if os_user_id: 
         curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-        context={
+        context = {
         "user": curr_user, 
-        "usertype":usertype,
+        "usertype": usertype,
         }
     return render(request, "grader/urlinput.html", context=context)
-
-
-
-
-
-
-
-#test nov 14- end
-
 
 
 def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):

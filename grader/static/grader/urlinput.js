@@ -1,10 +1,16 @@
 //Runs on load to ensure url is shown and csv is hidden
-function showurl(urldivID,csvdivID) {
-  var x = document.getElementById(urldivID);
-  x.style.display = "block";
-
-  var x = document.getElementById(csvdivID);
-  x.style.display = "none";
+function checkURLs_for_enabling_grade_button() {
+  var listofurlbuttons = document.getElementById('urlButtonContainer');         //open the list 
+  var urlbuttons_existing = listofurlbuttons.getElementsByTagName("li");        //get all the items in the list
+  var urlarray_existing = Array.prototype.slice.call(urlbuttons_existing);        //convert the items into array
+  var x = document.getElementById("gradeButton");
+  if(urlarray_existing.length>0){
+   
+    x.style.display = "block";
+  }
+  else{
+    x.style.display = "none";
+  }
 }
 
 
@@ -103,7 +109,8 @@ function addURLasbutton(toadd){
   var urlarray_existing = Array.prototype.slice.call(urlbuttons_existing);        //convert the items into array
   
   //create array of just the ids of the url buttons - ids will be the full url - to make sure there is only one copy of each url
-  var addedurls=[]; //create blank url array
+  var addedurls=[];   //create blank url array
+
   for (let i=0; i<urlarray_existing.length;i++){ 
     addedurls.push(urlarray_existing[i].id); 
   }
@@ -116,10 +123,10 @@ function addURLasbutton(toadd){
     listofurlbuttons.appendChild(newField);       //create the list   
     item=document.getElementById(toadd);          //grab the new button for editing innerHTML    
     did= get_did_from_url(toadd);                 // grab the did from the url string 
-
     //add hyperlink 
     item.innerHTML= '<a href="'+ toadd + '"target="_blank">' + did +'</a>' + '<span class="close" onclick=removeUrl("'+toadd+'")>&times;</span>'; //update the content of the item with a closable icon and a js function on click
   }
+checkURLs_for_enabling_grade_button(); //Function enables or disables the Grade model button - by checking for available URLs to grade 
 }
 
 
@@ -128,6 +135,7 @@ function removeUrl(toremove){
   list=document.getElementById("urlButtonContainer"); //list the items in the list
   item=document.getElementById(toremove);             //find the item that needs to be removed
   list.removeChild(item);                           //remove from the selected item list
+  checkURLs_for_enabling_grade_button();            //Function enables or disables the Grade model button - by checking for available URLs to grade 
 
 }
 
