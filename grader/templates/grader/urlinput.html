@@ -55,12 +55,16 @@
                     </form>
                 </div>     
                 <div class="selectedURL-DIV">
-                    <form  action="{% url 'grader:grade' user.os_user_id %}">
-                        <input name="ref_url" id="gradeButton" class="gradeButton" type="submit" value="Grade model" onclick="loading_spinner('Grade')"/>
-                        <!-- To do - find a way to send the contents of the list to the views page-->
+
+                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return set_ref_url_as_array()">
+                        <input id="ref_url_edu" hidden name="ref_url" type="text">
+                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade model" onclick="loading_spinner('Grade')"/>
+                        <!-- To do - find a way to send the contents of the list to the views page-->  
+                    </form>
+
                         <ul class="closeable_button" id="urlButtonContainer">
                         </ul>    
-                    </form>
+
                 </div>
             </div>
             <script>checkURLs_for_enabling_grade_button(); </script> <!--Run function to disable Grade button on load-->

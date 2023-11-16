@@ -219,8 +219,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
     #grab reference urls , possibly in a csv format, from the generic_grader.html
     cs_ref_urls = request.GET.getlist('ref_url')
-
-    print("url fro the page",cs_ref_urls)
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
 
@@ -298,7 +296,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     failed_urls = []
     
 
-    
+
 
     for i, url in enumerate(ref_urls): 
         ref_url = get_ref_url_ids(url)
@@ -475,62 +473,6 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
         request, "grader/generic_grader.html",  
         context=context    )  
 
-
-
-def enable_csv(request: HttpRequest, os_user_id: str): 
-
-    """ 
-    Detects the click of upload csv button show the upload csv tab
- 
-    
-    **Arguments:**
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    **Template:**
-    :template:`grader/generic_grader.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-    context={
-        "user": curr_user, 
-        "uploadtab":True #upload csv tab enabled
-        }
-
-    return render(
-        request, "grader/generic_grader.html",  
-        context=context
-    )
-
-def upload_csv(request: HttpRequest, os_user_id: str): 
-
-    # TO FIX: embedd csv upload on URL field tab. 
-    """ 
-    Funtion to upload csv file containing urls for grading. reads and returns the comma separated list of urls to the url grade tab
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/generic_grader.html`
-    """
-
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    csvfile = request.FILES["csvfile"]
-    cs_ref_urls=csvfile.read().decode("utf-8")
-    context={ 
-        "user": curr_user, 
-        "ref_urls" : cs_ref_urls,
-        "urlgradetab" : True  # enable the url grade tab
-        }
-
-    return render(
-        request, "grader/generic_grader.html", 
-        context=context    )  
 
 
 #################### Helper API calls ####################
