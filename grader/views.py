@@ -199,8 +199,8 @@ def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
 
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits url(s) API calls are made to grab property details of all documents (reference - the doc the app is opened in and the url(s) inputtd)
-    Returns  properties of  reference document as well as user requested document(s) 
+    When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
+    to the selected elements or input urls (called all_ref_props)
     
     **Context:**
     
@@ -222,162 +222,172 @@ def grade_model(request: HttpRequest, os_user_id: str):
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
 
-
-    #TO FIX: detect incorrectly formatted Onshape urls
-
     if(ref_urls ==['']): #check blank url field
         context={ 
         "user": curr_user, 
-        "urlgradetab" :True,
-        "error_message" : "URL not detected. Please copy and paste a valid Onshape URL and try again",
+        "urlgradetab": True,
+        "error_message": "URL not detected. Please copy and paste a valid Onshape URL and try again",
         }
         return render(request, "grader/generic_grader.html",context=context )
-
-
 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
     
     # Get mass props of model the user currently has opened
-    #TO DO : rename user to reference and ref to user 
-    user_mass_prop = get_mass_props(
+    mass_props = get_mass_props(
             curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.etype, 
-            massAsGroup=True, auth_token=curr_user.access_token
+            massAsGroup=False, auth_token=curr_user.access_token
         )
-
-    if not user_mass_prop: # API error 
+    
+    if not mass_props: # API error 
         return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
-
-    # Get info about the document the user currently has opened
-    user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
-    user_user_name=user_doc_info['name']
-    user_doc_name=user_doc_info["createdBy"]["name"]
-    user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
-
-    # Set list of user_props [mass, vol, periphery, principleInertia]
-    #TO FIX: rename PARTSTUDIO - partstudios and ASSEMBLY - assemblies
+    # Set list of user_props - different for each etype
     try:
         if curr_user.etype == "partstudios":
+            # Get parts list for part studio and create dictionary of IDs to names
+            part_list = get_part_list(curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.access_token)
+            partId_to_name = {} 
+            for item in part_list: 
+                partId_to_name[item['partId']] = item['name']
+            # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
             user_props = [
-                    user_mass_prop['bodies']['-all-']['mass'][0], 
-                    user_mass_prop['bodies']['-all-']['volume'][0], 
-                    user_mass_prop['bodies']['-all-']['periphery'][0],
-                    user_mass_prop['bodies']['-all-']['principalInertia'][0]
-                ]
+                            [prt['mass'][0] for prt in mass_props['bodies'].values()], 
+                            [prt['volume'][0] for prt in mass_props['bodies'].values()], 
+                            [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
+                            [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
+                            [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
+                        ]
+            user_props = sorted([
+                                    [
+                                        user_props[0][i], user_props[1][i], 
+                                        user_props[2][i], user_props[3][i], 
+                                        user_props[4][i]
+                                    ] 
+                                    for i in range(len(user_props[0]))
+                                ], key=lambda x : x[1])
+
         elif curr_user.etype == "assemblies":
-            user_props = [
-                    user_mass_prop['mass'][0], 
-                    user_mass_prop['volume'][0], 
-                    user_mass_prop['periphery'][0],
-                    user_mass_prop['principalInertia'][0]
-                ]
+            # assemblies user_props = [mass, vol, periphery, principalInertia]
+            user_props = [[
+                    mass_props['mass'][0], 
+                    mass_props['volume'][0], 
+                    mass_props['periphery'][0],
+                    mass_props['principalInertia'][0]
+                ]]
         
+        # Can we do precision in JS?
         # TO FIX : check the user's configuration for precision and units
         # Make rounding off based on the user's settings
-        for i, prop in enumerate(user_props):
-            if prop < 0.1 or prop > 99: 
-                user_props[i] = '{:.6f}'.format(user_props[i])
-            else: 
-                user_props[i] = round(user_props[i], 3)
-            pass
+        # for i, prop in enumerate(user_props):
+        #     if prop < 0.1 or prop > 99: 
+        #         user_props[i] = '{:.6f}'.format(user_props[i])
+        #     else: 
+        #         user_props[i] = round(user_props[i], 3)
+        #     pass
 
     except:
         user_props = None
-    
-    #Append user related information along with mass properties
-    user_props.append(user_user_name)
-    user_props.append(user_doc_name)
-    user_props.append(user_doc_time)
 
+    # Get info about the document the user currently has opened
+    # DO WE NEED THIS?
+    user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+    user_doc_name = user_doc_info['name']
+    user_user_name = user_doc_info["createdBy"]["name"]
+    user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
+
+    # Append user related information along with mass properties
+    # DO WE NEED THIS?
+    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time])
+
+
+    ## Initialize arrays for ref docs
+    all_ref_props = [] # 3D array - each 2D array corresponds to one URL
+    # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
+    # Rest is model props [[mass, vol, periphery, principalInertia, partName],[...]] (without partName for assemblies)
+    failed_urls = [] # Array of all URLs that we failed to get info from
     # Get info and mass props for all url's in ref doc list
-    all_ref_props = []
-    failed_urls = []
-    
-
-
-
     for i, url in enumerate(ref_urls): 
         ref_url = get_ref_url_ids(url)
 
-        #grab the element Type of reference URL 
-        try:
-            eType=get_element_type(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)
-            ref_url['eType']= eType[0]["elementType"]
-            ref_element_name= eType[0]["name"]
-        except:
-            print("Error with eType, perhaps blank ref URL")
-            ref_url['eType']="Error"
+        try:         
+            ref_props=[] # initialize empty array of ref props
 
-        try:
-            #check the element type of reference and current document
-            ref_props=[]  
+            mass_props = get_mass_props(
+                curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.etype, 
+                massAsGroup=False, auth_token=curr_user.access_token
+            )
+            if curr_user.etype == "partstudios":
+                # Get parts list for part studio and create dictionary of IDs to names
+                part_list = get_part_list(curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.access_token)
+                partId_to_name = {} 
+                for item in part_list: 
+                    partId_to_name[item['partId']] = item['name']
+                # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+                ref_props = [
+                                [prt['mass'][0] for prt in mass_props['bodies'].values()], 
+                                [prt['volume'][0] for prt in mass_props['bodies'].values()], 
+                                [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
+                                [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
+                                [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
+                            ]
+                ref_props = sorted([
+                                        [
+                                            ref_props[0][i], ref_props[1][i], 
+                                            ref_props[2][i], ref_props[3][i], 
+                                            ref_props[4][i]
+                                        ] 
+                                        for i in range(len(ref_props[0]))
+                                    ], key=lambda x : x[1])
 
-            try:
-                ref_mass_prop = get_mass_props(
-                    curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.etype, 
-                    massAsGroup=True, auth_token=curr_user.access_token
-                )
-                if curr_user.etype == "partstudios":
-                    ref_props = [
-                            ref_mass_prop['bodies']['-all-']['mass'][0], 
-                            ref_mass_prop['bodies']['-all-']['volume'][0], 
-                            ref_mass_prop['bodies']['-all-']['periphery'][0],
-                            ref_mass_prop['bodies']['-all-']['principalInertia'][0]
-                        ]
-                elif curr_user.etype == "assemblies":
-                    ref_props = [
-                            ref_mass_prop['mass'][0], 
-                            ref_mass_prop['volume'][0], 
-                            ref_mass_prop['periphery'][0],
-                            ref_mass_prop['principalInertia'][0]
-                        ]
-                #TO FIX: find better way of getting the thumbnail of the element
-                image_bytes=get_shadedviews_image_data(curr_user.os_domain, ref_url['did'],ref_url['wid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
-                if(image_bytes):
-                    image_str=image_bytes.decode('utf8')
-                    image_json=json.loads(image_str)
-                    image=image_json["images"][0]
+            elif curr_user.etype == "assemblies":
+                # assemblies ref_props = [mass, vol, periphery, principalInertia]
+                ref_props = [[
+                        mass_props['mass'][0], 
+                        mass_props['volume'][0], 
+                        mass_props['periphery'][0],
+                        mass_props['principalInertia'][0]
+                    ]]
+            
+            # Can we do precision in JS?
+            # for i, prop in enumerate(ref_props):
+            #     if prop < 0.1 or prop > 99: 
+            #         ref_props[i] = '{:.6f}'.format(ref_props[i])
+            #     else: 
+            #         ref_props[i] = round(ref_props[i], 3)
+            #     pass
 
-                for i, prop in enumerate(ref_props):
-                    if prop < 0.1 or prop > 99: 
-                        ref_props[i] = '{:.6f}'.format(ref_props[i])
-                    else: 
-                        ref_props[i] = round(ref_props[i], 3)
-                    pass
-                
-            except:
-                ref_props = None
+            # Get all additional info from the reference document
+            image = get_shaded_views(curr_user.os_domain, ref_url['did'],ref_url['wid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
 
-            #Get the document info of the reference document for user, name of document,time
+            element_info = get_element_info(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)
+            element_name = element_info[0]["name"]
             ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-            ref_user_name=ref_doc_info["createdBy"]["name"]
-            ref_doc_name = ref_doc_info['name']
-            ref_doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
-            ref_props.append(ref_element_name)
-            ref_props.append(ref_user_name)
-            ref_props.append(ref_doc_time)
-            ref_props.append(ref_doc_name)
-            ref_props.append(url)
-            ref_props.append(image)
+            user_name=ref_doc_info["createdBy"]["name"]
+            doc_name = ref_doc_info['name']
+            doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
+
+            # Insert first element of array 
+            ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
+
             all_ref_props.append((ref_props))
         except:
-            print("failed")
+            # If anything above failed, add url to the fairled URL list
             failed_urls.append(url)
-    print("RE F urls", ref_urls)
+    
     if len(failed_urls) == 0:
         failed_urls = None
 
     context={
-    "user": curr_user, 
-    "failed_urls" : failed_urls,
-    "user_props":user_props,
-    "all_ref_props":all_ref_props,
-    "urlgradetab": True, #shows the correct tab in generic_grader.html 
+        "user": curr_user, 
+        "etype": curr_user.etype,
+        "failed_urls": failed_urls,
+        "user_props": user_props,
+        "all_ref_props": all_ref_props
     }
     return render(
-        request, "grader/results.html", 
+        request, "grader/basic_results.html", 
         context=context
     )
 
@@ -446,14 +456,7 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
 
             if(eType == curr_user.etype):
                 eType_present=True  # indicate the etype is present
-                image_bytes=get_shadedviews_image_data(curr_user.os_domain, did,wid,eid, eType, auth_token=curr_user.access_token)
-                if(image_bytes):
-                    image_str=image_bytes.decode('utf8')
-                    image_json=json.loads(image_str)
-                    image=image_json["images"][0]
-                else:
-                    #if there are no shaded views add a default image of an empty
-                    image= "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"
+                image=get_shaded_views(curr_user.os_domain, did,wid,eid, eType, auth_token=curr_user.access_token)
                 element.append((eType,eName,image,did,wid,eid))
     except:
         print("ERROR")
@@ -482,13 +485,9 @@ def get_mass_props(
 ) -> Any: 
     """ Get the mass and geometry properties of the given element 
     """
-    
     response = requests.get(
         os.path.join(
-            domain, 
-            "api/{}/d/{}/{}/{}/e/{}/massproperties".format(
-            etype, did, wvm, wvmid, eid
-        )
+            domain, "api/{}/d/{}/{}/{}/e/{}/massproperties".format(etype, did, wvm, wvmid, eid)
         ), 
         headers={
             "Content-Type": "application/json", 
@@ -503,15 +502,15 @@ def get_mass_props(
         return response.json() 
     else: 
         return None
-def get_elements_info(
-    domain: str, did: str, wid: str, auth_token: str
+
+def get_part_list(
+    domain: str, did: str, wvm: str, wvmid: str, eid: str, auth_token: str
 ) -> Any: 
-    """ Get the information about available elements in the current document
+    """ Get all parts in an element
     """
     response = requests.get(
         os.path.join(
-            domain, 
-            "api/documents/d/{}/w/{}/elements".format(did,wid)
+            domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)
         ), 
         headers={
             "Content-Type": "application/json", 
@@ -519,11 +518,31 @@ def get_elements_info(
             "Authorization" : "Bearer " + auth_token
         }
     )
-
     if response.ok: 
         return response.json() 
     else: 
         return None
+
+def get_elements_info(
+    domain: str, did: str, wid: str, auth_token: str
+) -> Any: 
+    """ Get the information about available elements in the current document
+    """
+    response = requests.get(
+        os.path.join(
+            domain, "api/documents/d/{}/w/{}/elements".format(did,wid)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
 def get_blob_data(
     domain: str, did: str, wid: str, eid: str, auth_token: str
 ) -> Any: 
@@ -531,8 +550,7 @@ def get_blob_data(
     """
     response = requests.get(
         os.path.join(
-            domain, 
-            "api/blobelements/d/{}/w/{}/e/{}".format(did,wid,eid)
+            domain, "api/blobelements/d/{}/w/{}/e/{}".format(did,wid,eid)
         ), 
         headers={
             "Accept": "application/octet-stream", 
@@ -543,28 +561,35 @@ def get_blob_data(
         return response.content
     else: 
         return None
-def get_shadedviews_image_data(
+
+def get_shaded_views(
     domain: str, did: str, wid:str, eid:str, etype:str,  auth_token: str
 ) -> Any: 
-    """ Get the image data from the given url
+    """Get a thumbnail image of the question for display 
     """
-
     response = requests.get(
         os.path.join(
-            domain, 
-            "api/{}/d/{}/w/{}/e/{}/shadedviews?viewMatrix=0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0&outputHeight=50&outputWidth=50&pixelSize=0&edges=show&showAllParts=false&includeSurfaces=false&useAntiAliasing=false&includeWires=false".format(etype,did,wid,eid)
+            domain, "api/{}/d/{}/w/{}/e/{}/shadedviews".format(etype, did, wid, eid)
         ), 
+        params={
+            "outputHeight": 60, 
+            "outputWidth": 60, 
+            "pixelSize": 0, 
+            "viewMatrix": "0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0"
+        }, 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
+            "Authorization": "Bearer " + auth_token
         }
     )
-
+    
     if response.ok: 
-        return response.content
+        return f"data:image/png;base64,{response.json()['images'][0]}"
     else: 
-        return None  
+        return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII="
+
+
 def get_doc_info(
     domain: str, did: str, auth_token: str
 ) -> Any: 
@@ -572,8 +597,7 @@ def get_doc_info(
     """
     response = requests.get(
         os.path.join(
-            domain, 
-            "api/documents/{}".format(did)
+            domain, "api/documents/{}".format(did)
         ), 
         headers={
             "Content-Type": "application/json", 
@@ -585,16 +609,15 @@ def get_doc_info(
         return response.json() 
     else: 
         return None
+
 def get_user_doc_list(
     domain:str, auth_token: str
 ) -> Any: 
     """ Get list of documents - created by the user/ recently opened by the user and shared with the user
     """
-
     response = requests.get(
         os.path.join(
-            domain, 
-            "api/documents"
+            domain, "api/documents"
         ), 
         headers={
             "Content-Type": "application/json", 
@@ -606,6 +629,7 @@ def get_user_doc_list(
         return response.json() 
     else: 
         return None
+
 def get_class_list(
     domain: str,  auth_token: str, massAsGroup=True
 ) -> Any: 
@@ -613,8 +637,7 @@ def get_class_list(
     """
     response = requests.get(
         os.path.join(
-            domain, 
-            "api/globaltreenodes/magic/15"        
+            domain, "api/globaltreenodes/magic/15"        
             ), 
         headers={
             "Content-Type": "application/json", 
@@ -622,23 +645,20 @@ def get_class_list(
             "Authorization" : "Bearer " + auth_token
         }
     )
-
-
     if response.ok: 
         return response.json() 
     else:   
         return None
 
 
-def get_element_type(
+def get_element_info(
     domain: str, did: str, wvm: str, eid: str, auth_token: str
 ) -> Any: 
     """ Get information about element 
     """
     response = requests.get(
         os.path.join(
-            domain, 
-            "api/documents/d/{}/w/{}/elements?elementId={}&withThumbnails=false".format(did, wvm, eid)
+            domain, "api/documents/d/{}/w/{}/elements?elementId={}&withThumbnails=false".format(did, wvm, eid)
         ), 
         headers={
             "Content-Type": "application/json", 
