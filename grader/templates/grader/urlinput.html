@@ -56,6 +56,7 @@
                 <div class="selectedURL-DIV">
                     <form  action="{% url 'grader:grade' user.os_user_id %}">
                         <input name="url" id="gradeButton" class="gradeButton" type="submit" value="Grade model" />
+                        <!-- To do - find a way to send the contents of the list to the views page-->
                         <ul class="closeable_button" id="urlButtonContainer">
                         </ul>    
                     </form>
@@ -75,7 +76,7 @@
                 </div>
   
                 <div id="urlfield">
-                    <form  name="studenturl" method="post" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return validateForm()" required>
+                    <form  name="studenturl" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return validateForm()" required>
                         <div class="twoButtonsonEdge">
                             <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL of the reference document.">  
                         </div>
