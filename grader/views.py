@@ -218,7 +218,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
     #grab reference urls , possibly in a csv format, from the generic_grader.html
-    cs_ref_urls = request.GET.getlist('url')
+    cs_ref_urls = request.GET.getlist('ref_url')
 
     print("url fro the page",cs_ref_urls)
     #parse the csv file into array of urls
@@ -298,14 +298,16 @@ def grade_model(request: HttpRequest, os_user_id: str):
     failed_urls = []
     
 
+    
+
     for i, url in enumerate(ref_urls): 
         ref_url = get_ref_url_ids(url)
 
         #grab the element Type of reference URL 
         try:
             eType=get_element_type(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)
-            ref_url['eType']=eType[0]["elementType"]
-            ref_element_name=eType[0]["name"]
+            ref_url['eType']= eType[0]["elementType"]
+            ref_element_name= eType[0]["name"]
         except:
             print("Error with eType, perhaps blank ref URL")
             ref_url['eType']="Error"
