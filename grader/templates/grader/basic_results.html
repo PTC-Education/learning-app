@@ -75,7 +75,7 @@
         {% if all_ref_props %}
             <div class="slidecontainer">
                 <p>Tolerance: <span id="slider_value"></span> %</p>
-                <input type="range" min="1" max="5" value="50" class="slider" id="myRange" onchange="compute_error('myRange','{{all_ref_props|length}}')">
+                <input type="range" min="1" max="500" value="50" class="slider" id="myRange" onchange="compute_error('myRange','{{all_ref_props|length}}')">
                  <!-- <input type="range" min="1" max="5" value="50" class="slider" id="myRange"> -->
                 <button type="button" class="blue-button" onclick="tableToCSV()">Export CSV</button>
             </div>

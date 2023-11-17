@@ -66,10 +66,13 @@ for (let r = 0; r < num_of_urls; r++ ){ //for property in each url
         var usr_prop = Number(usr_data[i][j]);
         var ref_prop = Number(ref_data[i][j]);
         var Error_cell = Math.abs(ref_prop - usr_prop) * 100 / ref_prop;
-        console.log("Error",Error_cell);
-        console.log("error from slider",error);
+        var x = resulttable.getElementsByTagName("td");
+        console.log(x);
         if (Error_cell > error){
-          console.log("error here", i,j);
+          x[j].className="red";
+        }
+        else{
+          x[j].className="green";
         }
       }
     }

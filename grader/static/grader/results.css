@@ -79,6 +79,18 @@
 
 }
 
+.green{
+  background-color: green;
+  color:black;
+
+}
+
+.red{
+  background-color: red;
+  color:black;
+
+}
+
 td.symbols{
     font-size: 50px;
 }
@@ -152,4 +164,6 @@ ul{
     border-color: #777;
     cursor: pointer;
   }
+
+
 
