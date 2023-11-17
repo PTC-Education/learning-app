@@ -46,6 +46,8 @@
     padding-left:5px;
     padding-right: 5px;;
     color: #777;
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 .display_thumbnail{
     width:18%;
@@ -60,8 +62,8 @@
 
   .results{
     table-layout: fixed;
-
-
+    padding-top:10px;
+    padding-bottom:10px;
 
   }
 
