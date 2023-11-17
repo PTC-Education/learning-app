@@ -214,43 +214,23 @@ def grade_model(request: HttpRequest, os_user_id: str):
             massAsGroup=False, auth_token=curr_user.access_token
         )
     
+    # Eliminate massless bodies from mass_props
+    heavy_bodies = {}
+
+    for key, value in mass_props['bodies'].items():
+        if mass_props['bodies'][key]['hasMass']:
+            heavy_bodies[key] = value  
+
+    mass_props['bodies'] = heavy_bodies
+
     if not mass_props: # API error 
         return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
     # Set list of user_props - different for each etype
     try:
-        if curr_user.etype == "partstudios":
-            # Get parts list for part studio and create dictionary of IDs to names
-            part_list = get_part_list(curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.access_token)
-            partId_to_name = {} 
-            for item in part_list: 
-                partId_to_name[item['partId']] = item['name']
-            # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-            user_props = [
-                            [prt['mass'][0] for prt in mass_props['bodies'].values()], 
-                            [prt['volume'][0] for prt in mass_props['bodies'].values()], 
-                            [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
-                            [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
-                            [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
-                        ]
-            user_props = sorted([
-                                    [
-                                        user_props[0][i], user_props[1][i], 
-                                        user_props[2][i], user_props[3][i], 
-                                        user_props[4][i]
-                                    ] 
-                                    for i in range(len(user_props[0]))
-                                ], key=lambda x : x[1])
+        user_url = {'did' : curr_user.did, 'wid' : curr_user.wid, 'eid' : curr_user.eid}
+        user_props = make_props(curr_user, user_url, mass_props) 
 
-        elif curr_user.etype == "assemblies":
-            # assemblies user_props = [mass, vol, periphery, principalInertia]
-            user_props = [[
-                    mass_props['mass'][0], 
-                    mass_props['volume'][0], 
-                    mass_props['periphery'][0],
-                    mass_props['principalInertia'][0]
-                ]]
-        
         # Can we do precision in JS?
         # TO FIX : check the user's configuration for precision and units
         # Make rounding off based on the user's settings
@@ -262,7 +242,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
         #     pass
 
     except:
-        user_props = None
+        raise #user_props = None
 
     # Get info about the document the user currently has opened
     # DO WE NEED THIS?
@@ -285,43 +265,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
         ref_url = get_ref_url_ids(url)
 
         try:         
-            ref_props=[] # initialize empty array of ref props
+            # ref_props=[] # initialize empty array of ref props
 
             mass_props = get_mass_props(
                 curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.etype, 
                 massAsGroup=False, auth_token=curr_user.access_token
             )
-            if curr_user.etype == "partstudios":
-                # Get parts list for part studio and create dictionary of IDs to names
-                part_list = get_part_list(curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.access_token)
-                partId_to_name = {} 
-                for item in part_list: 
-                    partId_to_name[item['partId']] = item['name']
-                # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-                ref_props = [
-                                [prt['mass'][0] for prt in mass_props['bodies'].values()], 
-                                [prt['volume'][0] for prt in mass_props['bodies'].values()], 
-                                [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
-                                [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
-                                [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
-                            ]
-                ref_props = sorted([
-                                        [
-                                            ref_props[0][i], ref_props[1][i], 
-                                            ref_props[2][i], ref_props[3][i], 
-                                            ref_props[4][i]
-                                        ] 
-                                        for i in range(len(ref_props[0]))
-                                    ], key=lambda x : x[1])
-
-            elif curr_user.etype == "assemblies":
-                # assemblies ref_props = [mass, vol, periphery, principalInertia]
-                ref_props = [[
-                        mass_props['mass'][0], 
-                        mass_props['volume'][0], 
-                        mass_props['periphery'][0],
-                        mass_props['principalInertia'][0]
-                    ]]
+            ref_props = make_props(curr_user, ref_url, mass_props)
             
             # Can we do precision in JS?
             # for i, prop in enumerate(ref_props):
@@ -737,4 +687,37 @@ def convert_cs_to_array(cs_ref_urls: str):
     except:
         return None
     return ref_urls
-    
+
+# Get parts list for part studio and create dictionary of IDs to names
+def make_props(curr_user, urlIds, mass_props):
+    if curr_user.etype == "partstudios":
+        part_list = get_part_list(curr_user.os_domain, urlIds['did'], "w", urlIds['wid'], urlIds['eid'], curr_user.access_token)
+        partId_to_name = {} 
+        for item in part_list: 
+            partId_to_name[item['partId']] = item['name']
+        # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+        props = [
+            [prt['mass'][0] for prt in mass_props['bodies'].values()], 
+            [prt['volume'][0] for prt in mass_props['bodies'].values()], 
+            [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
+            [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
+            [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
+        ]
+        props = sorted([
+                [
+                    props[0][i], props[1][i], 
+                    props[2][i], props[3][i], 
+                    props[4][i]
+                ] 
+                for i in range(len(props[0]))
+            ], key=lambda x : x[1])
+        
+    elif curr_user.etype == "assemblies":
+        # assemblies ref_props = [mass, vol, periphery, principalInertia]
+        props = [[
+                mass_props['mass'][0], 
+                mass_props['volume'][0], 
+                mass_props['periphery'][0],
+                mass_props['principalInertia'][0]
+            ]]
+    return props
