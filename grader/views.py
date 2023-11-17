@@ -146,7 +146,7 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
 
 
 
-def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
+def url_input_page(request: HttpRequest, os_user_id: str , usertype:str):
     """ 
    This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
 
@@ -157,7 +157,7 @@ def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
 
     **Template:**
 
-    :template:`grader/urlinput.html`
+    :template:`grader/url_input.html`
     """
     context = { "user": None, 
                 "usertype": None} 
@@ -168,7 +168,7 @@ def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
         "user": curr_user, 
         "usertype": usertype,
         }
-    return render(request, "grader/urlinput.html", context=context)
+    return render(request, "grader/url_input.html", context=context)
 
 
 def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):

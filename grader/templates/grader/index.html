@@ -4,8 +4,6 @@
 <head>
     {% load static %}
     <link rel="stylesheet" href="{% static 'grader/index.css' %}">
-    <link rel="stylesheet" href="{% static 'grader/newindex.css' %}">
-
     <!-- Load loading_index function to enable loading screen -->
     <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
 </head>
@@ -50,13 +48,14 @@
             <button class="select">Self-Check</button>
             <div class="dropdown-content">
                 <!--Load url page for single file comparison-->
-                <form action="{% url 'grader:urlinputpage' user.os_user_id 'student'%}" onsubmit="loading_grades()">
+                <form action="{% url 'grader:url_input_page' user.os_user_id 'student'%}" onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Compare model properties to reference">
                 </form>
-                <!--Load url page for best practices check-->
+                <!--Load url page for best practices check
                 <form action="{% url 'grader:grader' user.os_user_id %}"onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Check best practices">
                 </form>
+                -->
 
             </div>
         </div>
@@ -64,13 +63,14 @@
             <button class="select">Compare models from a list</button>
                 <div class="dropdown-content">
                     <!--Load url page for multi file comparison-->
-                    <form action="{% url 'grader:urlinputpage' user.os_user_id 'educator'%}"onsubmit="loading_grades()">
+                    <form action="{% url 'grader:url_input_page' user.os_user_id 'educator'%}"onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Grade list of URLs">
                 </form>
-                <!--Load url page for group comparison through classes and assignments-->
+                <!--Load url page for group comparison through classes and assignments
                     <form action="{% url 'grader:generic_grader' user.os_user_id %}" onsubmit="loading_grades()">
                         <input class="options" type="submit" value="Grade from C&A submission list">
                     </form>
+                -->
             </div>
         </div>
     </div>
