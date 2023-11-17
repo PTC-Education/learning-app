@@ -1,78 +1,77 @@
 {% load static %}
-        <link rel="stylesheet" href="{% static 'grader/results.css' %}">
-        <!-- Load js for handling export of csv -->
-        <script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer=""></script>
-        <!-- Load loading_modelling function to enable loading screen -->
-        <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
-        <script src="{% static 'grader/results.js' %}" type="text/javascript"></script>
-    
-    
-        <!-- Return to the home page -->
-        <br>
-        <form action="{% url 'grader:index' user.os_user_id %}">
-            <input type="submit" value="Return to Home Page">
-        </form>
-        <div class="spinner-container">
-            <div id="lists">
-                <!--This is where the spinner will load-->
-            </div>
+
+<link rel="stylesheet" href="{% static 'grader/results.css' %}">
+<!-- Load js for handling export of csv -->
+<script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer=""></script>
+<!-- Load loading_modelling function to enable loading screen -->
+<script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+<script src="{% static 'grader/results.js' %}" type="text/javascript"></script>
+
+
+<!-- Return to the home page -->
+<br>
+<form action="{% url 'grader:index' user.os_user_id %}">
+    <input type="submit" value="Return to Home Page">
+</form>
+<div class="spinner-container">
+    <div id="lists">
+        <!--This is where the spinner will load-->
+    </div>
+</div>
+<div>
+    {% if error_message %}
+    <p id="err_msg"><strong>{{ error_message }}</strong></p>
+    {% endif %}
+</div>
+
+{% if user_props %}
+    <p class="resulttile">Reference properties</p>
+
+    <div class="reference_property_box">
+        <div class="docinfo">
+            <p class="docname">
+                {{user_props.0.0}}
+            </p>
+            <p class="username">
+                {{user_props.0.1}}
+            </p>
         </div>
         <div>
-            {% if error_message %}
-            <p id="err_msg"><strong>{{ error_message }}</strong></p>
-            {% endif %}
-        </div>
-
-        {% if user_props %}
-            <p class="resulttile">Reference properties</p>
-
-            <div class="reference_property_box">
-                <div class="docinfo">
-                    <p class="docname">
-                        {{user_props.0.0}}
-                    </p>
-                    <p class="username">
-                        {{user_props.0.1}}
-                    </p>
-                </div>
-                <div>
-                    <div class="display_table">
-                        <table id="reference" class="results">
-                            <tr>
-                                {% if etype == 'partstudios' %}
-                                    <th>Part Name</th>
-                                {% endif %}
-                                <th>Mass kg</th>
-                                <th>Volume  m<sup>3</sup></th>
-                                <th>Surface Area  m<sup>2</sup></th>
-                                <th>Principal MOI</th>
-                            </tr>
-                            {% for prop_array in user_props %}
-                                {% if prop_array == user_props.0 %}
-                                <!-- ignore doc info element -->
-                                {% else %}
-                                <tr>
-                                    {% if etype == 'partstudios' %}
-                                    <td>{{prop_array.4}}</td>
-                                    {% endif %}
-                                    <td>{{prop_array.0}}</td>
-                                    <td>{{prop_array.1}}</td>
-                                    <td>{{prop_array.2}}</td>
-                                    <td>{{prop_array.3}}</td>
-                                </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </table>
-                    </div>
-
-                </div>
+            <div class="display_table">
+                <table id="reference" class="results">
+                    <tr>
+                        {% if etype == 'partstudios' %}
+                            <th>Part Name</th>
+                        {% endif %}
+                        <th>Mass (kg)</th>
+                        <th>Volume  (m<sup>3</sup>)</th>
+                        <th>Surface Area  (m<sup>2</sup>)</th>
+                        <th>Principal MOI</th>
+                    </tr>
+                    {% for prop_array in user_props %}
+                        {% if prop_array == user_props.0 %}
+                        <!-- ignore doc info element -->
+                        {% else %}
+                        <tr>
+                            {% if etype == 'partstudios' %}
+                            <td>{{prop_array.4}}</td>
+                            {% endif %}
+                            <td>{{prop_array.0}}</td>
+                            <td>{{prop_array.1}}</td>
+                            <td>{{prop_array.2}}</td>
+                            <td>{{prop_array.3}}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
             </div>
-        
-        {% endif %}
 
-        <p class="resulttile">Results</p>
+        </div>
+    </div>
+{% endif %}
 
-        {% if all_ref_props %}
+<p class="resulttile">Results</p>
+      {% if all_ref_props %}
             <div class="slidecontainer">
                 <p>Tolerance: <span id="slider_value"></span> %</p>
                 <input type="range" min="1" max="500" value="50" class="slider" id="myRange" onchange="compute_error('myRange','{{all_ref_props|length}}')">
@@ -129,16 +128,14 @@
             <script>compute_error('myRange', '{{all_ref_props|length}}')</script>
         {% endif %}
             
-        
-        
 
-            {% if failed_urls %}
-            <p>We failed to get information from the following reference URLs</p>
-            <ul>
-                {% for url in failed_urls %}
-                    <li>{{ failed_urls|safe }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
+{% if failed_urls %}
+<p>We failed to get information from the following reference URLs</p>
+<ul>
+    {% for url in failed_urls %}
+        <li>{{ failed_urls|safe }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 
-    
+

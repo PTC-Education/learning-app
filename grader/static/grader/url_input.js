@@ -1,4 +1,6 @@
+
 //Function to enable or disable grade button based on if there are documents to grade
+
 function checkURLs_for_enabling_grade_button() {
   var listofurlbuttons = document.getElementById("urlButtonContainer"); //open the list
   var urlbuttons_existing = listofurlbuttons.getElementsByTagName("li"); //get all the items in the list

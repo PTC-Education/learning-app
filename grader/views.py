@@ -59,6 +59,7 @@ def login(request: HttpRequest):
         )
     )
 
+
 def authorize(request: HttpRequest): 
     """ 
     When the user authorizes the OAuth integration, Onshape's OAuth authorization page will redirect the user to this page, as registered as the redirect URL. 
@@ -120,6 +121,7 @@ def index(request: HttpRequest, os_user_id: str):
     context = {"user": curr_user}
     return render(request, "grader/index.html", context=context)
 
+
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
    This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
@@ -127,7 +129,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     **Arguments:**
         
     - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-    - ``usertype:str``: type of user , options are student and educator
+    - ``user_type:str``: type of user , options are student and educator
 
     **Template:**
 
@@ -143,6 +145,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         "user_type": user_type,
         }
     return render(request, "grader/url_input.html", context=context)
+
 
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
@@ -338,6 +341,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
         context=context
     )
 
+
 #################### Helper API calls ####################
 
 def get_mass_props(
@@ -449,7 +453,6 @@ def get_shaded_views(
     else: 
         return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII="
 
-
 def get_doc_info(
     domain: str, did: str, auth_token: str
 ) -> Any: 
@@ -509,7 +512,6 @@ def get_class_list(
         return response.json() 
     else:   
         return None
-
 
 def get_element_info(
     domain: str, did: str, wvm: str, eid: str, auth_token: str

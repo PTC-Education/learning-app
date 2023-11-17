@@ -51,8 +51,10 @@
                 <form action="{% url 'grader:url_input_page' user.os_user_id 'student'%}" onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Compare model properties to reference">
                 </form>
+
                 <!--Load url page for best practices check
                 <form action=""onsubmit="loading_grades()">
+
                     <input class="options" type="submit" value="Check best practices">
                 </form>
                 -->
@@ -66,11 +68,13 @@
                     <form action="{% url 'grader:url_input_page' user.os_user_id 'educator'%}"onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Grade list of URLs">
                 </form>
+
                 <!--Load url page for group comparison through classes and assignments
                     <form action="" onsubmit="loading_grades()">
                         <input class="options" type="submit" value="Grade from C&A submission list">
                     </form>
                 -->
+
             </div>
         </div>
     </div>
