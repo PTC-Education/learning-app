@@ -17,14 +17,21 @@
 }
 
 
-  .docname{
+
+.table_error_message{
+  font-size: smaller;
+  font-style:italic;
+  color:red;
+}
+
+.docname{
     color: var(--boston-terrier, #333);
     font-size: 14px;
     font-weight: 600;
     line-height: normal;
     margin:0
   }
-  .username{
+.username{
     color: var(--boston-terrier, #333);
     font-weight: Thin;
     line-height: normal;
