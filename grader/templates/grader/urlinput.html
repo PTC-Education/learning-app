@@ -99,16 +99,5 @@
  
 
 
-        {% if failed_urls %}
-        <p>We failed to get information from the following reference URLs</p>
-        <ul>
-            {% for url in failed_urls %}
-                <li>{{ failed_urls|safe }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-
-
-
     
     
