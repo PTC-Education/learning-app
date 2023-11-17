@@ -9,5 +9,5 @@ urlpatterns = [
     path('index/<str:os_user_id>/', views.index, name='index'), 
     path('grade/<str:os_user_id>/<str:ref_url>/', views.grade_model, name="grade"), 
     path('grade/<str:os_user_id>/', views.grade_model, name="grade"),
-    path('urlinputpage/<str:os_user_id>/<str:usertype>/', views.urlinputpage, name="urlinputpage"),
+    path('url_input_page/<str:os_user_id>/<str:user_type>/', views.url_input_page, name="url_input_page"),
 ]

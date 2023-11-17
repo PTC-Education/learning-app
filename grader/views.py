@@ -123,18 +123,18 @@ def index(request: HttpRequest, os_user_id: str):
     return render(request, "grader/index.html", context=context)
 
 
-def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
+def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
    This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
 
     **Arguments:**
         
     - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-    - ``usertype:str``: type of user , options are student and educator
+    - ``user_type:str``: type of user , options are student and educator
 
     **Template:**
 
-    :template:`grader/urlinput.html`
+    :template:`grader/url_input.html`
     """
     context = { "user": None, 
                 "usertype": None} 
@@ -143,9 +143,9 @@ def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
         curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
         context = {
         "user": curr_user, 
-        "usertype": usertype,
+        "user_type": user_type,
         }
-    return render(request, "grader/urlinput.html", context=context)
+    return render(request, "grader/url_input.html", context=context)
 
 
 def grade_model(request: HttpRequest, os_user_id: str): 

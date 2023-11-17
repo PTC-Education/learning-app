@@ -49,7 +49,7 @@
             <button class="select">Self-Check</button>
             <div class="dropdown-content">
                 <!--Load url page for single file comparison-->
-                <form action="{% url 'grader:urlinputpage' user.os_user_id 'student'%}" onsubmit="loading_grades()">
+                <form action="{% url 'grader:url_input_page' user.os_user_id 'student'%}" onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Compare model properties to reference">
                 </form>
                 <!--Load url page for best practices check-->
@@ -65,7 +65,7 @@
             <button class="select">Compare models from a list</button>
                 <div class="dropdown-content">
                     <!--Load url page for multi file comparison-->
-                    <form action="{% url 'grader:urlinputpage' user.os_user_id 'educator'%}"onsubmit="loading_grades()">
+                    <form action="{% url 'grader:url_input_page' user.os_user_id 'educator'%}"onsubmit="loading_grades()">
                     <input class="options" type="submit" value="Grade list of URLs">
                 </form>
                 <!--Load url page for group comparison through classes and assignments-->
