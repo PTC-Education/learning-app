@@ -290,6 +290,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     except:
         user_props = None
 
+
     # Get info about the document the user currently has opened
     # DO WE NEED THIS?
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
@@ -301,7 +302,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # DO WE NEED THIS?
     user_props.insert(0, [user_doc_name, user_user_name, user_doc_time])
 
-
+    print("User proprs", user_props)
     ## Initialize arrays for ref docs
     all_ref_props = [] # 3D array - each 2D array corresponds to one URL
     # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
