@@ -48,7 +48,10 @@ Arguments : slider , number
 
 
 function compute_error(slider, num_of_urls){
-
+  //grab  user selected acceptable error rate
+  var slider = document.getElementById(slider);
+  document.getElementById('slider_value').innerHTML=slider.value;
+  error=Number(slider.value);
   //grab reference data from table
   var reference_table= document.getElementById("reference");
   let usr_data = [...reference_table.rows].map(t => [...t.children].map(u => u.innerText)) ;  
