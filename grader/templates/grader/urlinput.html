@@ -58,7 +58,7 @@
 
                     <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return set_ref_url_as_array()">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
-                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade model" onclick="loading_spinner('Grade')"/>
+                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
                         <!-- To do - find a way to send the contents of the list to the views page-->  
                     </form>
 
