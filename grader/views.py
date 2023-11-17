@@ -144,6 +144,33 @@ def grader(request: HttpRequest, os_user_id: str, mass_props=None):
     return render(request, "grader/grader.html", context=context)
 
 
+
+
+def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
+    """ 
+   This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+    - ``usertype:str``: type of user , options are student and educator
+
+    **Template:**
+
+    :template:`grader/urlinput.html`
+    """
+    context = { "user": None, 
+                "usertype": None} 
+    
+    if os_user_id: 
+        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+        context = {
+        "user": curr_user, 
+        "usertype": usertype,
+        }
+    return render(request, "grader/urlinput.html", context=context)
+
+
 def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
     """ 
     The auto grader page for checking a model's mass properties and time completion. This will be used by all users.
@@ -192,7 +219,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
     #grab reference urls , possibly in a csv format, from the generic_grader.html
     cs_ref_urls = request.GET.getlist('ref_url')
-
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
 
@@ -275,6 +301,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # DO WE NEED THIS?
     user_props.insert(0, [user_doc_name, user_user_name, user_doc_time])
 
+
     ## Initialize arrays for ref docs
     all_ref_props = [] # 3D array - each 2D array corresponds to one URL
     # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
@@ -336,7 +363,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
             element_info = get_element_info(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)
             element_name = element_info[0]["name"]
-            
             ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
             user_name=ref_doc_info["createdBy"]["name"]
             doc_name = ref_doc_info['name']
@@ -450,62 +476,6 @@ def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str):
         request, "grader/generic_grader.html",  
         context=context    )  
 
-
-
-def enable_csv(request: HttpRequest, os_user_id: str): 
-
-    """ 
-    Detects the click of upload csv button show the upload csv tab
- 
-    
-    **Arguments:**
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    **Template:**
-    :template:`grader/generic_grader.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-    context={
-        "user": curr_user, 
-        "uploadtab":True #upload csv tab enabled
-        }
-
-    return render(
-        request, "grader/generic_grader.html",  
-        context=context
-    )
-
-def upload_csv(request: HttpRequest, os_user_id: str): 
-
-    # TO FIX: embedd csv upload on URL field tab. 
-    """ 
-    Funtion to upload csv file containing urls for grading. reads and returns the comma separated list of urls to the url grade tab
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/generic_grader.html`
-    """
-
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    csvfile = request.FILES["csvfile"]
-    cs_ref_urls=csvfile.read().decode("utf-8")
-    context={ 
-        "user": curr_user, 
-        "ref_urls" : cs_ref_urls,
-        "urlgradetab" : True  # enable the url grade tab
-        }
-
-    return render(
-        request, "grader/generic_grader.html", 
-        context=context    )  
 
 
 #################### Helper API calls ####################

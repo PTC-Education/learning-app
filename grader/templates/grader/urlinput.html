@@ -1,0 +1,103 @@
+{% load static %}
+        <link rel="stylesheet" href="{% static 'grader/index.css' %}">
+        <!-- Load loading_modelling function to enable loading screen -->
+        <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+        <script src="{% static 'grader/urlinput.js' %}" type="text/javascript"></script>
+
+      <!-- Return to the home page -->
+        <br>
+        <form action="{% url 'grader:index' user.os_user_id %}">
+            <input type="submit" value="Return to Home Page">
+        </form>
+
+        
+        <div class="instructions">
+            <h3>
+                Instuctions:
+            </h3>
+                    {% if usertype == "student" %}
+                        Enter the URL of the Onshape document you want to compare. Make sure the URL is properly formatted. 
+                    {% elif usertype == "educator" %}
+                        Make sure you have opened the app from the tab you want to use as an answer key within your reference document. You can enter the URLs of your students' Onshape documents in one of the following ways.
+                        <ul>
+                            <li>Copy and paste one Onshape URL at a time.</li>
+                            <li>Copy and paste multiple Onshape URLs that are either separated by comma or a space.</li>
+                            <li>Upload a CSV file containing Onshape URLs.</li>
+                        </ul>
+
+                    {% endif %}
+        </div>
+        {% if usertype == "educator" %}
+            <div class="URLinput-DIV">
+                <div class="twoButtonsonEdge">
+                    <p id="tab-header" class="tab-header">URL</p>                    
+                    <label for="csvfile"  class="file-UPLOAD" title="Click to select csv file with Onshape URLs to grade ">
+                        <img src="{% static 'grader/images/Upload.png' %}"/>
+                    </label>
+                    <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
+                </div>   
+                <div>
+                    <p class="urlError" id="urlError">
+                        <!--Error message here-->
+                    </p>
+                </div>
+                <div class="spinner-container">
+                    <div id="Grade">
+                        <!--This is where the spinner will load-->
+                    </div>
+                </div>
+                <div id="urlfield">
+                    <form  name="urlform"  method="post" action="javascript:show_url_as_buttons()">
+                        <div class="twoButtonsonEdge">
+                            <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs">  
+                            <input class="submiturl-button" type="submit" value="Load document(s)">
+                        </div>
+                    </form>
+                </div>     
+                <div class="selectedURL-DIV">
+
+                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return set_ref_url_as_array()">
+                        <input id="ref_url_edu" hidden name="ref_url" type="text">
+                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade model" onclick="loading_spinner('Grade')"/>
+                        <!-- To do - find a way to send the contents of the list to the views page-->  
+                    </form>
+
+                        <ul class="closeable_button" id="urlButtonContainer">
+                        </ul>    
+
+                </div>
+            </div>
+            <script>checkURLs_for_enabling_grade_button(); </script> <!--Run function to disable Grade button on load-->
+        {% elif usertype == "student" %}
+            <div class="URLinput-DIV">
+                <div class="twoButtonsonEdge">
+                    <p id="tab-header" class="tab-header">URL</p>
+                </div>
+
+                <div>
+                    <p  class="urlError"  id="urlError">
+                        <!--Error message here-->
+                    </p>
+                </div>
+                <div class="spinner-container">
+                    <div id="Grade">
+                        <!--This is where the spinner will load-->
+                    </div>
+                </div>
+                <div id="urlfield">
+                    <form  name="studenturl" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return validateForm()" required>
+                        <div class="twoButtonsonEdge">
+                            <input class="urlfield-INPUT" type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL of the reference document.">  
+                        </div>
+                        <input class="gradeButton" type="submit" value="Grade model" onclick="loading_spinner('Grade')"/>
+                    </form>
+                    
+                </div>
+            </div>        
+        {% endif %}
+
+ 
+
+
+    
+    

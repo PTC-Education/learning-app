@@ -14,8 +14,8 @@ function loading_list() {
 
 }
 
-function loading_grades() {
-    const main_content = document.getElementById("grades"); 
+function loading_spinner(divid) {
+    const main_content = document.getElementById(divid); 
     main_content.innerHTML = "<div class=\"loader\"></div>"; 
 
 }

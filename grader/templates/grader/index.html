@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-US">
 
-<head> <!-- hello -->
+<head>
     {% load static %}
     <link rel="stylesheet" href="{% static 'grader/index.css' %}">
+
     <!-- Load loading_index function to enable loading screen -->
-    <script src="{% static 'grader/loading.js' %}" type="text/javascript
-        "></script>
+    <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
 </head>
 
 <body>
@@ -14,6 +14,7 @@
     <div id="logo">
         <img id="app_logo" src="{% static 'grader/images/teacherstudents.svg' %}" alt="app_logo" />
     </div>
+
     <!-- Print out error message if any -->
     <div>
         {% if error_message %}
@@ -22,24 +23,62 @@
     </div>
 
     <!-- General instructions -->
+    
+    <div class="instructions">
+        <h3>
+            Instuctions:
+        </h3>
+            <ul>
 
-    <h3>Instructions:</h3>
-    <p>Auto grader instrucitons here. hello!</p>
-    <!-- Go to auto grader -->
-    <br />
-    <div class="button-container">
-        <form action="{% url 'grader:generic_grader' user.os_user_id %}">
-            <input type="submit" value="Generic Grader" />
-        </form>
-        <form action="{% url 'grader:grader' user.os_user_id %}">
-            <input type="submit" value="Science Olympiad Grader" />
-        </form>
+                <li><b>Self-Check</b> (for students):</li>
+                <ul>
+                    <li>Select <i>Compare model properties to reference</i> if you have access to the reference document you want to compare.</li>
+                    <li>Select <i>Check best practices</i> if you want to check your documents for best practices.</li>
+                </ul>
+                <li><b>Compare models from a list</b> (for educators): </li>
+                <ul>
+                    <li>Select <i>Grade list of URLs</i> if you have URLs of your students' documents.</li>
+                    <li>Select <i>Grade from C&A submission list</i> if you assigned student work through Classes and Assignments.</li>
+                </ul>
+            </ul>
     </div>
+
+    
+    <div class="select-container">
+        <div class="dropdown">
+            <button class="select">Self-Check</button>
+            <div class="dropdown-content">
+                <!--Load url page for single file comparison-->
+                <form action="{% url 'grader:urlinputpage' user.os_user_id 'student'%}" onsubmit="loading_grades()">
+                    <input class="options" type="submit" value="Compare model properties to reference">
+                </form>
+                <!--Load url page for best practices check-->
+                <form action="{% url 'grader:grader' user.os_user_id %}"onsubmit="loading_grades()">
+                    <input class="options" type="submit" value="Check best practices">
+                </form>
+
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="select">Compare models from a list</button>
+                <div class="dropdown-content">
+                    <!--Load url page for multi file comparison-->
+                    <form action="{% url 'grader:urlinputpage' user.os_user_id 'educator'%}"onsubmit="loading_grades()">
+                    <input class="options" type="submit" value="Grade list of URLs">
+                </form>
+                <!--Load url page for group comparison through classes and assignments-->
+                    <form action="{% url 'grader:generic_grader' user.os_user_id %}" onsubmit="loading_grades()">
+                        <input class="options" type="submit" value="Grade from C&A submission list">
+                    </form>
+            </div>
+        </div>
+    </div>
+              
 
     <!-- Disclaimer -->
     <div>
         <p id="disclaimer"><a href="{% url 'grader:index' user.os_user_id %}#details">Detailed Instructions</a> | <a
-                href="https://docs.google.com/forms/d/e/1FAIpQLSeOcFJo3V05CMtQSAXmmiF22xdfsdaob7_tBCTCDEwZVdVRwA/viewform?usp=sf_link">Feedback</a>
+        href="https://docs.google.com/forms/d/e/1FAIpQLSeOcFJo3V05CMtQSAXmmiF22xdfsdaob7_tBCTCDEwZVdVRwA/viewform?usp=sf_link">Feedback</a>
         </p>
     </div>
 
