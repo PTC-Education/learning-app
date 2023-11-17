@@ -13,8 +13,8 @@ function round_off_table_contents(num_of_parts, num_of_urls){
   var precison = 6 ; //set the precison
   var reference_table= document.getElementById("reference");
   let data = [...reference_table.rows].map(t => [...t.children].map(u => u.innerText)) ;  
-  for (let i=1; i<num_of_parts; i++){
-    for( let j=1; j< 5; j++){
+  for (let i = 1; i<num_of_parts; i++){
+    for( let j = 1; j < 5; j++){
       reference_table.rows[i].cells[j].innerHTML= Number(data[i][j]).toFixed(precison);
     }
   }
@@ -24,9 +24,9 @@ for (let r = 0; r < num_of_urls; r++ ){ //for property in each url
     var resulttable = document.getElementById("table_"+r); 
     let data = [...resulttable.rows].map(t => [...t.children].map(u => u.innerText)) ;  
 
-    for (let i=1; i<data.length; i++){
-      for( let j=1; j< 5; j++){
-        resulttable.rows[i].cells[j].innerHTML= Number(data[i][j]).toFixed(precison);
+    for (let i = 1; i<data.length; i++){
+      for( let j = 1; j < 5; j++){
+        resulttable.rows[i].cells[j].innerHTML = Number(data[i][j]).toFixed(precison);
       }
     }
   }
