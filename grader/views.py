@@ -59,6 +59,7 @@ def login(request: HttpRequest):
         )
     )
 
+
 def authorize(request: HttpRequest): 
     """ 
     When the user authorizes the OAuth integration, Onshape's OAuth authorization page will redirect the user to this page, as registered as the redirect URL. 
@@ -122,42 +123,18 @@ def index(request: HttpRequest, os_user_id: str):
     return render(request, "grader/index.html", context=context)
 
 
-def grader(request: HttpRequest, os_user_id: str, mass_props=None):
-    """ 
-    The auto grader page for checking a model's mass properties and time completion, will potentially be renamed SciOly. 
-
-    **Arguments:**
-        
-    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-
-    **Template:**
-
-    :template:`grader/grader.html`
-    """
-    context = {"user": None,
-               "time": None} 
-    if os_user_id: 
-        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-        context['user'] = curr_user
-    if mass_props:
-        context['mass_props'] = mass_props
-    return render(request, "grader/grader.html", context=context)
-
-
-
-
-def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
+def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
    This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
 
     **Arguments:**
         
     - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-    - ``usertype:str``: type of user , options are student and educator
+    - ``user_type:str``: type of user , options are student and educator
 
     **Template:**
 
-    :template:`grader/urlinput.html`
+    :template:`grader/url_input.html`
     """
     context = { "user": None, 
                 "usertype": None} 
@@ -166,35 +143,9 @@ def urlinputpage(request: HttpRequest, os_user_id: str , usertype:str):
         curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
         context = {
         "user": curr_user, 
-        "usertype": usertype,
+        "user_type": user_type,
         }
-    return render(request, "grader/urlinput.html", context=context)
-
-
-def generic_grader(request: HttpRequest, os_user_id: str, mass_props=None):
-    """ 
-    The auto grader page for checking a model's mass properties and time completion. This will be used by all users.
-
-    **Arguments:**
-        
-    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-
-    **Template:**
-
-    :template:`grader/generic_grader.html`
-    """
-    context = {"user": None,
-               "time": None} 
-    
-    if os_user_id: 
-        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-        context={
-        "user": curr_user, 
-        "urlgradetab" : True #to enable url text input
-        }
-    if mass_props:
-        context['mass_props'] = mass_props
-    return render(request, "grader/generic_grader.html", context=context)
+    return render(request, "grader/url_input.html", context=context)
 
 
 def grade_model(request: HttpRequest, os_user_id: str): 
@@ -391,92 +342,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
         context=context
     )
 
-def listdocs(request: HttpRequest, os_user_id: str, did:str, wid:str): 
-    """ 
-    This function loads the list of document created, opened or shared by/with the users
-    
-    **Context:**
-    
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/generic_grader.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    created_doc_info=[] # arry to store list of documents created by users
-    shared_doc_info=[] #arry to store list of documents shared with users
-    opened_doc_info=[] #arry to store list of documents opened by users
-    #get all documents in the user's recently opened list (perpahps 20? )
-    docsinfo=get_user_doc_list(curr_user.os_domain,auth_token=curr_user.access_token) 
-    items=docsinfo["items"]
-
-    try:
-        for item in items:
-            userID=item["createdBy"]["id"]
-            documentName=item["name"]
-            documentID=item["id"]
-            workspaceID=item["defaultWorkspace"]["id"]
-            
-
-            if(userID==os_user_id):
-                created_doc_info.append((documentName,documentID,workspaceID))
-            else:
-                shared_doc_info.append((documentName,documentID,workspaceID))
-
-
-    except:
-        print("ERROR on main TRY") #need better error message here
-
-    if (did=="None" and wid=="None"):
-        did=curr_user.did
-        wid=curr_user.wid
-
-    elements_info=get_elements_info(curr_user.os_domain,did,wid ,auth_token=curr_user.access_token) 
-
-    try:
-        element=[]
-        eType_present=False #check if the element type is present
-        #grab elements and their information from all the tabs in the document
-        for eInfo in elements_info:
-            image=""
-            eType=eInfo["elementType"]
-            if eType == "PARTSTUDIO":
-                eType = "partstudios"
-            elif eType == "ASSEMBLY":
-                eType = "assemblies"
-            eName=eInfo["name"]
-            eid=eInfo["id"]
-
-            if(eType == curr_user.etype):
-                eType_present=True  # indicate the etype is present
-                image=get_shaded_views(curr_user.os_domain, did,wid,eid, eType, auth_token=curr_user.access_token)
-                element.append((eType,eName,image,did,wid,eid))
-    except:
-        print("ERROR")
-    
-    if not eType_present:
-        element.append((curr_user.etype,eName,eid,image))
-
-    context={
-            "user": curr_user, 
-            "created_docs":created_doc_info,
-            "shared_docs":shared_doc_info,
-            "elements":element,
-            "doclisttab" :True # to enable the doc list tab 
-
-        }
-    return render(
-        request, "grader/generic_grader.html",  
-        context=context    )  
-
-
 
 #################### Helper API calls ####################
 
@@ -589,7 +454,6 @@ def get_shaded_views(
     else: 
         return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII="
 
-
 def get_doc_info(
     domain: str, did: str, auth_token: str
 ) -> Any: 
@@ -649,7 +513,6 @@ def get_class_list(
         return response.json() 
     else:   
         return None
-
 
 def get_element_info(
     domain: str, did: str, wvm: str, eid: str, auth_token: str
