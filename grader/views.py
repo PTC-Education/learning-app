@@ -202,6 +202,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
             partId_to_name = {} 
             for item in part_list: 
                 partId_to_name[item['partId']] = item['name']
+            
+            mass_props = ignore_massless(mass_props)
+               
             # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
             user_props = [
                             [prt['mass'][0] for prt in mass_props['bodies'].values()], 
@@ -269,12 +272,16 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.etype, 
                 massAsGroup=False, auth_token=curr_user.access_token
             )
+
             if curr_user.etype == "partstudios":
                 # Get parts list for part studio and create dictionary of IDs to names
                 part_list = get_part_list(curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.access_token)
                 partId_to_name = {} 
                 for item in part_list: 
                     partId_to_name[item['partId']] = item['name']
+
+                mass_props = ignore_massless(mass_props)
+
                 # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
                 ref_props = [
                                 [prt['mass'][0] for prt in mass_props['bodies'].values()], 
@@ -350,6 +357,7 @@ def get_mass_props(
 ) -> Any: 
     """ Get the mass and geometry properties of the given element 
     """
+    print(etype)
     response = requests.get(
         os.path.join(
             domain, "api/{}/d/{}/{}/{}/e/{}/massproperties".format(etype, did, wvm, wvmid, eid)
@@ -570,4 +578,17 @@ def convert_cs_to_array(cs_ref_urls: str):
     except:
         return None
     return ref_urls
-    
+
+# Eliminate massless bodies from mass_props
+def ignore_massless(mass_props):
+    heavy_bodies = {}
+    try:
+        for key, value in mass_props['bodies'].items():
+            if 'mass' in mass_props['bodies'][key]:
+                heavy_bodies[key] = value  
+
+        mass_props['bodies'] = heavy_bodies
+
+        return mass_props
+    except:
+        return None
