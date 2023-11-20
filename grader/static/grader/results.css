@@ -175,4 +175,6 @@ ul{
   }
 
 
-
+  .mass_col .vol_col .surf_col .PMOI_col{
+    visibility: hidden;
+  }

@@ -24,6 +24,13 @@
     {% endif %}
 </div>
 
+<button type="button" class="blue-button" onclick="tableToCSV()">Export CSV</button>
+
+
+
+
+
+
 {% if user_props %}
     <p class="resulttile">Reference properties</p>
 
@@ -39,6 +46,13 @@
         <div>
             <div class="display_table">
                 <table id="reference" class="results">
+                    {% if etype == 'partstudios' %}
+                    <col class="partname_col">
+                    {% endif %}
+                    <col class="mass_col">
+                    <col class="vol_col">
+                    <col class="surf_col">
+                    <col class="PMOI_col">
                     <tr>
                         {% if etype == 'partstudios' %}
                             <th>Part Name</th>
@@ -74,9 +88,16 @@
       {% if all_ref_props %}
             <div class="slidecontainer">
                 <p>Tolerance: <span id="slider_value"></span> %</p>
-                <input type="range" min="1" max="500" value="50" class="slider" id="myRange" onchange="compute_error('myRange','{{all_ref_props|length}}')">
+                <input type="range" min="1" max="500" value="50" class="slider" id="tolerance_slider" onchange="compute_error('{{all_ref_props|length}}')">
                  <!-- <input type="range" min="1" max="5" value="50" class="slider" id="myRange"> -->
-                <button type="button" class="blue-button" onclick="tableToCSV()">Export CSV</button>
+                
+                 <div id="propselector" onchange="reform_result('{{all_ref_props|length}}')" >
+                    <label><input type="checkbox" id="mass_check" name="mass" value="mass" checked="True" /> Mass</label>
+                    <label><input type="checkbox" id="vol_check" name="vol" value="volume" checked="True"/>Volume</label>
+                    <label><input type="checkbox" id="surf_check" name="surf" value="Surface_Area" checked="True"/>Surface Area</label>
+                    <label><input type="checkbox" id="PMOI_check" name="PMOI" value="Principal_MOI" checked="True"/>Principal MOI</label>
+                </div>
+
             </div>
             {% for ref_props in all_ref_props %}
                 <div class="property_box">
@@ -100,6 +121,14 @@
                     <div>
                         <div class="display_table">
                             <table id="table_{{forloop.counter0}}" class="results">
+                                {% if etype == 'partstudios' %}
+                                    <col class="partname_col">
+                                {% endif %}
+                                <col class="mass_col">
+                                <col class="vol_col">
+                                <col class="surf_col">
+                                <col class="PMOI_col">
+                                <thead>
                                 <tr>
                                     {% if etype == 'partstudios' %}
                                         <th>Part Name</th>
@@ -108,6 +137,7 @@
                                     <th>Volume</th>
                                     <th>Surface Area</th>
                                     <th>Principal MOI</th>
+                                    <th>Score</th>
                                 </tr>
                                 {% for prop_array in ref_props %}
                                     {% if prop_array == ref_props.0 %}
@@ -121,6 +151,7 @@
                                             <td id="ref_vol_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
                                             <td id="ref_surf_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
                                             <td id="ref_PMOI_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
+                                            <td id="ref_score_{{forloop.parentloop.counter0}}_{{forloop.counter0}}"></td>
                                         </tr>
                                     {% endif %}
                                 {% endfor %}
@@ -133,9 +164,10 @@
              <hr>
             </br></br>
             {% endfor %}
-            <script>round_off_table_contents('{{user_props|length}}','{{all_ref_props|length}}')</script>
-            <script>compute_error('myRange', '{{all_ref_props|length}}')</script>
+            
+            <script>compute_error('{{all_ref_props|length}}')</script>
         {% endif %}
+        <script>round_off_table_contents('{{user_props|length}}','{{all_ref_props|length}}')</script>
             
 
 {% if failed_urls %}
