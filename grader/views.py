@@ -400,13 +400,26 @@ def check_model(request: HttpRequest, os_user_id: str):
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
     
     **Template:**
     
-    :template:`grader/results.html`
+    :template:`grader/checker.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+    
+    # Get feature list of model the user currently has opened
+    feature_list = get_feature_list(
+            curr_user.os_domain, curr_user.etype, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+        )
+    
+    if not feature_list: # API error 
+        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+    print(feature_list)
 
     context={
         "user": curr_user
@@ -605,12 +618,12 @@ def get_shaded_views(
         return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII="
 
 def get_feature_list(
-    domain: str, etype: str, did: str, wid: str, eid: str, auth_token: str
+    domain: str, etype: str, did: str, wmv: str, wid: str, eid: str, auth_token: str
 ) -> Any: 
     """ Get the feature list from both part studios and assemblies
     """
     response = requests.get(
-        os.path.join(domain, "api/{}/d/{}/w/{}/e/{}/features".format(did,wid,eid)), 
+        os.path.join(domain, "api/{}/d/{}/w/{}/e/{}/features".format(etype, did, wmv, wid, eid)),   
         headers={
             "Accept": "application/octet-stream", 
             "Authorization" : "Bearer " + auth_token
