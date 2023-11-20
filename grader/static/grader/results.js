@@ -119,8 +119,8 @@ function compute_error(num_of_urls){
       var ref_table = document.getElementById("table_"+r); 
       var ref_number_of_parts = ref_table.getElementsByTagName("tr").length; //number of parts in url element
       
-      if(usr_number_of_parts == ref_number_of_parts){
-        for (let i = 1; i < ref_number_of_parts; i++){
+      var score = 0;
+        for (let i = 1; i < Math.min(usr_number_of_parts, ref_number_of_parts) ; i++){
           var usr_mass = document.getElementById("usr_mass_" + i).innerHTML;
           var usr_vol = document.getElementById("usr_vol_" + i).innerHTML;
           var usr_surf = document.getElementById("usr_surf_" + i).innerHTML;
@@ -138,56 +138,68 @@ function compute_error(num_of_urls){
           var Error_surf = Math.abs(ref_surf - usr_surf) * 100 / ref_surf;
           var Error_PMOI = Math.abs(ref_PMOI - usr_PMOI) * 100 / ref_PMOI;
 
-          var score="";
+          
           if(mass_select) {
             if(Error_mass > error){
               document.getElementById("ref_mass_"+ r + "_" + i).className="red";
-              score = score + "&#x274C";
+              //score = score + "&#x274C";
+              score = score + 1;
+
             }
             else{
               document.getElementById("ref_mass_"+ r + "_" + i).className="green";
-              score = score + "&#x2705";
+              //score = score + "&#x2705";
             }
           } 
           if(vol_select) {
             if(Error_vol > error){
               document.getElementById("ref_vol_"+ r + "_" + i).className="red";
-              score = score + "&#x274C";
+              //score = score + "&#x274C";
+              score = score + 1;
             }
             else{
               document.getElementById("ref_vol_"+ r + "_" + i).className="green";
-              score = score + "&#x2705";
+              //score = score + "&#x2705";
             }
           }
 
           if(surf_select) {
             if(Error_surf > error){
               document.getElementById("ref_surf_"+ r + "_" + i).className="red";
-              score = score + "&#x274C";
+              //score = score + "&#x274C";
+              score = score + 1;
             }
             else{
               document.getElementById("ref_surf_"+ r + "_" + i).className="green";
-              score = score + "&#x2705";
+              //score = score + "&#x2705";
             }
           }
 
           if(PMOI_select){
             if(Error_PMOI > error){
               document.getElementById("ref_PMOI_"+ r + "_" + i).className="red";
-              score = score + "&#x274C";
+              //score = score + "&#x274C";
+              score = score + 1;
             }
             else{
               document.getElementById("ref_PMOI_"+ r + "_" + i).className="green";
-              score = score + "&#x2705";
+              //score = score + "&#x2705";
             }
           }
-        document.getElementById("ref_score_"+ r + "_" + i).innerHTML = score;
         }
+      if(score > 0){
+        document.getElementById("ref_score_"+ r).innerHTML = "&#x274C";
       }
       else{
+        document.getElementById("ref_score_"+ r).innerHTML = "&#x2705";
+      }
+      
+      if(usr_number_of_parts != ref_number_of_parts){
           var text=document.getElementById("error_message_"+r);
           text.innerHTML="Mismatched number of parts from the reference- Please make sure you have selected the right document";
           ref_table.style.display="none";
+          document.getElementById("ref_score_"+ r).innerHTML =  "&#x274C";
+
       }
     }
   }

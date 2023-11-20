@@ -1,19 +1,14 @@
-.reference_property_box{
-    width:100%;
-    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-style: normal;
-    font-size: 14px;
-    float:left;
-    padding:10px;
-}
 
 .property_box{
-    width:100%;
+    width:98%;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
     font-style: normal;
     font-size: 14px;
     float:left;
     padding:10px;
+    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.05);
+    margin:10px auto;  
+ 
 }
 
 
@@ -119,18 +114,34 @@ ul{
 
 }
 
+.adjust-container{
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-style: normal;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 10px;
+}
 
 .slidecontainer {
-    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-style: normal;
-    font-size: 14px;
-    width: 80%;
-    display: flex;
+    font-size: 12px;
+    width: 20%;
     align-items: center;
     padding: 20px;
     justify-content: space-between;
   }
+
+  .propselector{
+  display: flex;
+  font-size: 12px;
+  }
   
+  .prop-selector-box-text{
+    align-items: center;
+    display: flex;
+  }
 .slider {
 
     -webkit-appearance: none;
@@ -178,3 +189,4 @@ ul{
   .mass_col .vol_col .surf_col .PMOI_col{
     visibility: hidden;
   }
+
