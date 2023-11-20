@@ -204,18 +204,10 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 partId_to_name[item['partId']] = item['name']
             
             mass_props = ignore_surfaces(mass_props)
-
             user_props = make_props(mass_props, partId_to_name)
 
         elif curr_user.etype == "assemblies":
             user_props = make_props(mass_props, None)
-            # assemblies user_props = [mass, vol, periphery, principalInertia]
-            # user_props = [[
-            #         mass_props['mass'][0], 
-            #         mass_props['volume'][0], 
-            #         mass_props['periphery'][0],
-            #         mass_props['principalInertia'][0]
-            #     ]]
         
         # Can we do precision in JS?
         # TO FIX : check the user's configuration for precision and units
@@ -266,20 +258,10 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     partId_to_name[item['partId']] = item['name']
 
                 mass_props = ignore_surfaces(mass_props)
-
                 ref_props = make_props(mass_props, partId_to_name)
-                # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
 
             elif curr_user.etype == "assemblies":
                 ref_props = make_props(mass_props, None)
-                
-                # assemblies ref_props = [mass, vol, periphery, principalInertia]
-                # ref_props = [[
-                #         mass_props['mass'][0], 
-                #         mass_props['volume'][0], 
-                #         mass_props['periphery'][0],
-                #         mass_props['principalInertia'][0]
-                #     ]]
             
             # Can we do precision in JS?
             # for i, prop in enumerate(ref_props):
