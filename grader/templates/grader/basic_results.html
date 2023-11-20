@@ -54,12 +54,12 @@
                         {% else %}
                         <tr>
                             {% if etype == 'partstudios' %}
-                            <td>{{prop_array.4}}</td>
+                            <td id="usr_name_{{forloop.counter0}}">{{prop_array.4}}</td>
                             {% endif %}
-                            <td>{{prop_array.0}}</td>
-                            <td>{{prop_array.1}}</td>
-                            <td>{{prop_array.2}}</td>
-                            <td>{{prop_array.3}}</td>
+                            <td id="usr_mass_{{forloop.counter0}}">{{prop_array.0}}</td>
+                            <td id="usr_vol_{{forloop.counter0}}">{{prop_array.1}}</td>
+                            <td id="usr_surf_{{forloop.counter0}}">{{prop_array.2}}</td>
+                            <td id="usr_PMOI_{{forloop.counter0}}">{{prop_array.3}}</td>
                         </tr>
                         {% endif %}
                     {% endfor %}
@@ -115,12 +115,12 @@
                                     {% else %}
                                         <tr>
                                             {% if etype == 'partstudios' %}
-                                            <td>{{prop_array.4}}</td>
+                                            <td id="ref_name_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.4}}</td>
                                             {% endif %}
-                                            <td>{{prop_array.0}}</td>
-                                            <td>{{prop_array.1}}</td>
-                                            <td>{{prop_array.2}}</td>
-                                            <td>{{prop_array.3}}</td>
+                                            <td id="ref_mass_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.0}}</td>
+                                            <td id="ref_vol_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
+                                            <td id="ref_surf_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
+                                            <td id="ref_PMOI_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
                                         </tr>
                                     {% endif %}
                                 {% endfor %}
