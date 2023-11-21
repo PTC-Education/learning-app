@@ -331,22 +331,45 @@ def check_model(request: HttpRequest, os_user_id: str):
         curr_user.refresh_oauth_token() 
 
     check_type = request.GET.getlist('check_type')
+    check_message = ""
     
     if "Features" in check_type:
         # Get feature list of model the user currently has opened
         feature_list = get_feature_list(
                 curr_user.os_domain, curr_user.etype, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
             )
-        
         if not feature_list: # API error 
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
-        feature_data = feature_list_helper(feature_list)
-        print(feature_data)
+        if curr_user.etype == "partstudios":
+            check_message += ps_feature_list_helper(feature_list)
+        if curr_user.etype == "assemblies":
+            check_message += as_feature_list_helper(feature_list)
+    
+    if "Parts" in check_type:
+        # Get parts list of model the user currently has opened
+        if curr_user.etype == "partstudios":
+            part_list = get_part_list(
+                    curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+                )
+            if not part_list: # API error 
+                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+            check_message += part_list_helper(part_list)
+
+        if curr_user.etype == "assemblies":
+            assembly_def = get_assembly_definition(
+                    curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+                )
+            if not assembly_def: # API error 
+                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+            check_message += instance_list_helper(assembly_def)
 
     context={
         "user": curr_user,
-        "check_type": check_type
+        "check_type": check_type,
+        "check_message": check_message
     }
     return render(
         request, "grader/checker.html", 
@@ -383,6 +406,25 @@ def get_part_list(
     """
     response = requests.get(
         os.path.join(domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
+
+def get_assembly_definition(
+    domain: str, did: str, wvm: str, wvmid: str, eid: str, auth_token: str
+) -> Any: 
+    """ Get all parts in an element
+    """
+    response = requests.get(
+        os.path.join(domain, "api/assemblies/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -632,11 +674,14 @@ def make_props(mass_props, partId_to_name):
         except:
             return None
 
-# Extract useful information from featurelist
-def feature_list_helper(feature_list):
-    feature_count = {}
+# Extract useful information from featurelist for partstudios
+def ps_feature_list_helper(feature_list):
+    feature_count = {} # initialize dictionary for number of features used
     renamed_count = 0
+    number_of_features = len(feature_list['features'])
     for feature in feature_list['features']:
+        if feature['featureType'] == "newSketch":
+            feature['featureType'] = "sketch"
         try:
             feature_count[feature['featureType']] += 1
         except:
@@ -644,10 +689,88 @@ def feature_list_helper(feature_list):
 
         feature_name = re.sub('[0-9]','',feature['name']).replace(" ","")
         
-        if feature_name.lower() != feature['featureType'].lower() and feature_name.lower() != "sketch":
+        if feature_name.lower() != feature['featureType'].lower():
             renamed_count += 1
     
-    print(renamed_count)
+    feature_count = dict(sorted(feature_count.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
 
-    return feature_count
+    feature_message = f'''
+    <h3>Feature Checking</h3>
+    <p>{renamed_count} out of {number_of_features} features are currently renamed from their defaults.</p>
+    <p>List of how many times each feature is used:
+    <ul>
+    '''
+    for k, v in feature_count.items():
+        feature_message += f'<li>{k} - {v}</li>'
 
+    return feature_message + '</ul>'
+
+# Extract useful information from featurelist for assemblies
+def as_feature_list_helper(feature_list):
+    mate_count = 0
+    mate_relation_count = 0
+
+    for feature in feature_list['features']:
+        if feature['featureType'] == "mate":
+            mate_count += 1
+        elif feature['featureType'] == "mateRelation":
+            mate_relation_count += 1
+
+    feature_message = f'''
+    <h3>Feature Checking</h3>
+    <p>This assembly has {mate_count} mates and {mate_relation_count} mate relations.</p>
+    '''
+
+    return feature_message
+
+# Extract useful information from part lists for partstudios
+def part_list_helper(part_list):
+    part_count = 0
+    part_rename_count = 0
+    part_material_count = 0
+    surface_count = 0
+    
+    for part in part_list:
+        if part['bodyType'] == "solid":
+            part_count += 1
+            if re.sub('[0-9]','',part['name']).replace(" ","") != "Part":
+                part_rename_count += 1
+            if 'material' in part:
+                part_material_count += 1
+
+        elif part['bodyType'] == "sheet":
+            surface_count += 1
+
+    part_message = f'''
+    <h3>Part Checking</h3>
+    <p>There is/are {part_count} part(s) in this part studio. <br>
+    {part_rename_count}/{part_count} parts are renamed. <br>
+    {part_material_count}/{part_count} parts have a material assigned.</p>
+    '''
+
+    if surface_count > 0:
+        part_message += f'''
+        <p>There are {surface_count} surfaces in this part studio.</p>
+        '''
+
+    return part_message
+
+# Extract useful information about instances for assemblies
+def instance_list_helper(assembly_def):
+    instance_count = len(assembly_def['rootAssembly']['instances'])
+    part_instance_count = 0
+    assemby_instance_count = 0
+    
+    for instance in assembly_def['rootAssembly']['instances']:
+        if instance['type'] == "Part":
+            part_instance_count += 1
+
+        elif instance['type'] == "Assembly":
+            assemby_instance_count += 1
+
+    part_message = f'''
+    <h3>Instance Checking</h3>
+    <p>There are {instance_count} instances in this assembly, with {part_instance_count} parts and {assemby_instance_count} sub-assemblies inserted.</p>
+    '''
+
+    return part_message

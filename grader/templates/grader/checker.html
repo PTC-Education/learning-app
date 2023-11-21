@@ -16,10 +16,15 @@
         <!-- Check model -->
         <form action="{% url 'grader:check_model' user.os_user_id %}" onsubmit="loading_spinner()">
             <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features<br>      
-            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts<br>      
+            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>      
             <input type="submit" value="Check model"/>
             <br>
         </form>
+
+        <br />
+        {% if check_message %}
+            {{ check_message|safe }}
+        {% endif %}
 
     </body>
 </html>
