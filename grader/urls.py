@@ -10,4 +10,5 @@ urlpatterns = [
     path('grade/<str:os_user_id>/<str:ref_url>/', views.grade_model, name="grade"), 
     path('grade/<str:os_user_id>/', views.grade_model, name="grade"),
     path('url_input_page/<str:os_user_id>/<str:user_type>/', views.url_input_page, name="url_input_page"),
+    path('checker/<str:os_user_id>/', views.check_model, name="check_model")
 ]

@@ -3,6 +3,7 @@ import requests
 from datetime import timedelta, datetime
 from typing import Union 
 import json
+import re
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse 
@@ -120,7 +121,6 @@ def index(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     context = {"user": curr_user}
     return render(request, "grader/index.html", context=context)
-
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
@@ -308,6 +308,73 @@ def grade_model(request: HttpRequest, os_user_id: str):
         context=context
     )
 
+def check_model(request: HttpRequest, os_user_id: str): 
+    """ 
+    When a user submits, model best practices are checkd for 
+    
+    **Context:**
+    
+    View to get time to completion and mass props compared to reference model
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/checker.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    check_type = request.GET.getlist('check_type')
+    check_message = ""
+    
+    if "Features" in check_type:
+        # Get feature list of model the user currently has opened
+        feature_list = get_feature_list(
+                curr_user.os_domain, curr_user.etype, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+            )
+        if not feature_list: # API error 
+            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+        if curr_user.etype == "partstudios":
+            check_message += ps_feature_list_helper(feature_list)
+        if curr_user.etype == "assemblies":
+            check_message += as_feature_list_helper(feature_list)
+    
+    if "Parts" in check_type:
+        # Get parts list of model the user currently has opened
+        if curr_user.etype == "partstudios":
+            part_list = get_part_list(
+                    curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+                )
+            if not part_list: # API error 
+                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+            check_message += part_list_helper(part_list)
+
+        if curr_user.etype == "assemblies":
+            assembly_def = get_assembly_definition(
+                    curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+                )
+            if not assembly_def: # API error 
+                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+            check_message += instance_list_helper(assembly_def)
+
+    context={
+        "user": curr_user,
+        "check_type": check_type,
+        "check_message": check_message
+    }
+    return render(
+        request, "grader/checker.html", 
+        context=context
+    )
 
 #################### Helper API calls ####################
 
@@ -317,9 +384,7 @@ def get_mass_props(
     """ Get the mass and geometry properties of the given element 
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/{}/d/{}/{}/{}/e/{}/massproperties".format(etype, did, wvm, wvmid, eid)
-        ), 
+        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/massproperties".format(etype, did, wvm, wvmid, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -340,9 +405,26 @@ def get_part_list(
     """ Get all parts in an element
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)
-        ), 
+        os.path.join(domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
+
+def get_assembly_definition(
+    domain: str, did: str, wvm: str, wvmid: str, eid: str, auth_token: str
+) -> Any: 
+    """ Get all parts in an element
+    """
+    response = requests.get(
+        os.path.join(domain, "api/assemblies/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -360,9 +442,7 @@ def get_elements_info(
     """ Get the information about available elements in the current document
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/documents/d/{}/w/{}/elements".format(did,wid)
-        ), 
+        os.path.join(domain, "api/documents/d/{}/w/{}/elements".format(did,wid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -380,9 +460,7 @@ def get_blob_data(
     """ Get the blob content of the given element
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/blobelements/d/{}/w/{}/e/{}".format(did,wid,eid)
-        ), 
+        os.path.join(domain, "api/blobelements/d/{}/w/{}/e/{}".format(did,wid,eid)), 
         headers={
             "Accept": "application/octet-stream", 
             "Authorization" : "Bearer " + auth_token
@@ -399,9 +477,7 @@ def get_shaded_views(
     """Get a thumbnail image of the question for display 
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/{}/d/{}/w/{}/e/{}/shadedviews".format(etype, did, wid, eid)
-        ), 
+        os.path.join(domain, "api/{}/d/{}/w/{}/e/{}/shadedviews".format(etype, did, wid, eid)), 
         params={
             "outputHeight": 60, 
             "outputWidth": 60, 
@@ -419,6 +495,24 @@ def get_shaded_views(
         return f"data:image/png;base64,{response.json()['images'][0]}"
     else: 
         return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII="
+
+def get_feature_list(
+    domain: str, etype: str, did: str, wmv: str, wid: str, eid: str, auth_token: str
+) -> Any: 
+    """ Get the feature list from both part studios and assemblies
+    """
+    response = requests.get(
+        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/features".format(etype, did, wmv, wid, eid)),   
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json()
+    else: 
+        return None
 
 def get_doc_info(
     domain: str, did: str, auth_token: str
@@ -446,9 +540,7 @@ def get_user_doc_list(
     """ Get list of documents - created by the user/ recently opened by the user and shared with the user
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/documents"
-        ), 
+        os.path.join(domain, "api/documents"), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -466,9 +558,7 @@ def get_class_list(
     """ Get the list of classes for the user
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/globaltreenodes/magic/15"        
-            ), 
+        os.path.join(domain, "api/globaltreenodes/magic/15"), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -486,9 +576,7 @@ def get_element_info(
     """ Get information about element 
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/documents/d/{}/w/{}/elements?elementId={}&withThumbnails=false".format(did, wvm, eid)
-        ), 
+        os.path.join(domain, "api/documents/d/{}/w/{}/elements?elementId={}&withThumbnails=false".format(did, wvm, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -585,3 +673,104 @@ def make_props(mass_props, partId_to_name):
             return ref_props
         except:
             return None
+
+# Extract useful information from featurelist for partstudios
+def ps_feature_list_helper(feature_list):
+    feature_count = {} # initialize dictionary for number of features used
+    renamed_count = 0
+    number_of_features = len(feature_list['features'])
+    for feature in feature_list['features']:
+        if feature['featureType'] == "newSketch":
+            feature['featureType'] = "sketch"
+        try:
+            feature_count[feature['featureType']] += 1
+        except:
+            feature_count[feature['featureType']] = 1
+
+        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","")
+        
+        if feature_name.lower() != feature['featureType'].lower():
+            renamed_count += 1
+    
+    feature_count = dict(sorted(feature_count.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
+
+    feature_message = f'''
+    <h3>Feature Checking</h3>
+    <p>{renamed_count} out of {number_of_features} features are currently renamed from their defaults.</p>
+    <p>List of how many times each feature is used:
+    <ul>
+    '''
+    for k, v in feature_count.items():
+        feature_message += f'<li>{k} - {v}</li>'
+
+    return feature_message + '</ul>'
+
+# Extract useful information from featurelist for assemblies
+def as_feature_list_helper(feature_list):
+    mate_count = 0
+    mate_relation_count = 0
+
+    for feature in feature_list['features']:
+        if feature['featureType'] == "mate":
+            mate_count += 1
+        elif feature['featureType'] == "mateRelation":
+            mate_relation_count += 1
+
+    feature_message = f'''
+    <h3>Feature Checking</h3>
+    <p>This assembly has {mate_count} mates and {mate_relation_count} mate relations.</p>
+    '''
+
+    return feature_message
+
+# Extract useful information from part lists for partstudios
+def part_list_helper(part_list):
+    part_count = 0
+    part_rename_count = 0
+    part_material_count = 0
+    surface_count = 0
+    
+    for part in part_list:
+        if part['bodyType'] == "solid":
+            part_count += 1
+            if re.sub('[0-9]','',part['name']).replace(" ","") != "Part":
+                part_rename_count += 1
+            if 'material' in part:
+                part_material_count += 1
+
+        elif part['bodyType'] == "sheet":
+            surface_count += 1
+
+    part_message = f'''
+    <h3>Part Checking</h3>
+    <p>There is/are {part_count} part(s) in this part studio. <br>
+    {part_rename_count}/{part_count} parts are renamed. <br>
+    {part_material_count}/{part_count} parts have a material assigned.</p>
+    '''
+
+    if surface_count > 0:
+        part_message += f'''
+        <p>There are {surface_count} surfaces in this part studio.</p>
+        '''
+
+    return part_message
+
+# Extract useful information about instances for assemblies
+def instance_list_helper(assembly_def):
+    instance_count = len(assembly_def['rootAssembly']['instances'])
+    part_instance_count = 0
+    assemby_instance_count = 0
+    
+    for instance in assembly_def['rootAssembly']['instances']:
+        if instance['type'] == "Part":
+            part_instance_count += 1
+
+        elif instance['type'] == "Assembly":
+            assemby_instance_count += 1
+
+    part_message = f'''
+    <h3>Instance Checking</h3>
+    <p>There are {instance_count} instances in this assembly, with {part_instance_count} parts and {assemby_instance_count} sub-assemblies inserted.</p>
+    '''
+
+    return part_message

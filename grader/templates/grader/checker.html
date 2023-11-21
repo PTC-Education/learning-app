@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'grader/index.css' %}">
+        <!-- Load loading_modelling function to enable loading screen -->
+        <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+    </head>
+    <body>
+        <!-- Return to the home page -->
+        <br />
+        <form action="{% url 'grader:index' user.os_user_id %}">
+            <input type="submit" value="Return to Home Page"/>
+        </form>
+        <br />
+        <!-- Check model -->
+        <form action="{% url 'grader:check_model' user.os_user_id %}" onsubmit="loading_spinner()">
+            <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features<br>      
+            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>      
+            <input type="submit" value="Check model"/>
+            <br>
+        </form>
+
+        <br />
+        {% if check_message %}
+            {{ check_message|safe }}
+        {% endif %}
+
+    </body>
+</html>
