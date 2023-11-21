@@ -3,6 +3,7 @@ import requests
 from datetime import timedelta, datetime
 from typing import Union 
 import json
+import re
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse 
@@ -120,7 +121,6 @@ def index(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     context = {"user": curr_user}
     return render(request, "grader/index.html", context=context)
-
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
@@ -308,6 +308,50 @@ def grade_model(request: HttpRequest, os_user_id: str):
         context=context
     )
 
+def check_model(request: HttpRequest, os_user_id: str): 
+    """ 
+    When a user submits, model best practices are checkd for 
+    
+    **Context:**
+    
+    View to get time to completion and mass props compared to reference model
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/checker.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    check_type = request.GET.getlist('check_type')
+    
+    if "Features" in check_type:
+        # Get feature list of model the user currently has opened
+        feature_list = get_feature_list(
+                curr_user.os_domain, curr_user.etype, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+            )
+        
+        if not feature_list: # API error 
+            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+        feature_data = feature_list_helper(feature_list)
+        print(feature_data)
+
+    context={
+        "user": curr_user,
+        "check_type": check_type
+    }
+    return render(
+        request, "grader/checker.html", 
+        context=context
+    )
 
 #################### Helper API calls ####################
 
@@ -317,9 +361,7 @@ def get_mass_props(
     """ Get the mass and geometry properties of the given element 
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/{}/d/{}/{}/{}/e/{}/massproperties".format(etype, did, wvm, wvmid, eid)
-        ), 
+        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/massproperties".format(etype, did, wvm, wvmid, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -340,9 +382,7 @@ def get_part_list(
     """ Get all parts in an element
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)
-        ), 
+        os.path.join(domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -360,9 +400,7 @@ def get_elements_info(
     """ Get the information about available elements in the current document
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/documents/d/{}/w/{}/elements".format(did,wid)
-        ), 
+        os.path.join(domain, "api/documents/d/{}/w/{}/elements".format(did,wid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -380,9 +418,7 @@ def get_blob_data(
     """ Get the blob content of the given element
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/blobelements/d/{}/w/{}/e/{}".format(did,wid,eid)
-        ), 
+        os.path.join(domain, "api/blobelements/d/{}/w/{}/e/{}".format(did,wid,eid)), 
         headers={
             "Accept": "application/octet-stream", 
             "Authorization" : "Bearer " + auth_token
@@ -399,9 +435,7 @@ def get_shaded_views(
     """Get a thumbnail image of the question for display 
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/{}/d/{}/w/{}/e/{}/shadedviews".format(etype, did, wid, eid)
-        ), 
+        os.path.join(domain, "api/{}/d/{}/w/{}/e/{}/shadedviews".format(etype, did, wid, eid)), 
         params={
             "outputHeight": 60, 
             "outputWidth": 60, 
@@ -419,6 +453,24 @@ def get_shaded_views(
         return f"data:image/png;base64,{response.json()['images'][0]}"
     else: 
         return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII="
+
+def get_feature_list(
+    domain: str, etype: str, did: str, wmv: str, wid: str, eid: str, auth_token: str
+) -> Any: 
+    """ Get the feature list from both part studios and assemblies
+    """
+    response = requests.get(
+        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/features".format(etype, did, wmv, wid, eid)),   
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json()
+    else: 
+        return None
 
 def get_doc_info(
     domain: str, did: str, auth_token: str
@@ -446,9 +498,7 @@ def get_user_doc_list(
     """ Get list of documents - created by the user/ recently opened by the user and shared with the user
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/documents"
-        ), 
+        os.path.join(domain, "api/documents"), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -466,9 +516,7 @@ def get_class_list(
     """ Get the list of classes for the user
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/globaltreenodes/magic/15"        
-            ), 
+        os.path.join(domain, "api/globaltreenodes/magic/15"), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -486,9 +534,7 @@ def get_element_info(
     """ Get information about element 
     """
     response = requests.get(
-        os.path.join(
-            domain, "api/documents/d/{}/w/{}/elements?elementId={}&withThumbnails=false".format(did, wvm, eid)
-        ), 
+        os.path.join(domain, "api/documents/d/{}/w/{}/elements?elementId={}&withThumbnails=false".format(did, wvm, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -585,3 +631,23 @@ def make_props(mass_props, partId_to_name):
             return ref_props
         except:
             return None
+
+# Extract useful information from featurelist
+def feature_list_helper(feature_list):
+    feature_count = {}
+    renamed_count = 0
+    for feature in feature_list['features']:
+        try:
+            feature_count[feature['featureType']] += 1
+        except:
+            feature_count[feature['featureType']] = 1
+
+        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","")
+        
+        if feature_name.lower() != feature['featureType'].lower() and feature_name.lower() != "sketch":
+            renamed_count += 1
+    
+    print(renamed_count)
+
+    return feature_count
+
