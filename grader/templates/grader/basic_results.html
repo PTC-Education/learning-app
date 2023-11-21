@@ -29,7 +29,7 @@
 
 
 
-
+<body>
 
 {% if user_props %}
     <p class="resulttile">Reference properties</p>
@@ -167,12 +167,56 @@
             
 
 {% if failed_urls %}
-<p>We failed to get information from the following reference URLs</p>
-<ul>
-    {% for url in failed_urls %}
-        <li>{{ failed_urls|safe }}</li>
-    {% endfor %}
-</ul>
+<div class="failed_url_reasons" id="failed_url_reasons">
+    <br>
+    <label for="failed_url_help" class="helper" title="Click to close this box" onclick="show_hide_url_reasons()">
+        <img src="{% static 'grader/images/close.png' %}"/>
+    </label><br>
+    Here are some reasons the CAD Checker may have failed to grade the document.
+    <ul>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+        <li>You may not have permisson to access the document. Please ask the owner of the document to share access with you.</li>
+        <li>The document may be of a different type. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
+        <li>Others.. to be added</li>
+    </ul>
+</div>
+<div class="failed_url_box">
+    The following URLs failed to return a result.                     
+    <label for="failed_url_help" class="helper" title="Click to learn more about reasons on why the urls failed. " onclick="show_hide_url_reasons()">
+        <img src="{% static 'grader/images/help.png' %}"/>
+    </label><br>
+
+    <script>show_hide_url_reasons();</script>
+    <ul class="failed_url_list">
+        {% for url in failed_urls %}
+            <li><a href="{{ url|safe }}" target="_blank">{{ url|safe }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
 {% endif %}
 
 
+</body>
