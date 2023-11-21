@@ -103,7 +103,6 @@ def authorize(request: HttpRequest):
 
     return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
-
 def index(request: HttpRequest, os_user_id: str): 
     """ 
     The index view of the app. 
@@ -244,6 +243,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     except:
         user_props = None
 
+
     # Get info about the document the user currently has opened
     # DO WE NEED THIS?
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
@@ -254,7 +254,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # Append user related information along with mass properties
     # DO WE NEED THIS?
     user_props.insert(0, [user_doc_name, user_user_name, user_doc_time])
-
 
     ## Initialize arrays for ref docs
     all_ref_props = [] # 3D array - each 2D array corresponds to one URL

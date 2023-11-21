@@ -1,30 +1,32 @@
-.reference_property_box{
-    width:100%;
-    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-style: normal;
-    font-size: 14px;
-    float:left;
-    padding:10px;
-}
 
 .property_box{
-    width:100%;
+    width:98%;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
     font-style: normal;
     font-size: 14px;
     float:left;
     padding:10px;
+    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.05);
+    margin:10px auto;  
+ 
 }
 
 
-  .docname{
+
+.table_error_message{
+  font-size: smaller;
+  font-style:italic;
+  color:red;
+}
+
+.docname{
     color: var(--boston-terrier, #333);
     font-size: 14px;
     font-weight: 600;
     line-height: normal;
     margin:0
   }
-  .username{
+.username{
     color: var(--boston-terrier, #333);
     font-weight: Thin;
     line-height: normal;
@@ -39,10 +41,10 @@
     padding-left:5px;
     padding-right: 5px;;
     color: #777;
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 .display_thumbnail{
-    
-
     width:18%;
     float:right;
     display: flex;
@@ -55,8 +57,8 @@
 
   .results{
     table-layout: fixed;
-
-
+    padding-top:10px;
+    padding-bottom:10px;
 
   }
 
@@ -81,6 +83,18 @@
 
 }
 
+.green{
+  background-color: #009400;
+  color:white;
+
+}
+
+.red{
+  background-color: #BD3039;
+  color:white;
+
+}
+
 td.symbols{
     font-size: 50px;
 }
@@ -100,18 +114,34 @@ ul{
 
 }
 
+.adjust-container{
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-style: normal;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 10px;
+}
 
 .slidecontainer {
-    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-style: normal;
-    font-size: 14px;
-    width: 80%;
-    display: flex;
+    font-size: 12px;
+    width: 20%;
     align-items: center;
     padding: 20px;
     justify-content: space-between;
   }
+
+  .propselector{
+  display: flex;
+  font-size: 12px;
+  }
   
+  .prop-selector-box-text{
+    align-items: center;
+    display: flex;
+  }
 .slider {
 
     -webkit-appearance: none;
@@ -153,5 +183,10 @@ ul{
     background: #fff;
     border-color: #777;
     cursor: pointer;
+  }
+
+
+  .mass_col .vol_col .surf_col .PMOI_col{
+    visibility: hidden;
   }
 

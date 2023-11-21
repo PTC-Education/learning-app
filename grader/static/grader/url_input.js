@@ -1,4 +1,6 @@
-//Runs on load to ensure url is shown and csv is hidden
+
+//Function to enable or disable grade button based on if there are documents to grade
+
 function checkURLs_for_enabling_grade_button() {
   var listofurlbuttons = document.getElementById("urlButtonContainer"); //open the list
   var urlbuttons_existing = listofurlbuttons.getElementsByTagName("li"); //get all the items in the list
@@ -20,7 +22,7 @@ function validateForm() {
     /https:\/\/[A-Za-z]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
   if (!regex.test(x)) {
     document.getElementById("urlError").innerHTML =
-      "Faulty urls detected. Please make sure the urls are correct."; //show the error message
+      "Faulty url detected. Please make sure the url is correct."; //show the error message
     document.forms["studenturl"]["ref_url"].value = "";
     return false;
   }
