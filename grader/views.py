@@ -204,9 +204,11 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 partId_to_name[item['partId']] = item['name']
             
             mass_props = ignore_surfaces(mass_props)
+            # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
             user_props = make_props(mass_props, partId_to_name)
 
         elif curr_user.etype == "assemblies":
+            # assemblies user_props = [mass, vol, periphery, principalInertia]
             user_props = make_props(mass_props, None)
         
         # Can we do precision in JS?
@@ -258,9 +260,11 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     partId_to_name[item['partId']] = item['name']
 
                 mass_props = ignore_surfaces(mass_props)
+                # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
                 ref_props = make_props(mass_props, partId_to_name)
 
             elif curr_user.etype == "assemblies":
+                # assemblies ref_props = [mass, vol, periphery, principalInertia]
                 ref_props = make_props(mass_props, None)
             
             # Can we do precision in JS?
@@ -548,7 +552,7 @@ def ignore_surfaces(mass_props):
         return None
 
 def make_props(mass_props, partId_to_name):
-    if partId_to_name is not None:
+    if partId_to_name:
         # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
         try:
             user_props = [
