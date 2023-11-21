@@ -202,33 +202,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
             for item in part_list: 
                 partId_to_name[item['partId']] = item['name']
             
-            mass_props = ignore_massless(mass_props)
-               
+            mass_props = ignore_surfaces(mass_props)
             # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-            user_props = [
-                            [prt['mass'][0] for prt in mass_props['bodies'].values()], 
-                            [prt['volume'][0] for prt in mass_props['bodies'].values()], 
-                            [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
-                            [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
-                            [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
-                        ]
-            user_props = sorted([
-                                    [
-                                        user_props[0][i], user_props[1][i], 
-                                        user_props[2][i], user_props[3][i], 
-                                        user_props[4][i]
-                                    ] 
-                                    for i in range(len(user_props[0]))
-                                ], key=lambda x : x[1])
+            user_props = make_props(mass_props, partId_to_name)
 
         elif curr_user.etype == "assemblies":
             # assemblies user_props = [mass, vol, periphery, principalInertia]
-            user_props = [[
-                    mass_props['mass'][0], 
-                    mass_props['volume'][0], 
-                    mass_props['periphery'][0],
-                    mass_props['principalInertia'][0]
-                ]]
+            user_props = make_props(mass_props, None)
         
         # Can we do precision in JS?
         # TO FIX : check the user's configuration for precision and units
@@ -279,33 +259,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 for item in part_list: 
                     partId_to_name[item['partId']] = item['name']
 
-                mass_props = ignore_massless(mass_props)
-
+                mass_props = ignore_surfaces(mass_props)
                 # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-                ref_props = [
-                                [prt['mass'][0] for prt in mass_props['bodies'].values()], 
-                                [prt['volume'][0] for prt in mass_props['bodies'].values()], 
-                                [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
-                                [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
-                                [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
-                            ]
-                ref_props = sorted([
-                                        [
-                                            ref_props[0][i], ref_props[1][i], 
-                                            ref_props[2][i], ref_props[3][i], 
-                                            ref_props[4][i]
-                                        ] 
-                                        for i in range(len(ref_props[0]))
-                                    ], key=lambda x : x[1])
+                ref_props = make_props(mass_props, partId_to_name)
 
             elif curr_user.etype == "assemblies":
                 # assemblies ref_props = [mass, vol, periphery, principalInertia]
-                ref_props = [[
-                        mass_props['mass'][0], 
-                        mass_props['volume'][0], 
-                        mass_props['periphery'][0],
-                        mass_props['principalInertia'][0]
-                    ]]
+                ref_props = make_props(mass_props, None)
             
             # Can we do precision in JS?
             # for i, prop in enumerate(ref_props):
@@ -356,7 +316,6 @@ def get_mass_props(
 ) -> Any: 
     """ Get the mass and geometry properties of the given element 
     """
-    print(etype)
     response = requests.get(
         os.path.join(
             domain, "api/{}/d/{}/{}/{}/e/{}/massproperties".format(etype, did, wvm, wvmid, eid)
@@ -579,7 +538,7 @@ def convert_cs_to_array(cs_ref_urls: str):
     return ref_urls
 
 # Eliminate massless bodies from mass_props
-def ignore_massless(mass_props):
+def ignore_surfaces(mass_props):
     heavy_bodies = {}
     try:
         for key, value in mass_props['bodies'].items():
@@ -591,3 +550,38 @@ def ignore_massless(mass_props):
         return mass_props
     except:
         return None
+
+def make_props(mass_props, partId_to_name):
+    if partId_to_name:
+        # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+        try:
+            user_props = [
+                [prt['mass'][0] for prt in mass_props['bodies'].values()], 
+                [prt['volume'][0] for prt in mass_props['bodies'].values()], 
+                [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
+                [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
+                [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
+            ]
+            user_props = sorted([
+                [
+                    user_props[0][i], user_props[1][i], 
+                    user_props[2][i], user_props[3][i], 
+                    user_props[4][i]
+                ] 
+                for i in range(len(user_props[0]))
+            ], key=lambda x : x[1])
+            return user_props
+        except:
+            return None
+    else:
+        # assemblies ref_props = [mass, vol, periphery, principalInertia]
+        try: 
+            ref_props = [[
+                mass_props['mass'][0], 
+                mass_props['volume'][0], 
+                mass_props['periphery'][0],
+                mass_props['principalInertia'][0]
+            ]]
+            return ref_props
+        except:
+            return None
