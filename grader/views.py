@@ -3,6 +3,7 @@ import requests
 from datetime import timedelta, datetime
 from typing import Union 
 import json
+import re
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse 
@@ -369,19 +370,24 @@ def check_model(request: HttpRequest, os_user_id: str):
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
-    
-    # Get feature list of model the user currently has opened
-    feature_list = get_feature_list(
-            curr_user.os_domain, curr_user.etype, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
-        )
-    
-    if not feature_list: # API error 
-        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
-    print(feature_list)
+    check_type = request.GET.getlist('check_type')
+    
+    if "Features" in check_type:
+        # Get feature list of model the user currently has opened
+        feature_list = get_feature_list(
+                curr_user.os_domain, curr_user.etype, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+            )
+        
+        if not feature_list: # API error 
+            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+        feature_data = feature_list_helper(feature_list)
+        print(feature_data)
 
     context={
-        "user": curr_user
+        "user": curr_user,
+        "check_type": check_type
     }
     return render(
         request, "grader/checker.html", 
@@ -496,14 +502,15 @@ def get_feature_list(
     """ Get the feature list from both part studios and assemblies
     """
     response = requests.get(
-        os.path.join(domain, "api/{}/d/{}/w/{}/e/{}/features".format(etype, did, wmv, wid, eid)),   
+        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/features".format(etype, did, wmv, wid, eid)),   
         headers={
-            "Accept": "application/octet-stream", 
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
         }
     )
     if response.ok: 
-        return response.content
+        return response.json()
     else: 
         return None
 
@@ -631,3 +638,22 @@ def ignore_massless(mass_props):
         return mass_props
     except:
         return None
+
+# Extract useful information from featurelist
+def feature_list_helper(feature_list):
+    feature_count = {}
+    renamed_count = 0
+    for feature in feature_list['features']:
+        try:
+            feature_count[feature['featureType']] += 1
+        except:
+            feature_count[feature['featureType']] = 1
+
+        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","")
+        
+        if feature_name.lower() != feature['featureType'].lower() and feature_name.lower() != "sketch":
+            renamed_count += 1
+    
+    print(renamed_count)
+
+    return feature_count
