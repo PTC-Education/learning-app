@@ -103,7 +103,6 @@ def authorize(request: HttpRequest):
 
     return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
-
 def index(request: HttpRequest, os_user_id: str): 
     """ 
     The index view of the app. 
@@ -223,6 +222,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
     except:
         user_props = None
+
 
     # Get info about the document the user currently has opened
     # DO WE NEED THIS?
