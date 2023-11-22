@@ -12,11 +12,11 @@ function reform_result(num_of_urls){
 
   //checking the list of properties user wants to compare
   var checkboxstatus = [];
-  for( let i = 0; i< 4 ; i++){
+  for( let i = 1; i< 5 ; i++){
     checkboxstatus[i] = document.getElementById("check_"+ i).checked;
   }
-  for (let url = 0; url <= num_of_urls ; url++ ){
-    for( let i = 0; i < 4 ; i++){
+  for (let url = 0 ; url <= num_of_urls ; url++ ){
+    for( let i = 1; i < 5 ; i++){
       if(!checkboxstatus[i]){
         document.getElementsByClassName('col_' + i)[url].style.visibility='collapse';
       }
@@ -33,7 +33,7 @@ function round_off_table_contents(num_of_parts, num_of_urls){
   var precison = 6 ; //set the precison 
   for (let part = 1; part < num_of_parts; part++){
     //round off data for each part in the user document 
-    for (let p = 0; p <4; p++){
+    for (let p = 1; p < 5; p++){
       var data = document.getElementById("usr_" + p + "_" + part).innerHTML;
       document.getElementById("usr_" + p + "_" + part).innerHTML = Number(data).toFixed(precison);
     }
@@ -46,7 +46,7 @@ function round_off_table_contents(num_of_parts, num_of_urls){
       //for each part 
       for (let part = 1; part < ref_number_of_parts; part++){
         //for each column
-        for (let p = 0; p <4; p++){
+        for (let p = 1; p <5; p++){
           var data = document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML;
           document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML = Number(data).toFixed(precison);
         }
@@ -72,12 +72,12 @@ function compute_error(num_of_urls){
   error=Number(slider.value);
 
   //grab reference data from reference table
-  var usr_table= document.getElementById("reference");
+  var usr_table = document.getElementById("reference");
   var usr_number_of_parts = usr_table.getElementsByTagName("tr").length; //number of parts 
 
   //checking the list of properties user wants to compare
   checkboxstatus = []; //blank array to store check box info
-  for( let i = 0; i< 4 ; i++){
+  for( let i = 1; i< 5 ; i++){
     checkboxstatus[i] = document.getElementById("check_"+ i).checked;
   }
 
@@ -88,9 +88,8 @@ function compute_error(num_of_urls){
       
       var score = 0;
       for (let part = 1; part < Math.min(usr_number_of_parts, ref_number_of_parts) ; part++){
-        for (let p = 0; p < 4; p++){
+        for (let p = 1; p < 5; p++){
           //get data for usr doc
-          console.log(part, p, "usrdata");
           var usrdata = document.getElementById("usr_" + p + "_" + part).innerHTML;
             //get data for url docs
           var refdata = document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML;

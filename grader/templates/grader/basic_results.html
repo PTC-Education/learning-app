@@ -38,12 +38,12 @@
             <div class="display_table">
                 <table id="reference" class="results">
                     {% if etype == 'partstudios' %}
-                    <col class="partname_col">
-                    {% endif %}
                     <col class="col_0">
+                    {% endif %}
                     <col class="col_1">
                     <col class="col_2">
                     <col class="col_3">
+                    <col class="col_4">
                     <tr>
                         {% if etype == 'partstudios' %}
                             <th>Part Name</th>
@@ -59,12 +59,12 @@
                         {% else %}
                         <tr>
                             {% if etype == 'partstudios' %}
-                            <td id="usr_name_{{forloop.counter0}}">{{prop_array.4}}</td>
+                            <td id="usr_0_{{forloop.counter0}}">{{prop_array.4}}</td>
                             {% endif %}
-                            <td id="usr_0_{{forloop.counter0}}">{{prop_array.0}}</td>
-                            <td id="usr_1_{{forloop.counter0}}">{{prop_array.1}}</td>
-                            <td id="usr_2_{{forloop.counter0}}">{{prop_array.2}}</td>
-                            <td id="usr_3_{{forloop.counter0}}">{{prop_array.3}}</td>
+                            <td id="usr_1_{{forloop.counter0}}">{{prop_array.0}}</td>
+                            <td id="usr_2_{{forloop.counter0}}">{{prop_array.1}}</td>
+                            <td id="usr_3_{{forloop.counter0}}">{{prop_array.2}}</td>
+                            <td id="usr_4_{{forloop.counter0}}">{{prop_array.3}}</td>
                         </tr>
                         {% endif %}
                     {% endfor %}
@@ -83,10 +83,10 @@
                 <input type="range" min="1" max="500" value="50" class="slider" id="tolerance_slider" onchange="compute_error('{{all_ref_props|length}}')">
             </div>
             <div class="propselector" onchange="reform_result('{{all_ref_props|length}}')" >
-                <label class="prop-selector-box-text"><input type="checkbox" id="check_0" name="mass" value="mass" checked="True" /> Mass</label>
-                <label class="prop-selector-box-text"><input type="checkbox" id="check_1" name="vol" value="volume" checked="True"/>Volume</label>
-                <label class="prop-selector-box-text"><input type="checkbox" id="check_2" name="surf" value="Surface_Area" checked="True"/>Surface Area</label>
-                <label class="prop-selector-box-text"><input type="checkbox" id="check_3" name="PMOI" value="Principal_MOI" checked="True"/>Principal MOI</label>
+                <label class="prop-selector-box-text"><input type="checkbox" id="check_1" name="mass" value="mass" checked="True" /> Mass</label>
+                <label class="prop-selector-box-text"><input type="checkbox" id="check_2" name="vol" value="volume" checked="True"/>Volume</label>
+                <label class="prop-selector-box-text"><input type="checkbox" id="check_3" name="surf" value="Surface_Area" checked="True"/>Surface Area</label>
+                <label class="prop-selector-box-text"><input type="checkbox" id="check_4" name="PMOI" value="Principal_MOI" checked="True"/>Principal MOI</label>
             </div>
         </div>
             {% for ref_props in all_ref_props %}
@@ -96,7 +96,7 @@
                         <p hidden id="url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
                         <p hidden id="elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
                         <img src="{{ref_props.0.4}}" alt="" />
-                        <div class="score" id="ref_score_{{forloop.counter0}}"><p></p></div>
+                        <div class="score" id="ref_score_{{forloop.counter0}}"></div>
                     </div>
                     <div class="docinfo">
                         <p class="docname" id="ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
@@ -109,12 +109,12 @@
                         <div class="display_table">
                             <table id="table_{{forloop.counter0}}" class="results">
                                 {% if etype == 'partstudios' %}
-                                    <col class="partname_col">
+                                    <col class="col_0">
                                 {% endif %}
-                                <col class="col_0">
                                 <col class="col_1">
                                 <col class="col_2">
                                 <col class="col_3">
+                                <col class="col_4">
                                 <thead>
                                 <tr>
                                     {% if etype == 'partstudios' %}
@@ -131,12 +131,12 @@
                                     {% else %}
                                         <tr>
                                             {% if etype == 'partstudios' %}
-                                            <td id="ref_name_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.4}}</td>
+                                            <td id="ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.4}}</td>
                                             {% endif %}
-                                            <td id="ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.0}}</td>
-                                            <td id="ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
-                                            <td id="ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
-                                            <td id="ref_3_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
+                                            <td id="ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.0}}</td>
+                                            <td id="ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
+                                            <td id="ref_3_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
+                                            <td id="ref_4_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
                                         </tr>
                                     {% endif %}
                                 {% endfor %}
