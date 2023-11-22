@@ -58,9 +58,11 @@
 }
 
   .results{
+    width : 100%;
     table-layout: fixed;
     padding-top:10px;
     padding-bottom:10px;
+    margin: auto;
 
   }
 
