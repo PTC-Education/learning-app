@@ -1,6 +1,8 @@
-
+.body{
+  min-width: 450px;
+}
 .property_box{
-    width:98%;
+    width:95%;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
     font-style: normal;
     font-size: 14px;
@@ -98,12 +100,7 @@
 td.symbols{
     font-size: 50px;
 }
-ul{
-    list-style: none;
-    display: inline-block;
-    text-align: left;
 
-}
 
 .resulttile{
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
@@ -190,3 +187,57 @@ ul{
     visibility: hidden;
   }
 
+  .helper{
+    display: flex;
+    float:left;
+    margin: 10px;
+    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+  }
+
+  .helper:hover{
+    background-color: #ebebeb;
+  }
+
+  .failed_url_box{
+    width:95%;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    font-style: normal;
+    position: relative;
+    font-size: 12px;
+    float:left;
+    padding:10px;
+    box-shadow: 5px 5px 5px 5px rgba(0, 0, 0, 0.05);
+    margin:10px auto;  
+    z-index: 1;
+  }
+
+  ul.failed_url_list{
+    color:darkviolet;
+    font-size: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    list-style: none;
+    text-align: left;
+    padding: 0px;
+    
+  
+  }
+
+  .failed_url_reasons{
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    width: 400px;
+    font-style: normal;
+    font-size: 12px;
+    position:absolute;
+    height: 150px;
+    top: -160px;
+    left: 30px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 10;
+    padding:10px;
+    box-shadow: 5px 5px 5px 5px rgba(0,0,0, 0.05);
+    margin:10px auto;
+    background-color: #FCFCFC ;
+  }

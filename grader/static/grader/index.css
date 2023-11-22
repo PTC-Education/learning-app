@@ -177,7 +177,7 @@ input.gradeButton[type=submit] {
 }
 
 input.gradeButton[type=submit]:hover {
-    background-color: #769fcc;
+  background-color: #769fcc;
 }
 
 
@@ -217,7 +217,7 @@ input.submiturl-button[type=submit]:hover {
 }
 
 .options:hover{
-    background-color: #ebebeb;
+  background-color: #ebebeb;
     cursor: pointer;
 }
   
@@ -306,11 +306,10 @@ table {
   td:hover {
 
     white-space: wrap;
-    background-color: #bbb;
+    background-color: #ebebeb;
     color:red;
   }
   
-
 
 
 .documentlist{
@@ -349,7 +348,7 @@ table {
 }
 
 button.document-names:hover {
-    background-color: #bbb;
+  background-color: #ebebeb;
 }
 
 button.documentname{
@@ -403,6 +402,7 @@ body{
     
     .gradeButton:hover{
       cursor:pointer;
+      
     }
     
     .tab-buttons
@@ -499,7 +499,7 @@ body{
     }
     
     #checkboxes label:hover {
-      background-color: #777;
+      background-color: #ebebeb;
     }
     
     
@@ -535,7 +535,7 @@ body{
     
     }
     
-    .close:hover {background: #777;}
+    .close:hover {background-color: #ebebeb;}
     
     .selectedProps-DIV{
       font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
@@ -653,7 +653,7 @@ body{
     }
     
     .file-UPLOAD:hover{
-    background-color: #777;
+      background-color: #ebebeb;
     cursor: pointer;
     }
     input[type="file"] {

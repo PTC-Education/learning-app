@@ -6,6 +6,7 @@
 
       <!-- Return to the home page -->
         <br>
+        <body>
         <form action="{% url 'grader:index' user.os_user_id %}">
             <input type="submit" value="Return to Home Page">
         </form>
@@ -98,7 +99,7 @@
                 </div>
             </div>        
         {% endif %}
-
+    </body>
 
     
     
