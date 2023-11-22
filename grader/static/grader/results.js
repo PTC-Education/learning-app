@@ -90,7 +90,6 @@ function compute_error(num_of_urls){
       for (let part = 1; part < Math.min(usr_number_of_parts, ref_number_of_parts) ; part++){
         for (let p = 0; p < 4; p++){
           //get data for usr doc
-          console.log(part, p, "usrdata");
           var usrdata = document.getElementById("usr_" + p + "_" + part).innerHTML;
             //get data for url docs
           var refdata = document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML;
