@@ -30,8 +30,8 @@ def login(request: HttpRequest):
     - If the user already exists, new Onshape working environment IDs will be recorded. 
     
     """
-    if request.GET.get("wvm") != 'w': 
-        return HttpResponse("Please relaunch this app in the main workspace or create a branch from the left panel to start modelling ...")
+    # if request.GET.get("wvm") != 'w': 
+    #     return HttpResponse("Please relaunch this app in the main workspace or create a branch from the left panel to start modelling ...")
 
     user_id = request.GET.get('userId')
     try: 
@@ -124,7 +124,7 @@ def index(request: HttpRequest, os_user_id: str):
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
-   This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
+    This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
 
     **Arguments:**
         
@@ -134,6 +134,29 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     **Template:**
 
     :template:`grader/url_input.html`
+    """
+    context = { "user": None, 
+                "usertype": None} 
+    
+    if os_user_id: 
+        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+        context = {
+        "user": curr_user, 
+        "user_type": user_type,
+        }
+    return render(request, "grader/url_input.html", context=context)
+
+def doc_info_page(request: HttpRequest, os_user_id: str):
+    """ 
+    This function is for showing elements in a document for checking. 
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/doc_info_checker.html`
     """
     context = { "user": None, 
                 "usertype": None} 
