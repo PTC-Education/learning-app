@@ -29,7 +29,7 @@
 
 
 
-<body>
+<body id="whole">
 
 {% if user_props %}
     <p class="resulttile">Reference properties</p>
@@ -167,22 +167,20 @@
             
 
 {% if failed_urls %}
-<div class="failed_url_reasons" id="failed_url_reasons">
-    <br>
-    <label for="failed_url_help" class="helper" title="Click to close this box" onclick="show_hide_url_reasons()">
-        <img src="{% static 'grader/images/close.png' %}"/>
-    </label><br>
-    Here are some reasons the CAD Checker may have failed to grade the document.
-    <ul>
-        <li>You may not have permisson to access the document. Please request the document owner to share access with you.</li>
-        <li>The url may be of a different element type in the document. Make sure you are comparing a Part Studio with a Part Studio and an Assembly with an Assembly type.</li>
-        
-    </ul>
-</div>
+
 <div class="failed_url_box">
-    The following URLs failed to return a result.                     
-    <label for="failed_url_help" class="helper" title="Click to learn more about reasons on why the urls failed. " onclick="show_hide_url_reasons()">
-        <img src="{% static 'grader/images/help.png' %}"/>
+    The following URLs failed to return a result.    
+    <div class="failed_url_reasons" id="failed_url_reasons" >
+        <br>
+        Here are some reasons the CAD Checker may have failed to grade the document.
+        <ul>
+            <li>You may not have permission to access the document - make sure the document owner has shared it with you.</li>
+            <li>The url may be a different element type than you currently have open - make sure you are comparing a Part Studio with a Part Studio or an Assembly with an Assembly.</li>
+            
+        </ul>
+    </div>                 
+    <label for="failed_url_help" class="helper" onmouseover="show_hide_url_reasons()" onmouseleave="show_hide_url_reasons()">
+        <img id="helper_image" src="{% static 'grader/images/help.png' %}"/>
     </label><br>
 
     <script>show_hide_url_reasons();</script>

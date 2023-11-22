@@ -17,7 +17,6 @@ function loading_list() {
 function loading_spinner(divid) {
     const main_content = document.getElementById(divid); 
     main_content.innerHTML = "<div class=\"loader\"></div>"; 
-
 }
 
 function loading_documentlist() {

@@ -205,11 +205,11 @@ function compute_error(num_of_urls){
   }
 
 
-  //Function to show and hide the Reasons for failed url. Gets triggered when the question mark button is called, and closed when close button is clicked. 
+  //Function to show and hide the Reasons for failed url.
   function show_hide_url_reasons(){
    var reasons = document.getElementById("failed_url_reasons");
    if(reasons.style.display == "none"){
-    reasons.style.display = "block";    
+    reasons.style.display = "block"; 
    }
    else{
     reasons.style.display = "none";
