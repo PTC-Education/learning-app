@@ -26,7 +26,8 @@ function tableToCSV(num_of_urls) {
 	csvrow = [];
 	var docname = document.getElementById("usr_docname").innerHTML;
 	var username = document.getElementById("usr_username").innerHTML;
-	csvrow.push("", username,"", "Reference document",docname, ""); //element name and score are left blank
+	var userurl = document.getElementById("usr_url").innerHTML;
+	csvrow.push(userurl, username,"", "Reference document",docname, ""); //element name and score are left blank
 	csv_data.push(csvrow.join(",")); //Next row with document information 
 	
 	//Document property information of the user
