@@ -178,6 +178,7 @@ input.gradeButton[type=submit] {
 
 input.gradeButton[type=submit]:hover {
   background-color: #769fcc;
+  cursor:pointer;
 }
 
 
@@ -195,6 +196,7 @@ input.submiturl-button[type=submit] {
 }
 
 input.submiturl-button[type=submit]:hover {
+    cursor:pointer;
     cursor:pointer;
 }
 
