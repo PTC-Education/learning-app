@@ -66,8 +66,6 @@ function round_off_table_contents(num_of_parts, num_of_urls){
 }
 
 
-
-
 function compute_error(num_of_urls){
   /*
   This function calculates erros and hence the score or grade for each url inputted by the user as comapred with the property of model the app is currently opened on
