@@ -57,7 +57,7 @@
                 </div>     
                 <div class="selectedURL-DIV">
 
-                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return set_ref_url_as_array()">
+                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
 
                         <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
