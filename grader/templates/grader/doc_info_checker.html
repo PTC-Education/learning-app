@@ -9,21 +9,11 @@
     <body>
         <!-- Return to the home page -->
         <br />
-        <form action="{% url 'grader:index' user.os_user_id %}">
-            <input type="submit" value="Return to Home Page"/>
-        </form>
+        <p>Select which element you would like to check</p>
         <br />
         <!-- Check model -->
-        <form action="{% url 'grader:check_model' user.os_user_id %}" onsubmit="loading_spinner()">
-            <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features<br>      
-            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>      
-            <input type="submit" value="Check model"/>
-            <br>
-        </form>
-
-        <br />
-        {% if check_message %}
-            {{ check_message|safe }}
+        {% if element_list %}
+            {{ element_list|safe }}
         {% endif %}
 
     </body>
