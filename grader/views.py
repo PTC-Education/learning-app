@@ -45,7 +45,8 @@ def login(request: HttpRequest):
     
     user.os_domain = request.GET.get('server')
     user.did = request.GET.get('did')
-    user.wid = request.GET.get('wvmid')
+    user.wv = request.GET.get('wv')
+    user.wvid = request.GET.get('wvid')
     user.eid = request.GET.get('eid')
     user.etype = request.GET.get('etype')
     user.save() 
@@ -102,7 +103,10 @@ def authorize(request: HttpRequest):
     user.expires_at = timezone.now() + timedelta(seconds=token_response['expires_in'])
     user.save() 
 
-    return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
+    if user.etype == "infopanel":
+        return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
+    else:
+        return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
 def index(request: HttpRequest, os_user_id: str): 
     """ 
