@@ -50,9 +50,9 @@
                         {% if etype == 'partstudios' %}
                             <th>Part Name</th>
                         {% endif %}
-                        <th>Mass (kg)</th>
-                        <th>Volume  (m<sup>3</sup>)</th>
-                        <th>Surface Area  (m<sup>2</sup>)</th>
+                        <th>Mass <span class = unit>(kg)</span></th>
+                        <th>Volume <span class = unit>(m<sup>3</sup>)</span></th>
+                        <th>Surface area <span class = unit>(m<sup>2</sup>)</span></th>
                         <th>Principal MOI</th>
                     </tr>
                     {% for prop_array in user_props %}
@@ -122,9 +122,9 @@
                                     {% if etype == 'partstudios' %}
                                         <th>Part Name</th>
                                     {% endif %}
-                                    <th>Mass</th>
-                                    <th>Volume</th>
-                                    <th>Surface Area</th>
+                                    <th>Mass <span class = unit>(kg)</span></th>
+                                    <th>Volume <span class = unit>(m<sup>3</sup>)</span></th>
+                                    <th>Surface area <span class = unit>(m<sup>2</sup>)</span></th>
                                     <th>Principal MOI</th>
                                 </tr>
                                 {% for prop_array in ref_props %}
