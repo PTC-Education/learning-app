@@ -30,12 +30,18 @@ function reform_result(num_of_urls){
 
 
 function round_off_table_contents(num_of_parts, num_of_urls){
-  var precison = 6 ; //set the precison 
+  var precison = 3 ; //set the precison 
   for (let part = 1; part < num_of_parts; part++){
     //round off data for each part in the user document 
     for (let p = 1; p < 5; p++){
       var data = document.getElementById("usr_" + p + "_" + part).innerHTML;
-      document.getElementById("usr_" + p + "_" + part).innerHTML = Number(data).toFixed(precison);
+      if(0 < data && data < 0.01){
+        document.getElementById("usr_" + p + "_" + part).innerHTML = Number(data).toExponential(precison);
+      }
+      else{
+        document.getElementById("usr_" + p + "_" + part).innerHTML = Number(data).toFixed(precison);
+      }
+      
     }
   }
   //round off data for each part in the results table 
@@ -46,9 +52,14 @@ function round_off_table_contents(num_of_parts, num_of_urls){
       //for each part 
       for (let part = 1; part < ref_number_of_parts; part++){
         //for each column
-        for (let p = 1; p <5; p++){
+        for (let p = 1; p < 5; p++){
           var data = document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML;
-          document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML = Number(data).toFixed(precison);
+          if(0.0 < data && data< 0.01){
+            document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML = Number(data).toExponential(precison);
+          }
+          else{
+            document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML = Number(data).toFixed(precison);
+          }
         }
       }
     }
