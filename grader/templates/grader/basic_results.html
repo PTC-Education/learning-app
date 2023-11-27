@@ -1,49 +1,51 @@
 {% load static %}
 
-<link rel="stylesheet" href="{% static 'grader/results.css' %}">
+<link rel = "stylesheet" href = "{% static 'grader/results.css' %}">
 <!-- Load js for handling export of csv -->
-<script src="{% static 'grader/download_csv.js' %}" type="text/javascript" defer=""></script>
+<script src = "{% static 'grader/download_csv.js' %}" type = "text/javascript" defer = ""></script>
 <!-- Load loading_modelling function to enable loading screen -->
-<script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
-<script src="{% static 'grader/results.js' %}" type="text/javascript"></script>
+<script src = "{% static 'grader/loading.js' %}" type = "text/javascript"></script>
+<script src = "{% static 'grader/results.js' %}" type = "text/javascript"></script>
 
-<body id="whole">
+<body id = "whole">
 <!-- Return to the home page -->
 <br>
-<form action="{% url 'grader:index' user.os_user_id %}">
-    <input type="submit" value="Return to Home Page">
+
+<button type = "button" class = "blue_button" onclick = "tableToCSV('{{all_ref_props|length}}')">Download report</button>
+<form action = "{% url 'grader:index' user.os_user_id %}">
+    <input type = "submit" value= "Return to Home Page">
 </form>
-<div class="spinner-container">
-    <div id="lists">
+<div class = "spinner-container">
+    <div id = "lists">
         <!--This is where the spinner will load-->
     </div>
 </div>
 <div>
     {% if error_message %}
-    <p id="err_msg"><strong>{{ error_message }}</strong></p>
+    <p id = "err_msg"><strong>{{ error_message }}</strong></p>
     {% endif %}
 </div>
 
-<button type="button" class="blue-button" onclick="tableToCSV('{{user_props|length}}','{{all_ref_props|length}}')">Export CSV</button>
+
 
 {% if user_props %}
-    <p class="resulttile">Reference properties</p>
+    <p class = "resulttile">Reference properties</p>
 
-    <div class="property_box">
-        <div class="docinfo">
-            <p class="docname" id="usr_docname">{{user_props.0.0}}</p>
-            <p class="username" id="usr_username">{{user_props.0.1}}</p>
+    <div class = "property_box">
+        <div class = "docinfo">
+            <p class = "docname" id = "usr_docname">{{user_props.0.0}}</p>
+            <p class = "username" id = "usr_username">{{user_props.0.1}}</p>
         </div>
         <div>
-            <div class="display_table">
-                <table id="reference" class="results">
+            <div class = "display_table">
+                <table id = "reference" class = "results">
                     {% if etype == 'partstudios' %}
-                    <col class="partname_col">
+                    <col class = "col_0">
                     {% endif %}
-                    <col class="col_0">
-                    <col class="col_1">
-                    <col class="col_2">
-                    <col class="col_3">
+                    <col class = "col_1">
+                    <col class = "col_2">
+                    <col class = "col_3">
+                    <col class = "col_4">
                     <tr>
                         {% if etype == 'partstudios' %}
                             <th>Part Name</th>
@@ -59,12 +61,12 @@
                         {% else %}
                         <tr>
                             {% if etype == 'partstudios' %}
-                            <td id="usr_name_{{forloop.counter0}}">{{prop_array.4}}</td>
+                            <td id = "usr_0_{{forloop.counter0}}">{{prop_array.4}}</td>
                             {% endif %}
-                            <td id="usr_0_{{forloop.counter0}}">{{prop_array.0}}</td>
-                            <td id="usr_1_{{forloop.counter0}}">{{prop_array.1}}</td>
-                            <td id="usr_2_{{forloop.counter0}}">{{prop_array.2}}</td>
-                            <td id="usr_3_{{forloop.counter0}}">{{prop_array.3}}</td>
+                            <td id = "usr_1_{{forloop.counter0}}">{{prop_array.0}}</td>
+                            <td id = "usr_2_{{forloop.counter0}}">{{prop_array.1}}</td>
+                            <td id = "usr_3_{{forloop.counter0}}">{{prop_array.2}}</td>
+                            <td id = "usr_4_{{forloop.counter0}}">{{prop_array.3}}</td>
                         </tr>
                         {% endif %}
                     {% endfor %}
@@ -75,46 +77,46 @@
     </div>
 {% endif %}
 
-<p class="resulttile">Results</p>
+<p class = "resulttile">Results</p>
       {% if all_ref_props %}
-        <div class="adjust-container">
-            <div class="slidecontainer">
-                <p>Tolerance: <span id="slider_value"></span> %</p>
-                <input type="range" min="1" max="500" value="50" class="slider" id="tolerance_slider" onchange="compute_error('{{all_ref_props|length}}')">
+        <div class = "adjust-container">
+            <div class = "slidecontainer">
+                <p>Tolerance: <span id = "slider_value"></span> %</p>
+                <input type = "range" min = "1" max = "500" value = "50" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{all_ref_props|length}}')">
             </div>
-            <div class="propselector" onchange="reform_result('{{all_ref_props|length}}')" >
-                <label class="prop-selector-box-text"><input type="checkbox" id="check_0" name="mass" value="mass" checked="True" /> Mass</label>
-                <label class="prop-selector-box-text"><input type="checkbox" id="check_1" name="vol" value="volume" checked="True"/>Volume</label>
-                <label class="prop-selector-box-text"><input type="checkbox" id="check_2" name="surf" value="Surface_Area" checked="True"/>Surface Area</label>
-                <label class="prop-selector-box-text"><input type="checkbox" id="check_3" name="PMOI" value="Principal_MOI" checked="True"/>Principal MOI</label>
+            <div class = "propselector" onchange= "reform_result('{{all_ref_props|length}}')" >
+                <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1" name = "mass" value = "mass" checked = "True" /> Mass</label>
+                <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_2" name = "vol" value = "volume" checked = "True"/>Volume</label>
+                <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_3" name = "surf" value = "Surface_Area" checked = "True"/>Surface Area</label>
+                <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_4" name = "PMOI" value = "Principal_MOI" checked = "True"/>Principal MOI</label>
             </div>
         </div>
             {% for ref_props in all_ref_props %}
-                <div class="property_box">
-                    <div class="display_thumbnail">
-                        <a href="{{ref_props.0.5|safe}}" target="_blank">{{ref_props.0.2}}</a> 
-                        <p hidden id="url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
-                        <p hidden id="elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
-                        <img src="{{ref_props.0.4}}" alt="" />
-                        <div class="score" id="ref_score_{{forloop.counter0}}"><p></p></div>
+                <div class = "property_box">
+                    <div class = "display_thumbnail">
+                        <a href = "{{ref_props.0.5|safe}}" target = "_blank">{{ref_props.0.2}}</a> 
+                        <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
+                        <p hidden id = "elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
+                        <img src = "{{ref_props.0.4}}" alt = "" />
+                        <div class = "score" id = "ref_score_{{forloop.counter0}}"></div>
                     </div>
-                    <div class="docinfo">
-                        <p class="docname" id="ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
-                        <p class="username" id="ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
+                    <div class = "docinfo">
+                        <p class = "docname" id = "ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
+                        <p class = "username" id = "ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
                     </div>
-                    <div class="table_error_message" id="error_message_{{forloop.counter0}}"></div>
+                    <div class = "table_error_message" id = "error_message_{{forloop.counter0}}"></div>
 
 
                     <div>
-                        <div class="display_table">
-                            <table id="table_{{forloop.counter0}}" class="results">
+                        <div class = "display_table">
+                            <table id = "table_{{forloop.counter0}}" class = "results">
                                 {% if etype == 'partstudios' %}
-                                    <col class="partname_col">
+                                    <col class = "col_0">
                                 {% endif %}
-                                <col class="col_0">
-                                <col class="col_1">
-                                <col class="col_2">
-                                <col class="col_3">
+                                <col class = "col_1">
+                                <col class = "col_2">
+                                <col class = "col_3">
+                                <col class = "col_4">
                                 <thead>
                                 <tr>
                                     {% if etype == 'partstudios' %}
@@ -131,12 +133,12 @@
                                     {% else %}
                                         <tr>
                                             {% if etype == 'partstudios' %}
-                                            <td id="ref_name_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.4}}</td>
+                                            <td id = "ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.4}}</td>
                                             {% endif %}
-                                            <td id="ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.0}}</td>
-                                            <td id="ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
-                                            <td id="ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
-                                            <td id="ref_3_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
+                                            <td id = "ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.0}}</td>
+                                            <td id = "ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
+                                            <td id = "ref_3_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
+                                            <td id = "ref_4_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
                                         </tr>
                                     {% endif %}
                                 {% endfor %}
@@ -153,9 +155,9 @@
 
 {% if failed_urls %}
 
-<div class="failed_url_box">
+<div class = "failed_url_box">
     The following URLs failed to return a result.    
-    <div class="failed_url_reasons" id="failed_url_reasons" >
+    <div class = "failed_url_reasons" id = "failed_url_reasons" >
         <br>
         Here are some reasons the CAD Checker may have failed to grade the document.
         <ul>
@@ -164,14 +166,14 @@
             
         </ul>
     </div>                 
-    <label for="failed_url_help" class="helper" onmouseover="show_hide_url_reasons()" onmouseleave="show_hide_url_reasons()">
-        <img id="helper_image" src="{% static 'grader/images/help.png' %}"/>
+    <label for = "failed_url_help" class = "helper" onmouseover = "show_hide_url_reasons()" onmouseleave = "show_hide_url_reasons()">
+        <img id = "helper_image" src= "{% static 'grader/images/help.png' %}"/>
     </label><br>
 
     <script>show_hide_url_reasons();</script>
-    <ul class="failed_url_list">
+    <ul class = "failed_url_list" id = "failed_url_list">
         {% for url in failed_urls %}
-            <li><a href="{{ url|safe }}" target="_blank">{{ url|safe }}</a></li>
+            <li><a href = "{{ url|safe }}" target = "_blank">{{ url|safe }}</a></li>
         {% endfor %}
     </ul>
 </div>
