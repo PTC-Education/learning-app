@@ -225,7 +225,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
 
     # Get info about the document the user currently has opened
-    # DO WE NEED THIS?
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     user_doc_name = user_doc_info['name']
     user_user_name = user_doc_info["createdBy"]["name"]
