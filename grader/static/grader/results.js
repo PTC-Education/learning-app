@@ -136,14 +136,15 @@ function compute_error(num_of_urls){
   }
    
 
-  //Function to show and hide the Reasons for failed url.
-  function show_hide_url_reasons(){
-   var reasons = document.getElementById("failed_url_reasons");
-   if(reasons.style.display == "none"){
+  //Function to show pop up
+  function show_popup(popup){
+    var reasons = document.getElementById(popup);
     reasons.style.display = "block"; 
-   }
-   else{
+  }
+
+  //Function to  hide pop up
+  function hide_popup(popup){
+    var reasons = document.getElementById(popup);
     reasons.style.display = "none";
-   }
   }
    

@@ -166,11 +166,10 @@
             
         </ul>
     </div>                 
-    <label for = "failed_url_help" class = "helper" onmouseover = "show_hide_url_reasons()" onmouseleave = "show_hide_url_reasons()">
+    <label for = "failed_url_help" class = "helper" onmouseover = "show_popup('failed_url_reasons')" onmouseleave = "hide_popup('failed_url_reasons')">
         <img id = "helper_image" src= "{% static 'grader/images/help.png' %}"/>
-    </label><br>
-
-    <script>show_hide_url_reasons();</script>
+    </label>
+    <script>hide_popup('failed_url_reasons')</script>
     <ul class = "failed_url_list" id = "failed_url_list">
         {% for url in failed_urls %}
             <li><a href = "{{ url|safe }}" target = "_blank">{{ url|safe }}</a></li>
