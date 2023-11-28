@@ -89,7 +89,7 @@ function tableToCSV(num_of_urls) {
 		console.log(failedurls);
 		for(let i = 0; i < failedurls.length; i++){
 			csvrow = [];
-			csvrow.push(failedurls[i].innerHTML, "", "", "Failed to access");
+			csvrow.push(failedurls[i].innerHTML, "", "", "Failed to grade!");
 			csv_data.push(csvrow.join(","));
 		}
 	}
