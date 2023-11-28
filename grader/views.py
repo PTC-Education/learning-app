@@ -332,7 +332,8 @@ def check_model(request: HttpRequest, os_user_id: str):
 
     check_type = request.GET.getlist('check_type')
     check_message = ""
-    
+    check_mates = []
+
     if "Features" in check_type:
         # Get feature list of model the user currently has opened
         feature_list = get_feature_list(
@@ -345,6 +346,7 @@ def check_model(request: HttpRequest, os_user_id: str):
             check_message += ps_feature_list_helper(feature_list)
         if curr_user.etype == "assemblies":
             check_message += as_feature_list_helper(feature_list)
+            check_mates = as_get_mates(feature_list)
     
     if "Parts" in check_type:
         # Get parts list of model the user currently has opened
@@ -369,7 +371,8 @@ def check_model(request: HttpRequest, os_user_id: str):
     context={
         "user": curr_user,
         "check_type": check_type,
-        "check_message": check_message
+        "check_message": check_message,
+        "check_mates": check_mates
     }
     return render(
         request, "grader/checker.html", 
@@ -722,6 +725,49 @@ def as_feature_list_helper(feature_list):
     '''
 
     return feature_message
+
+# Extract arrayve of mates and mate relations, including offsets and limits
+def as_get_mates(feature_list):
+    mates = []
+
+    for feature in feature_list['features']:
+        if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
+            mate = {'name': feature['name'], 'type': feature['featureType']}
+            
+            params = feature['parameters']
+            
+            limits = []
+            offsets = []
+
+            for param in params:
+                paramId = param['parameterId']
+                if paramId  == 'limitsEnabled':
+                    limitsEnabled = param['value']
+                if paramId == 'mateOffsetEnabled':
+                    offsetEnabled = param['value']
+                if paramId[:11] == 'mateOffsetD':
+                    offsetArr = [param['parameterId'], param['expression']]
+                    offsets.append(offsetArr)
+                if paramId[:5] == 'limit' and 'nullValue' in param:
+                    if param['nullValue'] == "":
+                        limitArr = [param['parameterId'], param['expression']]
+                        limits.append(limitArr)
+                if paramId  == 'relationType' or paramId == 'mateType':
+                    renamed = param['value'].lower() == re.sub('[0-9]','',feature['name']).replace(" ","").lower()
+
+            if limitsEnabled:
+                mate.update({'limits': limits})
+            limitsEnabled = False
+
+            if offsetEnabled:
+                mate.update({'offsets': offsets})
+            offsetEnabled = False
+
+            mate.update({'renamed': renamed})
+
+            mates.append(mate)
+
+    return mates
 
 # Extract useful information from part lists for partstudios
 def part_list_helper(part_list):

@@ -31,5 +31,37 @@
             {{ check_message|safe }}
         {% endif %}
 
+        {% if check_mates %}
+            <h3>Assembly Mates</h3>
+            <table><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr>
+                {% for mate in check_mates %}
+                    <tr>
+                        <td>{{ mate.name }}</td>
+                        <td>{{ mate.type }}</td>
+                        <td>
+                            {% if mate.limits %}
+                                {% for limit in mate.limits %}
+                                    {{ limit.0 }}: {{ limit.1 }}<br/>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if mate.offsets %}
+                                {% for mate in mate.offsets %}
+                                    {{ mate.0 }}: {{ mate.1 }}<br/>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if mate.renamed %}
+                                &#10003;
+                            {% else %}
+                                &#10007;
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
     </body>
 </html>
