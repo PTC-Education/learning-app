@@ -225,15 +225,14 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
 
     # Get info about the document the user currently has opened
-    # DO WE NEED THIS?
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     user_doc_name = user_doc_info['name']
     user_user_name = user_doc_info["createdBy"]["name"]
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
-
+    user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/w/" + curr_user.wid + "/e/" + curr_user.eid
+    
     # Append user related information along with mass properties
-    # DO WE NEED THIS?
-    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time])
+    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url])
 
     ## Initialize arrays for ref docs
     all_ref_props = [] # 3D array - each 2D array corresponds to one URL
