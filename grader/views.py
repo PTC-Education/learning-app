@@ -333,6 +333,7 @@ def check_model(request: HttpRequest, os_user_id: str):
     check_type = request.GET.getlist('check_type')
     check_message = ""
     check_mates = []
+    mate_count = {}
 
     if "Features" in check_type:
         # Get feature list of model the user currently has opened
@@ -346,7 +347,7 @@ def check_model(request: HttpRequest, os_user_id: str):
             check_message += ps_feature_list_helper(feature_list)
         if curr_user.etype == "assemblies":
             check_message += as_feature_list_helper(feature_list)
-            check_mates = as_get_mates(feature_list)
+            check_mates, mate_count = as_get_mates(feature_list)
     
     if "Parts" in check_type:
         # Get parts list of model the user currently has opened
@@ -372,7 +373,8 @@ def check_model(request: HttpRequest, os_user_id: str):
         "user": curr_user,
         "check_type": check_type,
         "check_message": check_message,
-        "check_mates": check_mates
+        "check_mates": check_mates,
+        "mate_count": mate_count
     }
     return render(
         request, "grader/checker.html", 
@@ -729,6 +731,7 @@ def as_feature_list_helper(feature_list):
 # Extract arrayve of mates and mate relations, including offsets and limits
 def as_get_mates(feature_list):
     mates = []
+    mate_count = {}
 
     for feature in feature_list['features']:
         if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
@@ -753,7 +756,13 @@ def as_get_mates(feature_list):
                         limitArr = [param['parameterId'], param['expression']]
                         limits.append(limitArr)
                 if paramId  == 'relationType' or paramId == 'mateType':
-                    renamed = param['value'].lower() == re.sub('[0-9]','',feature['name']).replace(" ","").lower()
+                    val = param['value']
+                    val += '*' if paramId == 'relationType' else val
+                    renamed = val.lower() == re.sub('[0-9]','',feature['name']).replace(" ","").lower()
+                    if val not in mate_count:
+                        mate_count.update({val : 1})
+                    else:
+                        mate_count[val] += 1
 
             if limitsEnabled:
                 mate.update({'limits': limits})
@@ -767,7 +776,7 @@ def as_get_mates(feature_list):
 
             mates.append(mate)
 
-    return mates
+    return mates, mate_count
 
 # Extract useful information from part lists for partstudios
 def part_list_helper(part_list):
