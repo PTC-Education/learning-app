@@ -118,10 +118,14 @@ function compute_error(num_of_urls){
       
       if(usr_number_of_parts != ref_number_of_parts){
           var text=document.getElementById("error_message_" + url);
-          text.innerHTML="Mismatched number of parts from the reference- Please make sure you have selected the right document";
+          if(usr_number_of_parts > ref_number_of_parts){
+            text.innerHTML="Some parts are missing.";
+          }
+          else {
+            text.innerHTML="Extra parts were detected.";
+          }
           ref_table.style.display="none";
           document.getElementById("ref_score_"+ url).innerHTML =  "&#x274C";
-
       }
     }
   }
