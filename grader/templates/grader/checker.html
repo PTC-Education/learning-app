@@ -31,50 +31,68 @@
             {{ check_message|safe }}
         {% endif %}
 
-        {% if mate_count %}
-            <h3>Mates Summary</h3>
+        {% if mates and mate_relations %}   
+            <h3>Mates Summary</h3>  
+            {{ mates_msg }}
+            <p class="table_title">Mates</p>
             <table><tr><th>Type</th><th>Count</th></tr>
-                {% for key, value in mate_count.items %}
+                {% for key, value in mates.items %}
                     <tr>
                         <td>{{ key }}</td>
                         <td>{{ value }}</td>
-                     </tr>
+                        </tr>
                 {% endfor %}
             </table>
-            <p class="caption">* Mate Relation</p>
+            {% if mate_relations|length > 0 %}
+                <p class="table_title">Mate Relations</p>
+                <table><tr><th>Type</th><th>Count</th></tr>
+                    {% for key, value in mate_relations.items %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ value }}</td>
+                            </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
         {% endif %}
-
-        {% if check_mates %}
-            <h3>Mate Details</h3>
-            <table><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr>
-                {% for mate in check_mates %}
-                    <tr>
-                        <td>{{ mate.name }}</td>
-                        <td>{{ mate.type }}</td>
-                        <td>
-                            {% if mate.limits %}
-                                {% for limit in mate.limits %}
-                                    {{ limit.0 }}: {{ limit.1 }}<br/>
-                                {% endfor %}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if mate.offsets %}
-                                {% for mate in mate.offsets %}
-                                    {{ mate.0 }}: {{ mate.1 }}<br/>
-                                {% endfor %}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if mate.renamed %}
-                                &#10007;
-                            {% else %}
-                                &#10003;
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
+        
+        <h3>Mates Details</h3>  
+        {% if detail_msg %}
+            {% for msg in detail_msg %}
+                {{ msg }}<br>
+            {% endfor %}
         {% endif %}
+        
+        {% if mate_details %}
+        <table><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr>
+            {% for mate in mate_details %}
+                <tr>
+                    <td>{{ mate.name }}</td>
+                    <td>{{ mate.type }}</td>
+                    <td>
+                        {% if mate.limits %}
+                            {% for limit in mate.limits %}
+                                {{ limit.0 }}: {{ limit.1 }}<br/>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if mate.offsets %}
+                            {% for mate in mate.offsets %}
+                                {{ mate.0 }}: {{ mate.1 }}<br/>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if mate.renamed %}
+                            &#10007;
+                        {% else %}
+                            &#10003;
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
     </body>
 </html>

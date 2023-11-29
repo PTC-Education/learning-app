@@ -38,9 +38,9 @@ ol {
     color: red;
 }
 
-.caption {
-  margin-top: 0px;
-  font-size: 11px;
+.table_title {
+  font-weight: bold;
+  margin: 5px 0px 0px 0px;
 }
 
 /* Style the app logo at the center top of the page */ 

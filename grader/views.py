@@ -332,8 +332,11 @@ def check_model(request: HttpRequest, os_user_id: str):
 
     check_type = request.GET.getlist('check_type')
     check_message = ""
-    check_mates = []
-    mate_count = {}
+    mates_msg = ""
+    detail_msg = []
+    mates = {}
+    mate_relations = {}
+    mate_details = {}
 
     if "Features" in check_type:
         # Get feature list of model the user currently has opened
@@ -346,8 +349,9 @@ def check_model(request: HttpRequest, os_user_id: str):
         if curr_user.etype == "partstudios":
             check_message += ps_feature_list_helper(feature_list)
         if curr_user.etype == "assemblies":
-            check_message += as_feature_list_helper(feature_list)
-            check_mates, mate_count = as_get_mates(feature_list)
+            # check_message += as_feature_list_helper(feature_list)
+            mates, mate_relations, mates_msg = as_get_mate_summary(feature_list)
+            mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type:
         # Get parts list of model the user currently has opened
@@ -373,8 +377,11 @@ def check_model(request: HttpRequest, os_user_id: str):
         "user": curr_user,
         "check_type": check_type,
         "check_message": check_message,
-        "check_mates": check_mates,
-        "mate_count": mate_count
+        "mates": mates,
+        "mate_relations": mate_relations, 
+        "mates_msg": mates_msg,
+        "mate_details": mate_details,
+        "detail_msg": detail_msg
     }
     return render(
         request, "grader/checker.html", 
@@ -728,10 +735,42 @@ def as_feature_list_helper(feature_list):
 
     return feature_message
 
-# Extract arrayve of mates and mate relations, including offsets and limits
-def as_get_mates(feature_list):
-    mates = []
-    mate_count = {}
+# Extract array of mates and mate relations, including offsets and limits
+def as_get_mate_summary(feature_list):
+    mates = {}
+    mate_relations = {}
+    mates_count = 0
+    mate_relations_count = 0
+
+    for feature in feature_list['features']:
+        if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
+            params = feature['parameters']
+            for param in params:
+                paramId = param['parameterId']
+                if 'value' in param:
+                    val = param['value']
+                    if paramId == 'relationType':
+                        mate_relations_count += 1
+                        if val not in mate_relations:
+                            mate_relations.update({val : 1})
+                        else:
+                            mate_relations[val] += 1
+                    elif paramId == 'mateType':
+                        mates_count += 1
+                        if val not in mates:
+                            mates.update({val : 1})
+                        else:
+                            mates[val] += 1
+    mates_msg = "This assembly contains " + str(mates_count) + " mates and " + str(mate_relations_count) + " mate relations."
+    return mates, mate_relations, mates_msg
+
+# Extract array of mates and mate relations, including offsets and limits
+def as_get_mate_details(feature_list):
+    mate_details = []
+    detail_msg = []
+    renamed_count = 0
+    offset_count = 0
+    limit_count = 0
 
     for feature in feature_list['features']:
         if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
@@ -758,25 +797,28 @@ def as_get_mates(feature_list):
                 if paramId  == 'relationType' or paramId == 'mateType':
                     val = param['value']
                     renamed = val.lower().replace("_", "") == re.sub('[0-9]','',feature['name']).replace(" ","").lower()
-                    val += '*' if paramId == 'relationType' else ''
-                    if val not in mate_count:
-                        mate_count.update({val : 1})
-                    else:
-                        mate_count[val] += 1
 
             if limitsEnabled:
+                limit_count += 1
                 mate.update({'limits': limits})
             limitsEnabled = False
 
             if offsetEnabled:
+                offset_count += 1
                 mate.update({'offsets': offsets})
             offsetEnabled = False
 
+            if renamed:
+                renamed_count += 1
             mate.update({'renamed': renamed})
 
-            mates.append(mate)
+            mate_details.append(mate)
+    # renamed, offsets, limits
+    detail_msg.append(str(renamed_count) + " of the mates and mate relations have been renamed.")
+    detail_msg.append(str(offset_count) + " have offsets.")
+    detail_msg.append(str(limit_count) + " have limits set.")
 
-    return mates, mate_count
+    return mate_details, detail_msg
 
 # Extract useful information from part lists for partstudios
 def part_list_helper(part_list):
