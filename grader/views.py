@@ -45,8 +45,8 @@ def login(request: HttpRequest):
     
     user.os_domain = request.GET.get('server')
     user.did = request.GET.get('did')
-    user.wv = request.GET.get('wv')
-    user.wvid = request.GET.get('wvid')
+    user.wv = request.GET.get('wvm')
+    user.wvid = request.GET.get('wvmid')
     user.eid = request.GET.get('eid')
     user.etype = request.GET.get('etype')
     user.save() 
@@ -150,7 +150,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         }
     return render(request, "grader/url_input.html", context=context)
 
-def doc_info_checker(request: HttpRequest, os_user_id: str):
+def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
     """ 
     This function is for showing elements in a document for checking. 
 
@@ -167,18 +167,74 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     doc_wid = doc_info['defaultWorkspace']['id']
 
-    elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", thumbnails="true", auth_token=curr_user.access_token)
+    if element_list == "":
+        elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
 
-    element_list = ""
-    for element in elements_info:
-        element_list += element['name']
+        element_list = '''
+        <label for="elements">Choose an element:</label>
+        <select id="elements" name="elements" size="5">'''
+        for element in elements_info:
+            if element['elementType'] == "PARTSTUDIO":
+                image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
+                element_list += f'''
+                <option value="partstudios {element['id']}"> {element['name']}</option>'''
+            elif element['elementType'] == "ASSEMBLY":
+                image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
+                element_list += f'''
+                <option value="assemblies {element['id']}">{element['name']}</option>'''
+        
+        element_list += "</select>"
+
+    element = request.GET.get('elements')
+    try:
+        etype = element.split(" ")[0]
+        eid = element.split(" ")[1]
+    except:
+        pass
+    check_type = request.GET.getlist('check_type')
+    check_message = ""
+    
+    if "Features" in check_type and element:
+        # Get feature list of model the user currently has opened
+        feature_list = get_feature_list(
+                curr_user.os_domain, etype, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+            )
+        if not feature_list: # API error 
+            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+        if etype == "partstudios":
+            check_message += ps_feature_list_helper(feature_list)
+        if etype == "assemblies":
+            check_message += as_feature_list_helper(feature_list)
+    
+    if "Parts" in check_type and element:
+        # Get parts list of model the user currently has opened
+        if etype == "partstudios":
+            part_list = get_part_list(
+                    curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+                )
+            if not part_list: # API error 
+                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+            check_message += part_list_helper(part_list)
+
+        if etype == "assemblies":
+            assembly_def = get_assembly_definition(
+                    curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+                )
+            if not assembly_def: # API error 
+                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+            check_message += instance_list_helper(assembly_def)
 
     context={
         "user": curr_user, 
-        # "element_list": element_list
+        "element_list": element_list,
+        "check_type": check_type,
+        "check_message": check_message
     }
 
-    return render(request, "grader/url_input.html", context=context)
+    return render(request, "grader/doc_info_checker.html", context=context)
 
 
 def grade_model(request: HttpRequest, os_user_id: str): 
