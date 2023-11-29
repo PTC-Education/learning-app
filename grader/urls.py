@@ -13,6 +13,6 @@ urlpatterns = [
     path('checker/<str:os_user_id>/', views.check_model, name="check_model"),
     path('list_classes/<str:os_user_id>/', views.list_classes, name="list_classes"),
     path('list_assignments/<str:os_user_id>/<str:class_id>', views.list_assignments, name="list_assignments"),
-    path('list_members/<str:os_user_id>/<str:assignment_id>', views.list_members, name="list_members"),
+    path('list_members/<str:os_user_id>/<str:class_id>/<str:assignment_id>', views.list_members, name="list_members"),
 
 ]

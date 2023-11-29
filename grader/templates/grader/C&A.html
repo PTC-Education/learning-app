@@ -53,13 +53,13 @@
                     <th class = "write_sideways">In progress</th>
                 </tr>
                 {% for assignment in assignments %}
-                    <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id assignment.0|safe%}">
+                    <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id assignment.0|safe assignment.1|safe%}">
                         <tr class="classlist">
-                            <th><input class = "gradeButton classname" type="submit" value="{{assignment.1}}" onmouseover = "show_popup('description','{{assignment.6}}', '{{assignment.7}}')" onmouseleave = "hide_popup('description')"></th>
-                            <th><input class = "gradeButton" type="submit" value="{{assignment.2}}"></th>
+                            <th><input class = "gradeButton classname" type="submit" value="{{assignment.2}}" onmouseover = "show_popup('description','{{assignment.7}}', '{{assignment.8}}')" onmouseleave = "hide_popup('description')"></th>
                             <th><input class = "gradeButton" type="submit" value="{{assignment.3}}"></th>
                             <th><input class = "gradeButton" type="submit" value="{{assignment.4}}"></th>
                             <th><input class = "gradeButton" type="submit" value="{{assignment.5}}"></th>
+                            <th><input class = "gradeButton" type="submit" value="{{assignment.6}}"></th>
 
                         </tr>
                     </form>
@@ -72,6 +72,14 @@
             <span class = "description_title">Description: </span> <div id = "description_text"> </div>
             </div>
         </div> <!-- Place to show the description of assignment-->
+        {% endif %}
+
+
+        {% if studentworks %}
+        {% for studentwork in studentworks %}
+            {{studentwork|safe}}
+
+        {% endfor %}
         {% endif %}
 
        

@@ -217,9 +217,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str):
             not_submitted = item["numberOfSubmissionsNotStarted"]
             description = item["description"]
             published_date = item["publishedDate"]
-
-
-            assignments.append([assignment_id, name, status, in_progress, submitted, not_submitted, published_date, description,])
+            assignments.append([class_id, assignment_id, name, status, in_progress, submitted, not_submitted, published_date, description,])
 
     except:
         print("Error in assignment") #need better error message here
@@ -233,7 +231,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str):
     )
 
 
-def list_members(request: HttpRequest, os_user_id: str, assignment_id:str):
+def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment_id:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -249,17 +247,32 @@ def list_members(request: HttpRequest, os_user_id: str, assignment_id:str):
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
-    items = get_assignment_list(curr_user.os_domain,class_id,auth_token = curr_user.access_token)
-    print(items)    
-    item=[["milan","is","a ","good","b0y"] ]    
+
+    student_works = [] 
+
+    full_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
+    submissions = full_list["submissions"]
+    for submission in submissions:
+        user_name = submission["memberName"]
+        state_name = submission["stateName"]
+        #number_of_attemps = submission["numberOfAttempts"]
+        #did = submission["documents"][0]["metadata"]["did"]
+        #wid = submission["documents"][0]["metadata"]["dwi"]
+        #eid = submission["documents"][0]["metadata"]["die"]
+        #vid = submission["documents"][0]["metadata"]["dvi"]
+        doc_name = submission["documents"][0]["metadata"]["dn"]
+        version_url = submission["documents"][0]["viewRef"]
+        #workspace_url = curr_user.os_domain + "/documents/" + did + "/w/" + wid + "/e/" + eid
+    
+        student_works.append([user_name, state_name, doc_name, version_url])
 
     context={
             "user": curr_user, 
-            "assignments":item,
+            "studentworks":student_works,
         }
     return render(
         request, "grader/c&A.html", 
-        context=context
+        context = context
     )
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
@@ -678,7 +691,7 @@ def get_class_list(
 
 def get_assignment_list(
     domain: str, classid: str, auth_token: str
-    ) -> Any: 
+) -> Any: 
 
     response = requests.get(
         os.path.join(
@@ -691,11 +704,35 @@ def get_assignment_list(
             "Authorization" : "Bearer " + auth_token
         }
     )
-    print(response.json())
     if response.ok: 
         return response.json() 
     else: 
         return None
+
+def get_submission_list(
+    domain: str, classid:str , assignmentid: str, auth_token: str
+) -> Any: 
+    print("URL",os.path.join(
+            domain, 
+            "api/classrooms/{}/assignments/{}".format(classid, assignmentid)
+        ))
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/classrooms/{}/assignments/{}".format(classid, assignmentid)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
 
 
 def get_element_info(
