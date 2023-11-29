@@ -70,11 +70,11 @@
                     <input class="options" type="submit" value="Grade list of URLs">
                 </form>
 
-                <!--Load url page for group comparison through classes and assignments
-                    <form action="" onsubmit="loading_grades()">
+                <!--Load url page for group comparison through classes and assignments -->
+                    <form action="{% url 'grader:list_classes' user.os_user_id%}" onsubmit="loading_grades()">
                         <input class="options" type="submit" value="Grade from C&A submission list">
                     </form>
-                -->
+                
 
             </div>
         </div>
