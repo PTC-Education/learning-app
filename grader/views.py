@@ -332,8 +332,8 @@ def check_model(request: HttpRequest, os_user_id: str):
 
     check_type = request.GET.getlist('check_type')
     check_message = ""
-    mates_msg = ""
-    detail_msg = []
+    summary_msg = {}
+    detail_msg = {}
     mates = {}
     mate_relations = {}
     mate_details = {}
@@ -350,7 +350,7 @@ def check_model(request: HttpRequest, os_user_id: str):
             check_message += ps_feature_list_helper(feature_list)
         if curr_user.etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, mates_msg = as_get_mate_summary(feature_list)
+            mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
             mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type:
@@ -379,7 +379,7 @@ def check_model(request: HttpRequest, os_user_id: str):
         "check_message": check_message,
         "mates": mates,
         "mate_relations": mate_relations, 
-        "mates_msg": mates_msg,
+        "summary_msg": summary_msg,
         "mate_details": mate_details,
         "detail_msg": detail_msg
     }
@@ -739,8 +739,10 @@ def as_feature_list_helper(feature_list):
 def as_get_mate_summary(feature_list):
     mates = {}
     mate_relations = {}
-    mates_count = 0
-    mate_relations_count = 0
+    summary_msg = {
+        'mates': 0,
+        'mate_relations': 0,
+    }
 
     for feature in feature_list['features']:
         if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
@@ -750,73 +752,71 @@ def as_get_mate_summary(feature_list):
                 if 'value' in param:
                     val = param['value']
                     if paramId == 'relationType':
-                        mate_relations_count += 1
+                        summary_msg['mate_relations'] += 1
                         if val not in mate_relations:
                             mate_relations.update({val : 1})
                         else:
                             mate_relations[val] += 1
                     elif paramId == 'mateType':
-                        mates_count += 1
+                        summary_msg['mates'] += 1
                         if val not in mates:
                             mates.update({val : 1})
                         else:
                             mates[val] += 1
-    mates_msg = "This assembly contains " + str(mates_count) + " mates and " + str(mate_relations_count) + " mate relations."
-    return mates, mate_relations, mates_msg
+    
+    return mates, mate_relations, summary_msg
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_details(feature_list):
     mate_details = []
-    detail_msg = []
-    renamed_count = 0
-    offset_count = 0
-    limit_count = 0
+    detail_msg = {
+        'renamed': 0,
+        'offsets': 0,
+        'limits': 0
+    }
+    feature_types = {'mate', 'mateRelation'}
 
     for feature in feature_list['features']:
-        if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
+        if feature['featureType'] in feature_types:
             mate = {'name': feature['name'], 'type': feature['featureType']}
-            
             params = feature['parameters']
-            
             limits = []
             offsets = []
+            limitsEnabled = False
+            offsetEnabled = False
+            renamed = False
 
             for param in params:
                 paramId = param['parameterId']
+
                 if paramId  == 'limitsEnabled':
                     limitsEnabled = param['value']
-                if paramId == 'mateOffsetEnabled':
+                elif paramId == 'mateOffsetEnabled':
                     offsetEnabled = param['value']
-                if paramId[:11] == 'mateOffsetD':
+                elif paramId.startswith('mateOffsetD'):
                     offsetArr = [param['parameterId'], param['expression']]
                     offsets.append(offsetArr)
-                if paramId[:5] == 'limit' and 'nullValue' in param:
+                elif paramId.startswith('limit') and 'nullValue' in param:
                     if param['nullValue'] == "":
                         limitArr = [param['parameterId'], param['expression']]
                         limits.append(limitArr)
-                if paramId  == 'relationType' or paramId == 'mateType':
+                elif paramId  == 'relationType' or paramId == 'mateType':
                     val = param['value']
-                    renamed = val.lower().replace("_", "") == re.sub('[0-9]','',feature['name']).replace(" ","").lower()
+                    renamed = val.lower().replace("_", "") != re.sub('[0-9]','',feature['name']).replace(" ","").lower()
 
             if limitsEnabled:
-                limit_count += 1
+                detail_msg['limits'] += 1
                 mate.update({'limits': limits})
-            limitsEnabled = False
-
+            
             if offsetEnabled:
-                offset_count += 1
+                detail_msg['offsets'] += 1
                 mate.update({'offsets': offsets})
-            offsetEnabled = False
-
+            
             if renamed:
-                renamed_count += 1
-            mate.update({'renamed': renamed})
+                detail_msg['renamed'] += 1
 
+            mate.update({'renamed': renamed})
             mate_details.append(mate)
-    # renamed, offsets, limits
-    detail_msg.append(str(renamed_count) + " of the mates and mate relations have been renamed.")
-    detail_msg.append(str(offset_count) + " have offsets.")
-    detail_msg.append(str(limit_count) + " have limits set.")
 
     return mate_details, detail_msg
 

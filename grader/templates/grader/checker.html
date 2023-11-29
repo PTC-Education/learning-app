@@ -32,8 +32,15 @@
         {% endif %}
 
         {% if mates and mate_relations %}   
-            <h3>Mates Summary</h3>  
-            {{ mates_msg }}
+            <h3>Mates Summary</h3> 
+            {% if summary_msg %}
+                <p>This assembly contains {{ summary_msg.mates}} mates and {{ summary_msg.mate_relations}} mate relations.</p>
+            {% endif %}
+            {% if detail_msg %}
+                <p>Of the mates and mate relations, {{ detail_msg.renamed}} have been renamed, 
+                {{ detail_msg.offsets}} have offests, and 
+                {{ detail_msg.limits}} have limits defined.</p>
+            {% endif %}
             <p class="table_title">Mates</p>
             <table><tr><th>Type</th><th>Count</th></tr>
                 {% for key, value in mates.items %}
@@ -56,12 +63,7 @@
             {% endif %}
         {% endif %}
         
-        <h3>Mates Details</h3>  
-        {% if detail_msg %}
-            {% for msg in detail_msg %}
-                {{ msg }}<br>
-            {% endfor %}
-        {% endif %}
+        <p class="table_title">Mates Details</p>  
         
         {% if mate_details %}
         <table><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr>
@@ -85,9 +87,9 @@
                     </td>
                     <td>
                         {% if mate.renamed %}
-                            &#10007;
-                        {% else %}
                             &#10003;
+                        {% else %}
+                            &#10007;
                         {% endif %}
                     </td>
                 </tr>
