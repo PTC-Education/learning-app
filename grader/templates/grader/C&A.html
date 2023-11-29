@@ -55,7 +55,7 @@
                 {% for assignment in assignments %}
                     <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id assignment.0|safe%}">
                         <tr class="classlist">
-                            <th><input class = "gradeButton classname" type="submit" value="{{assignment.1}}" onmouseover = "show_popup('description','{{assignment.6}}')" onmouseleave = "hide_popup('description')"></th>
+                            <th><input class = "gradeButton classname" type="submit" value="{{assignment.1}}" onmouseover = "show_popup('description','{{assignment.6}}', '{{assignment.7}}')" onmouseleave = "hide_popup('description')"></th>
                             <th><input class = "gradeButton" type="submit" value="{{assignment.2}}"></th>
                             <th><input class = "gradeButton" type="submit" value="{{assignment.3}}"></th>
                             <th><input class = "gradeButton" type="submit" value="{{assignment.4}}"></th>
@@ -67,9 +67,11 @@
             </table>
 
         </div>
-
-            <div class = "description_box" id = "description"></div>
-        
+        <div hidden class = "description_box" id = "description">
+            <span class = "description_title">Published date: </span><div id = "date"> </div>
+            <span class = "description_title">Description: </span> <div id = "description_text"> </div>
+            </div>
+        </div> <!-- Place to show the description of assignment-->
         {% endif %}
 
        

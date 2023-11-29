@@ -141,16 +141,19 @@ function compute_error(num_of_urls){
    
 
   //Function to show pop up
-  function show_popup(popup, msg){
+  function show_popup(popup, msg1, msg2){
     var reasons = document.getElementById(popup);
     reasons.style.display = "block"; 
-    reasons.innerHTML = msg;
+    var date = document.getElementById("date");
+    var text = document.getElementById("description_text");
+    var localDateTime = new Date(msg1);
+    date.innerHTML = localDateTime;
+    text.innerHTML = msg2;
   }
 
   //Function to  hide pop up
   function hide_popup(popup){
     var reasons = document.getElementById(popup);
-    reasons.innerHTML = "";
     reasons.style.display = "none";
   }
    

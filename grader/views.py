@@ -216,9 +216,10 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str):
             submitted = item["numberOfSubmissionsSubmitted"]
             not_submitted = item["numberOfSubmissionsNotStarted"]
             description = item["description"]
+            published_date = item["publishedDate"]
 
 
-            assignments.append([assignment_id, name, status, in_progress, submitted, not_submitted, description])
+            assignments.append([assignment_id, name, status, in_progress, submitted, not_submitted, published_date, description,])
 
     except:
         print("Error in assignment") #need better error message here
