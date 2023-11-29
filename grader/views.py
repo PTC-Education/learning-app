@@ -757,7 +757,7 @@ def as_get_mates(feature_list):
                         limits.append(limitArr)
                 if paramId  == 'relationType' or paramId == 'mateType':
                     val = param['value']
-                    val += '*' if paramId == 'relationType' else val
+                    val += '*' if paramId == 'relationType' else ''
                     renamed = val.lower() == re.sub('[0-9]','',feature['name']).replace(" ","").lower()
                     if val not in mate_count:
                         mate_count.update({val : 1})
