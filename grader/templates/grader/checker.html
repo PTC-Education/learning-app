@@ -34,12 +34,19 @@
         {% if mates and mate_relations %}   
             <h3>Mates Summary</h3> 
             {% if summary_msg %}
-                <p>This assembly contains {{ summary_msg.mates}} mates and {{ summary_msg.mate_relations}} mate relations.</p>
+                <p class="list_title">This assembly contains:<ul class="summary">
+                    <li>{{ summary_msg.mates}} mates</li>
+                    <li>{{ summary_msg.mate_relations}} mate relations</li>
+                    </ul>
+                </p>
             {% endif %}
             {% if detail_msg %}
-                <p>Of the mates and mate relations, {{ detail_msg.renamed}} have been renamed, 
-                {{ detail_msg.offsets}} have offests, and 
-                {{ detail_msg.limits}} have limits defined.</p>
+                <p class="list_title">Of the mates and mate relations:<ul class="summary">
+                    <li>{{ detail_msg.renamed}} have been renamed</li>
+                    <li>{{ detail_msg.offsets}} have offests</li>
+                    <li>{{ detail_msg.limits}} have limits defined</li>
+                    </ul>
+                </p>
             {% endif %}
             <p class="table_title">Mates</p>
             <table><tr><th>Type</th><th>Count</th></tr>

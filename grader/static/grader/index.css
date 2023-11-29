@@ -43,6 +43,14 @@ ol {
   margin: 5px 0px 0px 0px;
 }
 
+ul.summary {
+  margin-top: 0px;
+}
+
+.list_title {
+  margin-bottom: 0px;
+}
+
 /* Style the app logo at the center top of the page */ 
 #logo {
     display: block;
