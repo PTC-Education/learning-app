@@ -32,7 +32,7 @@
         {% endif %}
 
         {% if mate_count %}
-            <h3>Mate Count</h3>
+            <h3>Mates Summary</h3>
             <table><tr><th>Type</th><th>Count</th></tr>
                 {% for key, value in mate_count.items %}
                     <tr>
@@ -45,7 +45,7 @@
         {% endif %}
 
         {% if check_mates %}
-            <h3>Assembly Mates</h3>
+            <h3>Mate Details</h3>
             <table><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr>
                 {% for mate in check_mates %}
                     <tr>
