@@ -352,6 +352,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
         url = submission["documents"][0]["viewRef"]
 
         number_of_attempts = 0
+        tab_names_and_ids =[] 
         if (state_name == "Submitted"):
             number_of_attempts = submission["numberOfAttempts"]
 
@@ -360,7 +361,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
             wv      = splitted_url[1]
             wvid    = splitted_url[2]
 
-            tab_names_and_ids =[] 
+            
 
             if not url.find("/e/") < 0: # if there is an element id
                 tab_id = splitted_url[4]
