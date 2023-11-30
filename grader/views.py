@@ -345,19 +345,29 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
     full_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
     submissions = full_list["submissions"]
     for submission in submissions:
-        print("submission ", submission)
         user_name = submission["memberName"]
         state_name = submission["stateName"]
-        #number_of_attemps = submission["numberOfAttempts"]
         #did = submission["documents"][0]["metadata"]["did"]
         #wid = submission["documents"][0]["metadata"]["dwi"]
         #eid = submission["documents"][0]["metadata"]["die"]
         #vid = submission["documents"][0]["metadata"]["dvi"]
         doc_name = submission["documents"][0]["metadata"]["dn"]
-        version_url = submission["documents"][0]["viewRef"]
+        url = submission["documents"][0]["viewRef"]
+
+        if (state_name == "Submitted"):
+            number_of_attempts = submission["numberOfAttempts"]
+        else:
+            number_of_attempts = 0
+
+        if url.find("/e/") < 0: #check if url has element id, if not try to find the eid 
+            did = url.split("/documents/")[1].split("/")[0]
+            print("and the did is ", did)
+            newurl = get_doc_info(curr_user.os_domain, did, auth_token=curr_user.access_token)
+            print("--------- information about the document", newurl)
+            print(" ****************** no element detected for ",url)
         #workspace_url = curr_user.os_domain + "/documents/" + did + "/w/" + wid + "/e/" + eid
     
-        student_works.append([user_name, state_name, doc_name, version_url])
+        student_works.append([user_name, state_name, doc_name, url])
 
     context={
             "user": curr_user, 

@@ -78,7 +78,8 @@
         {% if studentworks %}
         {% for studentwork in studentworks %}
             {{studentwork|safe}}
-
+        if the student url comes without eid, then make API calls to list all elements  and either choose the first element or let the educator choose the element 
+        perhaps make that function call even before loading this page
         {% endfor %}
         {% endif %}
 
