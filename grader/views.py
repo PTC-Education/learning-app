@@ -128,7 +128,9 @@ def index(request: HttpRequest, os_user_id: str):
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
-    This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
+
+   This function will open the url_input.html customized for single url and multiurl+upload csv function for student and educators use. 
+
 
     **Arguments:**
         
@@ -237,6 +239,133 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
     return render(request, "grader/doc_info_checker.html", context=context)
 
 
+def list_classes(request: HttpRequest, os_user_id: str):
+    """ 
+   This function will get the list of classes created by the user.
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/c&A.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    classes=[]          # to store the names of classes
+    assignments=[]      #array to store assisgnments within the classes
+
+
+    #get information about classrooms created by the user
+    classinfo = get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
+    items = classinfo["items"]
+    try:
+        for item in items:
+            if(item["resourceType"]=="classroom"):
+                class_id = item["id"]
+                class_name = item["name"]
+                number_of_assignment = item["numberOfAssignments"]
+                number_of_members = item["numberOfMembers"]
+                classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
+    except:
+        print("Error in classes") #need better error message here
+    context={
+            "user": curr_user, 
+            "classes":classes,
+        }
+    return render(
+        request, "grader/c&A.html", 
+        context=context
+    )
+
+def list_assignments(request: HttpRequest, os_user_id: str, class_id:str):
+    """ 
+   This function will get the list of classes created by the user.
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/c&A.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    assignments = []
+    items = get_assignment_list(curr_user.os_domain, class_id, auth_token = curr_user.access_token)["items"]
+    try:
+        for item in items:
+            assignment_id = item["id"]
+            name = item["name"]
+            status = item["stateName"]
+            in_progress = item["numberOfSubmissionsInProgress"]
+            submitted = item["numberOfSubmissionsSubmitted"]
+            not_submitted = item["numberOfSubmissionsNotStarted"]
+            description = item["description"]
+            published_date = item["publishedDate"]
+            assignments.append([class_id, assignment_id, name, status, in_progress, submitted, not_submitted, published_date, description,])
+
+    except:
+        print("Error in assignment") #need better error message here
+    context={
+            "user": curr_user, 
+            "assignments": assignments,
+        }
+    return render(
+        request, "grader/c&A.html", 
+        context=context
+    )
+
+
+def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment_id:str):
+    """ 
+   This function will get the list of classes created by the user.
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/c&A.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+
+    student_works = [] 
+
+    full_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
+    submissions = full_list["submissions"]
+    for submission in submissions:
+        user_name = submission["memberName"]
+        state_name = submission["stateName"]
+        #number_of_attemps = submission["numberOfAttempts"]
+        #did = submission["documents"][0]["metadata"]["did"]
+        #wid = submission["documents"][0]["metadata"]["dwi"]
+        #eid = submission["documents"][0]["metadata"]["die"]
+        #vid = submission["documents"][0]["metadata"]["dvi"]
+        doc_name = submission["documents"][0]["metadata"]["dn"]
+        version_url = submission["documents"][0]["viewRef"]
+        #workspace_url = curr_user.os_domain + "/documents/" + did + "/w/" + wid + "/e/" + eid
+    
+        student_works.append([user_name, state_name, doc_name, version_url])
+
+    context={
+            "user": curr_user, 
+            "studentworks":student_works,
+        }
+    return render(
+        request, "grader/c&A.html", 
+        context = context
+    )
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
@@ -261,14 +390,6 @@ def grade_model(request: HttpRequest, os_user_id: str):
     cs_ref_urls = request.GET.getlist('ref_url')
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
-
-    if(ref_urls ==['']): #check blank url field
-        context={ 
-        "user": curr_user, 
-        "urlgradetab": True,
-        "error_message": "URL not detected. Please copy and paste a valid Onshape URL and try again",
-        }
-        return render(request, "grader/generic_grader.html",context=context )
 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -640,6 +761,53 @@ def get_class_list(
         return response.json() 
     else:   
         return None
+
+
+def get_assignment_list(
+    domain: str, classid: str, auth_token: str
+) -> Any: 
+
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/classrooms/{}/assignments".format(classid)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
+def get_submission_list(
+    domain: str, classid:str , assignmentid: str, auth_token: str
+) -> Any: 
+    print("URL",os.path.join(
+            domain, 
+            "api/classrooms/{}/assignments/{}".format(classid, assignmentid)
+        ))
+    response = requests.get(
+        os.path.join(
+            domain, 
+            "api/classrooms/{}/assignments/{}".format(classid, assignmentid)
+        ), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+
+    if response.ok: 
+        return response.json() 
+    else: 
+        return None
+
+
 
 def get_element_info(
     domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str, thumbnails="false"

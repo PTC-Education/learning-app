@@ -1,0 +1,102 @@
+/* Main font and color style */
+body {
+    color: #333;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+    
+h3 {
+    margin-bottom: 0px;
+}
+.instructions{
+  width: 90%;
+  color: #000;
+  background-color: white;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 350;
+  line-height: normal;
+  margin-bottom:50px;
+}
+
+.classes_assignments_box{
+  width:95%;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-style: normal;
+  float:left;
+  padding:10px;
+  background-color: #efefef;
+  box-shadow: 0 5px 10px rgba(0,0,0,.25);
+  margin:10px auto;  
+}
+
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  font-size: 11px;
+  border: 0px;
+  border-spacing: 0px;
+
+
+}
+
+th.write_sideways{
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  width: 15%;
+}
+
+th.status_column_34{
+  width: 34%;
+}
+
+
+tr,th,td {
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+}
+
+.gradeButton{
+  background-color: transparent;
+  border: none;
+  font-size: 11px;
+  width: 100%;
+  height:auto;
+}
+
+.classname{
+  text-align: left;
+  vertical-align: bottom;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tr.classlist:hover, .gradeButton:hover {
+  background-color: #90cef1;
+  cursor: pointer;
+}
+
+.description_box{
+  width:95%;
+  height: auto;
+  float: left;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-style: normal;
+  font-size: 11px;
+  padding:10px;
+  background-color: #efefef;
+  box-shadow: 0 5px 10px rgba(0,0,0,.25);
+  margin:10px auto; 
+}
+
+.description_title{
+  font-size: 12px;
+  font-weight: 500;
+}
+
+
+
