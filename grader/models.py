@@ -48,7 +48,8 @@ class AuthUser(models.Model):
         help_text="https://cad.onshape.com for non-enterprise Onshape accounts"
     )
     did = models.CharField(max_length=30, null=True, help_text="Onshape document ID")
-    wid = models.CharField(max_length=30, null=True, help_text="Onshape workspace ID")
+    wv = models.CharField(max_length=30, null=True, help_text="Onshape workspace or version")
+    wvid = models.CharField(max_length=30, null=True, help_text="Onshape workspace or version ID")
     eid = models.CharField(max_length=30, null=True, help_text="Onshape element ID")
     etype = models.CharField(
         max_length=40, choices=ElementType.choices, null=True, 
