@@ -339,36 +339,54 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
-
     student_works = [] 
 
-    full_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
-    submissions = full_list["submissions"]
+    full_submission_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
+    submissions = full_submission_list["submissions"]
+
+    type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
     for submission in submissions:
         user_name = submission["memberName"]
-        state_name = submission["stateName"]
-        #did = submission["documents"][0]["metadata"]["did"]
-        #wid = submission["documents"][0]["metadata"]["dwi"]
-        #eid = submission["documents"][0]["metadata"]["die"]
-        #vid = submission["documents"][0]["metadata"]["dvi"]
         doc_name = submission["documents"][0]["metadata"]["dn"]
+        state_name = submission["stateName"]
         url = submission["documents"][0]["viewRef"]
 
+        number_of_attempts = 0
         if (state_name == "Submitted"):
             number_of_attempts = submission["numberOfAttempts"]
-        else:
-            number_of_attempts = 0
 
-        if url.find("/e/") < 0: #check if url has element id, if not try to find the eid 
-            did = url.split("/documents/")[1].split("/")[0]
-            print("and the did is ", did)
-            newurl = get_doc_info(curr_user.os_domain, did, auth_token=curr_user.access_token)
-            print("--------- information about the document", newurl)
-            print(" ****************** no element detected for ",url)
-        #workspace_url = curr_user.os_domain + "/documents/" + did + "/w/" + wid + "/e/" + eid
-    
-        student_works.append([user_name, state_name, doc_name, url])
+            splitted_url = url.split("/documents/")[1].split("/")
+            did     = splitted_url[0]
+            wv      = splitted_url[1]
+            wvid    = splitted_url[2]
 
+            tab_names_and_ids =[] 
+
+            if not url.find("/e/") < 0: # if there is an element id
+                tab_id = splitted_url[4]
+
+                tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, tab_id, auth_token=curr_user.access_token)
+
+                tab_name = tab_info[0]["name"]
+                tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
+                tab_names_and_ids.append([tab_name, tab_id, tab_image]) 
+            
+            else: #check if url has element id, if not try to find the eid 
+                tab_infos = get_element_info(curr_user.os_domain, did, wv, wvid, " ", auth_token=curr_user.access_token) #get all tab info
+                
+                for tab_info in tab_infos:
+                    tab_type = tab_info["elementType"]
+                    if( tab_type == type_dict[curr_user.etype]):
+                    #print("Tab info type", tab_type, curr_user.etype)
+                    #if(tab_type == curr_user.etype): # Only get information of the tabs that have same element type as the user document
+                        tab_name    = tab_info["name"]
+                        tab_id      = tab_info["id"]
+                        tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token)
+
+                        tab_names_and_ids.append([tab_name, tab_id, tab_image])  # bundle the tab name , id and image of each tab
+
+                
+        student_works.append([user_name, state_name, number_of_attempts, doc_name, url, tab_names_and_ids])
     context={
             "user": curr_user, 
             "studentworks":student_works,
@@ -502,7 +520,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
             element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
             element_name = element_info[0]["name"]
             ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-            user_name=ref_doc_info["createdBy"]["name"]
+            user_name = ref_doc_info["createdBy"]["name"]
             doc_name = ref_doc_info['name']
             doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
 
@@ -817,7 +835,6 @@ def get_submission_list(
         return response.json() 
     else: 
         return None
-
 
 
 def get_element_info(
