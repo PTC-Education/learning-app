@@ -309,7 +309,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str):
             not_submitted = item["numberOfSubmissionsNotStarted"]
             description = item["description"]
             published_date = item["publishedDate"]
-            assignments.append([class_id, assignment_id, name, status, in_progress, submitted, not_submitted, published_date, description,])
+            assignments.append([class_id, assignment_id, name, status, submitted, not_submitted, in_progress, published_date, description,])
 
     except:
         print("Error in assignment") #need better error message here
@@ -345,6 +345,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
     full_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
     submissions = full_list["submissions"]
     for submission in submissions:
+        print("submission ", submission)
         user_name = submission["memberName"]
         state_name = submission["stateName"]
         #number_of_attemps = submission["numberOfAttempts"]
