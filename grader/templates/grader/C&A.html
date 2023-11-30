@@ -18,6 +18,11 @@
             </h3>
                  Click on the class name to view the assignments.
         </div>
+        <div class="spinner-container">
+            <div id="features">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
 
         {% if classes%}
         <div class="classes_assignments_box">
@@ -29,7 +34,7 @@
                     <th class = "write_sideways">Number of members</th>
                 </tr>
                 {% for class in classes %}
-                    <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id class.0|safe %}">
+                    <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id class.0|safe %}" onsubmit="loading_spinner('features')">
                         <tr class="classlist">
                             
                             <td><input class="gradeButton classname" type="submit" value="{{class.1|safe}}"></td>
@@ -53,7 +58,7 @@
                     <th class = "write_sideways">In progress</th>
                 </tr>
                 {% for assignment in assignments %}
-                    <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id assignment.0|safe assignment.1|safe%}">
+                    <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id assignment.0|safe assignment.1|safe%}" onsubmit="loading_spinner('features')">
                         <tr class="classlist">
                             <th><input class = "gradeButton classname" type="submit" value="{{assignment.2}}" onmouseover = "show_popup('description','{{assignment.7}}', '{{assignment.8}}')" onmouseleave = "hide_popup('description')"></th>
                             <th><input class = "gradeButton" type="submit" value="{{assignment.3}}"></th>
@@ -76,11 +81,30 @@
 
 
         {% if studentworks %}
-        {% for studentwork in studentworks %}
-            {{studentwork|safe}}
-        if the student url comes without eid, then make API calls to list all elements  and either choose the first element or let the educator choose the element 
-        perhaps make that function call even before loading this page
-        {% endfor %}
+            <table>
+                <tr>
+                    <th>Student name</th>
+                    <th>Submission status</th>
+                    <th>Number of attempts</th>
+                    <th>Document name</th>
+                    <th>Document URL</th>
+                    <th>Tab info</th>
+                </tr>
+                {% for studentwork in studentworks %}
+                    <tr>
+                        <th>{{studentwork.0}}</th>
+                        <th>{{studentwork.1}}</th>
+                        <th>{{studentwork.2}}</th>
+                        <th>{{studentwork.3}}</th>
+                        <th>{{studentwork.4}}</th>
+                        <th>
+                            {% for tab in studentwork.5 %}
+                            <img src = "{{tab.2}}" alt = "" />
+                            {% endfor%}
+                        </th>
+                    </tr>  
+                {% endfor %}
+            </table>{{studentwork|safe}} 
         {% endif %}
 
        

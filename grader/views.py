@@ -366,7 +366,6 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
                 tab_id = splitted_url[4]
 
                 tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, tab_id, auth_token=curr_user.access_token)
-
                 tab_name = tab_info[0]["name"]
                 tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
                 tab_names_and_ids.append([tab_name, tab_id, tab_image]) 
@@ -376,13 +375,10 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
                 
                 for tab_info in tab_infos:
                     tab_type = tab_info["elementType"]
-                    if( tab_type == type_dict[curr_user.etype]):
-                    #print("Tab info type", tab_type, curr_user.etype)
-                    #if(tab_type == curr_user.etype): # Only get information of the tabs that have same element type as the user document
+                    if( tab_type == type_dict[curr_user.etype]): # Only get information of the tabs that have same element type as the user document
                         tab_name    = tab_info["name"]
                         tab_id      = tab_info["id"]
                         tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token)
-
                         tab_names_and_ids.append([tab_name, tab_id, tab_image])  # bundle the tab name , id and image of each tab
 
                 
