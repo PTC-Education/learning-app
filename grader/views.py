@@ -30,8 +30,8 @@ def login(request: HttpRequest):
     - If the user already exists, new Onshape working environment IDs will be recorded. 
     
     """
-    if request.GET.get("wvm") != 'w': 
-        return HttpResponse("Please relaunch this app in the main workspace or create a branch from the left panel to start modelling ...")
+    # if request.GET.get("wvm") != 'w': 
+    #     return HttpResponse("Please relaunch this app in the main workspace or create a branch from the left panel to start modelling ...")
 
     user_id = request.GET.get('userId')
     try: 
@@ -45,7 +45,8 @@ def login(request: HttpRequest):
     
     user.os_domain = request.GET.get('server')
     user.did = request.GET.get('did')
-    user.wid = request.GET.get('wvmid')
+    user.wv = request.GET.get('wvm')
+    user.wvid = request.GET.get('wvmid')
     user.eid = request.GET.get('eid')
     user.etype = request.GET.get('etype')
     user.save() 
@@ -102,7 +103,10 @@ def authorize(request: HttpRequest):
     user.expires_at = timezone.now() + timedelta(seconds=token_response['expires_in'])
     user.save() 
 
-    return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
+    if user.etype == "infopanel":
+        return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
+    else:
+        return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
 def index(request: HttpRequest, os_user_id: str): 
     """ 
@@ -124,7 +128,7 @@ def index(request: HttpRequest, os_user_id: str):
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
-   This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
+    This function will open the urlinput.html customized for single url and multiurl+upload csv function for student and educators use. 
 
     **Arguments:**
         
@@ -145,6 +149,92 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         "user_type": user_type,
         }
     return render(request, "grader/url_input.html", context=context)
+
+def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
+    """ 
+    This function is for showing elements in a document for checking. 
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/doc_info_checker.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+    doc_wid = doc_info['defaultWorkspace']['id']
+
+    if element_list == "":
+        elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
+
+        element_list = '''
+        <label for="elements">Choose an element:</label>
+        <select id="elements" name="elements" size="5">'''
+        for element in elements_info:
+            if element['elementType'] == "PARTSTUDIO":
+                image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
+                element_list += f'''
+                <option value="partstudios {element['id']}"> {element['name']}</option>'''
+            elif element['elementType'] == "ASSEMBLY":
+                image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
+                element_list += f'''
+                <option value="assemblies {element['id']}">{element['name']}</option>'''
+        
+        element_list += "</select>"
+
+    element = request.GET.get('elements')
+    try:
+        etype = element.split(" ")[0]
+        eid = element.split(" ")[1]
+    except:
+        pass
+    check_type = request.GET.getlist('check_type')
+    check_message = ""
+    
+    if "Features" in check_type and element:
+        # Get feature list of model the user currently has opened
+        feature_list = get_feature_list(
+                curr_user.os_domain, etype, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+            )
+        if not feature_list: # API error 
+            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+        if etype == "partstudios":
+            check_message += ps_feature_list_helper(feature_list)
+        if etype == "assemblies":
+            check_message += as_feature_list_helper(feature_list)
+    
+    if "Parts" in check_type and element:
+        # Get parts list of model the user currently has opened
+        if etype == "partstudios":
+            part_list = get_part_list(
+                    curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+                )
+            if not part_list: # API error 
+                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+            check_message += part_list_helper(part_list)
+
+        if etype == "assemblies":
+            assembly_def = get_assembly_definition(
+                    curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+                )
+            if not assembly_def: # API error 
+                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+            check_message += instance_list_helper(assembly_def)
+
+    context={
+        "user": curr_user, 
+        "element_list": element_list,
+        "check_type": check_type,
+        "check_message": check_message
+    }
+
+    return render(request, "grader/doc_info_checker.html", context=context)
 
 
 def grade_model(request: HttpRequest, os_user_id: str): 
@@ -186,7 +276,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     
     # Get mass props of model the user currently has opened
     mass_props = get_mass_props(
-            curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.etype, 
+            curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, 
             massAsGroup=False, auth_token=curr_user.access_token
         )
     
@@ -197,7 +287,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     try:
         if curr_user.etype == "partstudios":
             # Get parts list for part studio and create dictionary of IDs to names
-            part_list = get_part_list(curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, curr_user.access_token)
+            part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
             partId_to_name = {} 
             for item in part_list: 
                 partId_to_name[item['partId']] = item['name']
@@ -247,13 +337,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
             ref_props=[] # initialize empty array of ref props
 
             mass_props = get_mass_props(
-                curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.etype, 
+                curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, 
                 massAsGroup=False, auth_token=curr_user.access_token
             )
 
             if curr_user.etype == "partstudios":
                 # Get parts list for part studio and create dictionary of IDs to names
-                part_list = get_part_list(curr_user.os_domain, ref_url['did'], "w", ref_url['wid'], ref_url['eid'], curr_user.access_token)
+                part_list = get_part_list(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.access_token)
                 partId_to_name = {} 
                 for item in part_list: 
                     partId_to_name[item['partId']] = item['name']
@@ -275,9 +365,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
             #     pass
 
             # Get all additional info from the reference document
-            image = get_shaded_views(curr_user.os_domain, ref_url['did'],ref_url['wid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
+            image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
 
-            element_info = get_element_info(curr_user.os_domain ,ref_url['did'],ref_url['wid'], ref_url['eid'], auth_token=curr_user.access_token)
+            element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
             element_name = element_info[0]["name"]
             ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
             user_name=ref_doc_info["createdBy"]["name"]
@@ -335,7 +425,7 @@ def check_model(request: HttpRequest, os_user_id: str):
     if "Features" in check_type:
         # Get feature list of model the user currently has opened
         feature_list = get_feature_list(
-                curr_user.os_domain, curr_user.etype, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+                curr_user.os_domain, curr_user.etype, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
             )
         if not feature_list: # API error 
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
@@ -349,7 +439,7 @@ def check_model(request: HttpRequest, os_user_id: str):
         # Get parts list of model the user currently has opened
         if curr_user.etype == "partstudios":
             part_list = get_part_list(
-                    curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
                 )
             if not part_list: # API error 
                 return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
@@ -358,7 +448,7 @@ def check_model(request: HttpRequest, os_user_id: str):
 
         if curr_user.etype == "assemblies":
             assembly_def = get_assembly_definition(
-                    curr_user.os_domain, curr_user.did, "w", curr_user.wid, curr_user.eid, auth_token=curr_user.access_token
+                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
                 )
             if not assembly_def: # API error 
                 return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
@@ -399,12 +489,12 @@ def get_mass_props(
         return None
 
 def get_part_list(
-    domain: str, did: str, wvm: str, wvmid: str, eid: str, auth_token: str
+    domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str
 ) -> Any: 
     """ Get all parts in an element
     """
     response = requests.get(
-        os.path.join(domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)), 
+        os.path.join(domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wv, wvid, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -418,30 +508,12 @@ def get_part_list(
 
 
 def get_assembly_definition(
-    domain: str, did: str, wvm: str, wvmid: str, eid: str, auth_token: str
+    domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str
 ) -> Any: 
     """ Get all parts in an element
     """
     response = requests.get(
-        os.path.join(domain, "api/assemblies/d/{}/{}/{}/e/{}".format(did, wvm, wvmid, eid)), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-def get_elements_info(
-    domain: str, did: str, wid: str, auth_token: str
-) -> Any: 
-    """ Get the information about available elements in the current document
-    """
-    response = requests.get(
-        os.path.join(domain, "api/documents/d/{}/w/{}/elements".format(did,wid)), 
+        os.path.join(domain, "api/assemblies/d/{}/{}/{}/e/{}".format(did, wv, wvid, eid)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -454,12 +526,12 @@ def get_elements_info(
         return None
 
 def get_blob_data(
-    domain: str, did: str, wid: str, eid: str, auth_token: str
+    domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str
 ) -> Any: 
     """ Get the blob content of the given element
     """
     response = requests.get(
-        os.path.join(domain, "api/blobelements/d/{}/w/{}/e/{}".format(did,wid,eid)), 
+        os.path.join(domain, "api/blobelements/d/{}/{}/{}/e/{}".format(did,wv,wvid,eid)), 
         headers={
             "Accept": "application/octet-stream", 
             "Authorization" : "Bearer " + auth_token
@@ -471,12 +543,12 @@ def get_blob_data(
         return None
 
 def get_shaded_views(
-    domain: str, did: str, wid:str, eid:str, etype:str,  auth_token: str
+    domain: str, did: str, wv:str, wvid:str, eid:str, etype:str,  auth_token: str
 ) -> Any: 
     """Get a thumbnail image of the question for display 
     """
     response = requests.get(
-        os.path.join(domain, "api/{}/d/{}/w/{}/e/{}/shadedviews".format(etype, did, wid, eid)), 
+        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/shadedviews".format(etype, did, wv, wvid, eid)), 
         params={
             "outputHeight": 60, 
             "outputWidth": 60, 
@@ -570,12 +642,12 @@ def get_class_list(
         return None
 
 def get_element_info(
-    domain: str, did: str, wvm: str, eid: str, auth_token: str
+    domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str, thumbnails="false"
 ) -> Any: 
     """ Get information about element 
     """
     response = requests.get(
-        os.path.join(domain, "api/documents/d/{}/w/{}/elements?elementId={}&withThumbnails=false".format(did, wvm, eid)), 
+        os.path.join(domain, "api/documents/d/{}/{}/{}/elements?elementId={}&withThumbnails={}".format(did, wv, wvid, eid, thumbnails)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -602,10 +674,10 @@ def elapsed_time(start_time: str, stop_time: str):
 def get_ref_url_ids(ref_url: str):
     try:
         ref = dict()
-        ref['did'] = ref_url.split("documents/")[1].split("/w/")[0]
-        ref['wid'] = ref_url.split("/w/")[1].split("/e/")[0]
+        ref['did'] = ref_url.split("documents/")[1].split("/")[0]
+        ref['wv'] = ref_url.split("documents/")[1].split("/")[1].split("/")[0]
+        ref['wvid'] = ref_url.split("/e/")[0].split("/")[-1]
         ref['eid'] = ref_url.split("/e/")[1].split("?")[0]
-        ref['eType']=''
         return ref
     except:
         return None
