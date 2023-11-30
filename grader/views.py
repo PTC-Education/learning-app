@@ -319,7 +319,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     user_doc_name = user_doc_info['name']
     user_user_name = user_doc_info["createdBy"]["name"]
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
-    user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/w/" + curr_user.wid + "/e/" + curr_user.eid
+    user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
     
     # Append user related information along with mass properties
     user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url])
