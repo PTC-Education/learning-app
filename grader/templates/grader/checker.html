@@ -5,6 +5,21 @@
         <link rel="stylesheet" href="{% static 'grader/index.css' %}">
         <!-- Load loading_modelling function to enable loading screen -->
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+        <script>
+            function showHideDetails(d,div)
+            {
+               if(d.checked == true )
+                  document.getElementById(div).style.display = "block";
+               else
+                  document.getElementById(div).style.display = "none";
+            }
+            function hide()
+            {
+                document.getElementById('mates_details').style.display = "none";
+            }
+            window.onload = hide;
+        </script>
+            
     </head>
     <body>
         <!-- Return to the home page -->
@@ -15,7 +30,7 @@
         <br />
         <!-- Check model -->
         <form action="{% url 'grader:check_model' user.os_user_id %}" onsubmit="loading_spinner('features')">
-            <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features<br>      
+            <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features/Mates<br>      
             <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>      
             <input type="submit" value="Check model"/>
             <br>
@@ -25,8 +40,6 @@
                 <!--This is where the spinner will load-->
             </div>
         </div>
-
-        <br />
         {% if check_message %}
             {{ check_message|safe }}
         {% endif %}
@@ -70,38 +83,42 @@
             {% endif %}
         {% endif %}
         
-        <p class="table_title">Mates Details</p>  
-        
         {% if mate_details %}
-        <table><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr>
-            {% for mate in mate_details %}
-                <tr>
-                    <td>{{ mate.name }}</td>
-                    <td>{{ mate.type }}</td>
-                    <td>
-                        {% if mate.limits %}
-                            {% for limit in mate.limits %}
-                                {{ limit.0 }}: {{ limit.1 }}<br/>
-                            {% endfor %}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if mate.offsets %}
-                            {% for mate in mate.offsets %}
-                                {{ mate.0 }}: {{ mate.1 }}<br/>
-                            {% endfor %}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if mate.renamed %}
-                            &#10003;
-                        {% else %}
-                            &#10007;
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
+            <div>
+            <p class="table_title">Mate Details:
+            <input id="show_hide_checkbox" type="checkbox" onclick="showHideDetails(this,'mates_details')" style="margin:0;"></p>
+            </div>
+            <div id="mates_details">
+                <table><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr>
+                    {% for mate in mate_details %}
+                        <tr>
+                            <td>{{ mate.name }}</td>
+                            <td>{{ mate.type }}</td>
+                            <td>
+                                {% if mate.limits %}
+                                    {% for limit in mate.limits %}
+                                        {{ limit.0 }}: {{ limit.1 }}<br/>
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if mate.offsets %}
+                                    {% for mate in mate.offsets %}
+                                        {{ mate.0 }}: {{ mate.1 }}<br/>
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if mate.renamed %}
+                                    &#10003;
+                                {% else %}
+                                    &#10007;
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                </div>
     {% endif %}
     </body>
 </html>
