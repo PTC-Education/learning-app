@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'grader/index.css' %}">
+        <!-- Load loading_modelling function to enable loading screen -->
+        <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+    </head>
+    <body>
+        <br />
+        <p>Select the element and type of check(s) you would like to perform</p>
+        <br />
+
+        <br />
+        <!-- Check model -->
+        <form action="{% url 'grader:doc_info_checker' user.os_user_id %}" onsubmit="loading_spinner('features')">
+            <!-- Select element -->
+            {% if element_list %}
+                {{ element_list|safe }}
+            {% endif %}
+            <br />
+            <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features<br>      
+            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>      
+            <input type="submit" value="Check model"/>
+            <br>
+        </form>
+        <div class="spinner-container">
+            <div id="features">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
+
+        <br />
+        {% if check_message %}
+            {{ check_message|safe }}
+        {% endif %}
+
+
+    </body>
+</html>
