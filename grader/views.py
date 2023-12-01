@@ -30,8 +30,6 @@ def login(request: HttpRequest):
     - If the user already exists, new Onshape working environment IDs will be recorded. 
     
     """
-    # if request.GET.get("wvm") != 'w': 
-    #     return HttpResponse("Please relaunch this app in the main workspace or create a branch from the left panel to start modelling ...")
 
     user_id = request.GET.get('userId')
     try: 
@@ -152,7 +150,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
 
 def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
     """ 
-    This function is for showing elements in a document for checking. 
+    This function is for showing elements in a document for best practices checking. 
 
     **Arguments:**
         
@@ -163,13 +161,13 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
     :template:`grader/doc_info_checker.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-
+    # Get info and workspace for current document selected
     doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     doc_wid = doc_info['defaultWorkspace']['id']
 
+    # Create HTML for list of elements
     if element_list == "":
         elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
-
         element_list = '''
         <label for="elements">Choose an element:</label>
         <select id="elements" name="elements" size="5">'''
@@ -185,13 +183,14 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
         
         element_list += "</select>"
 
+    # Get element and check type that the user has selected
     element = request.GET.get('elements')
+    check_type = request.GET.getlist('check_type')
     try:
         etype = element.split(" ")[0]
         eid = element.split(" ")[1]
     except:
         pass
-    check_type = request.GET.getlist('check_type')
     check_message = ""
     
     if "Features" in check_type and element:
@@ -299,20 +298,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
         elif curr_user.etype == "assemblies":
             # assemblies user_props = [mass, vol, periphery, principalInertia]
             user_props = make_props(mass_props, None)
-        
-        # Can we do precision in JS?
-        # TO FIX : check the user's configuration for precision and units
-        # Make rounding off based on the user's settings
-        # for i, prop in enumerate(user_props):
-        #     if prop < 0.1 or prop > 99: 
-        #         user_props[i] = '{:.6f}'.format(user_props[i])
-        #     else: 
-        #         user_props[i] = round(user_props[i], 3)
-        #     pass
 
     except:
         user_props = None
-
 
     # Get info about the document the user currently has opened
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
@@ -355,18 +343,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
             elif curr_user.etype == "assemblies":
                 # assemblies ref_props = [mass, vol, periphery, principalInertia]
                 ref_props = make_props(mass_props, None)
-            
-            # Can we do precision in JS?
-            # for i, prop in enumerate(ref_props):
-            #     if prop < 0.1 or prop > 99: 
-            #         ref_props[i] = '{:.6f}'.format(ref_props[i])
-            #     else: 
-            #         ref_props[i] = round(ref_props[i], 3)
-            #     pass
 
             # Get all additional info from the reference document
             image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
-
             element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
             element_name = element_info[0]["name"]
             ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
