@@ -385,7 +385,7 @@ button.blue-button{
     border-radius: 4px;
     justify-content: center;
     font-size: 14px;
-
+    }
 .twoButtonsonEdge{
   display: flex;
   justify-content: space-between;
