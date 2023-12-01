@@ -6,15 +6,35 @@ body {
     padding-right: 5%;
     line-height: normal;
 }
-
-    
 h3 {
-    margin-bottom: 0px;
+  margin-bottom: 0px;
 }
 
 ol {
-    margin-top: .2em;
-    margin-bottom: .2em;
+  margin-top: .2em;
+  margin-bottom: .2em;
+}
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  border: 1px solid rgb(5, 97, 25);
+}
+
+th,
+td {
+  border: 1px solid black;
+  width: 100%;
+  overflow: hidden;
+  font-size:11px;
+}
+
+th:hover,
+td:hover {
+
+  white-space: wrap;
+  background-color: #ebebeb;
+  color:red;
 }
 
 .details {
@@ -38,6 +58,19 @@ ol {
   
 #err_msg {
     color: red;
+}
+
+.table_title {
+  font-weight: bold;
+  margin: 5px 0px 0px 0px;
+}
+
+ul.summary {
+  margin-top: 0px;
+}
+
+.list_title {
+  margin-bottom: 0px;
 }
 
 /* Style the app logo at the center top of the page */ 
@@ -136,7 +169,6 @@ ol {
     content: '\2212'; 
 }
 
-
 .instructions{
     width: 90%;
     color: #000;
@@ -148,7 +180,6 @@ ol {
     line-height: normal;
     margin-bottom:50px;
 }
-
 
 /* Style the submit button of forms - generic*/ 
 input[type=submit] {
@@ -164,10 +195,7 @@ input[type=submit]:hover {
     background-color: #ebebeb;
 }
 
-
-
-
-/* Style the submit button of forms  - for Grade button specific*/ 
+/* Style the submit button of forms - for Grade button specific*/ 
 input.gradeButton[type=submit] {
     border: 0 none;
     margin-bottom: 5px;
@@ -191,10 +219,6 @@ input.gradeButton[type=submit]:hover {
   cursor:pointer;
 }
 
-
-
-
-
 /* Style the submit button of forms - for loading the urls  */ 
 input.submiturl-button[type=submit] {
     color: var(--charles, #1651B0);
@@ -211,7 +235,6 @@ input.submiturl-button[type=submit]:hover {
     cursor:pointer;
     cursor:pointer;
 }
-
 
 .options{
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
@@ -235,7 +258,6 @@ input.submiturl-button[type=submit]:hover {
     cursor: pointer;
 }
   
-
 /* Loader */
 .loader {
     position: relative;
@@ -253,26 +275,6 @@ input.submiturl-button[type=submit]:hover {
     -webkit-animation: spin 2s linear infinite; /* Safari */
     animation: spin 2s linear infinite;
   }
-
-/* Loader in Safari */
-@-webkit-keyframes spin {
-    0% { -webkit-transform: rotate(0deg); }
-    100% { -webkit-transform: rotate(360deg); }
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.spinner-container{
-    display: flex;
-    gap: 50px;
-    padding: 10px;
-    justify-content: center;
-    align-items: center;
-
-}
 
 .button-container {
     display: flex;
@@ -293,9 +295,6 @@ input.submiturl-button[type=submit]:hover {
     align-items: center;
     
   }
-
-
-
 
 
 table {
@@ -326,7 +325,6 @@ table {
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
 }
 
-
 /*For document and element list*/
 /* Create two equal columns that floats next to each other */
 .column {
@@ -336,24 +334,24 @@ table {
     height: 500px;
     overflow:auto;
     
-  }
+}
   
-  /* Clear floats after the columns */
-  .row:after {
-    content: "";
-    display: table;
-    clear: both;
-  }
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 
-  button.document-names{
-    display: block;
-    width: 100%;
-    border: none;
-    background-color: #ddd;
-    padding: 2px 2px;
-    font-size: 12px;
-    cursor: pointer;
-    text-align: left;
+button.document-names{
+  display: block;
+  width: 100%;
+  border: none;
+  background-color: #ddd;
+  padding: 2px 2px;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
 }
 
 button.document-names:hover {
@@ -370,25 +368,14 @@ button.blue-button{
     color: #ffffff; 
     padding: 10px;
 }
+    
+.tab-nav{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 5px; 
+}
 
 
-
-    
-    .tab-nav{
-    display:grid;
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 5px; 
-    }
-    
-    
-    .twoButtonsonEdge{
-      display: flex;
-      justify-content: space-between;
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 10px 10px;
-    }
-    
 
     
     .tab-buttons
@@ -398,274 +385,288 @@ button.blue-button{
     border-radius: 4px;
     justify-content: center;
     font-size: 14px;
+
+.twoButtonsonEdge{
+  display: flex;
+  justify-content: space-between;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 10px;
+}
+
+.gradeButton{
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    color: var(--zakim, #FFF);
+    background: var(--charles, #1651B0);
+    text-align: center;
     font-size: 14px;
     font-style: normal;
-    font-weight: 300;
+    font-weight: 350;
     line-height: normal;
-    color:  #333;
-    padding-top:5px;
-    padding-bottom:5px;
-    border: none;
-    }
-    .tab-buttons:hover{
-      cursor:pointer;
-    }
-    
-    .panel{
-      width:100%;
-      background:#D9D9D9;
-      padding:5px;
-    
-    }
-    
-    .URLinput-DIV{
-      padding:10px;
-      justify-content: center;
-      align-items: center;
-      height:auto;
-      margin: 0 auto;
-      border-radius: 3px;
-      background: #FFF;
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
-      box-shadow: 0px 0px 5px 6px rgba(0, 0, 0, 0.20);
-    
-    
-    }
-    
-    
-    
-    input.selectprop{
-      display:flex;
-      align-items: left;
-    }
-    
-    
-    
-    .multiselect {
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
-      font-size: 12px;
-      font-style: normal;
-      font-weight: 300;
-      width: 200px;
-    }
-    
-    .selectBox {
-      position: relative;
-    }
-    
-    
-    
-    .selectBox select {
-      width: 100%;
-      font-weight: bold;
-    }
-    
+    border-radius: 4px;
+    width: 160px;
+    padding: 8px 0px 8px 0px;
+    justify-content: center;
+    border: 0;
+}
 
-    .overSelect {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-    }
-    .overSelect:hover{
-      cursor:pointer;
-    }
-    
-    #checkboxes {
-      background-color: white;
-      display: none;
-      border: 1px #dadada solid;
-    }
-    
-    #checkboxes label {
-      display: flex;
-      flex-direction: row;
-    
-    }
-    
-    #checkboxes label:hover {
-      background-color: #ebebeb;
-    }
-    
-    
-    
-    ul.closeable_button {
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    ul.closeable_button li {
-      width: fit-content;
-      border: 1px solid #ddd;
-      background-color: #f6f6f6;
-      padding: 2px;
-      text-decoration: none;
-      font-size: 14px;
-      color: black;
-      position: relative;
-    }
-    
-    
-    
-    .close {
-      cursor: pointer;
-      top: 0%;
-      right: 0%;
-      margin-left:5px;
-      padding-left:  5px;
-      padding-right:  5px;
-      padding-top:  -2px;
-      padding-bottom:  -2px;
-    
-    }
-    
-    .close:hover {background-color: #ebebeb;}
-    
-    .selectedProps-DIV{
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-      background-color: #f6f6f6;
-      font-size: 14px;
-      color: rgb(255, 255, 255);
-      display: inline;
-      height:10px;
-      margin:0px;
-      margin-block-end: 0;
-      margin-block-start: 0;
-    }
-    
-    .selected_props_warning{
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-      background-color: #f6f6f6;
-      font-size: 14px;
-      color: rgb(255, 255, 255);
-      display: inline;
-      height:10px;
-      margin:0;
-      margin-block-end: 0;
-      margin-block-start: 0;
-    
-    }
-    
-    button.uploadcsv-button{
-      padding: 10px;
-      border-radius: 20px;
-      cursor: pointer;
-      appearance: none;
-      background-color: inherit;
-      align-items: center;
-      justify-content: center;
-    
-    }
-    
-    button.uploadcsv-button:hover{
-    cursor:pointer;
-    }
-    
-    
-    
-    .twoButtonsonEdge{
-      display: flex;
-      justify-content: space-between;
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 10px 10px;
-    }
-    
-    .tab-header{
-      color: #333;
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-      font-size: 18px;
-      font-weight: 500;
-    }
-    
-    .urlError{
-        color: red;
-        font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-        font-size: 12px;
-        font-weight: 400;
-        font-style: italic;
+.gradeButton:hover{
+  cursor:pointer;
+  
+}
 
-    }
-    
-    
-    .urlfield {
-      display: flex;
-      justify-content: space-between;
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 10px 10px;
-    
-    }
-    
-    
-    
-    .urlfield-INPUT{
-      border: 1px solid #ccc;
-      width: 100%;
-      height:auto;
-      padding: 10px;
-      border-radius: 4px;
-      margin-top: 5px;
-      border-radius: 4px;
-      justify-content: center;
-      border: 1px solid #9AA5AF;
-      box-shadow: 0px 2px 1px 0px rgba(0, 0, 0, 0.08) inset;
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-      font-size: 14px;
-      font-weight: 300;
-    }
-    
-    
-    
+.tab-buttons
+{
+  width:100%;
+  display: inline-flex;
+  border-radius: 4px;
+  justify-content: center;
+  font-size: 14px;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+  color:  #333;
+  padding-top:5px;
+  padding-bottom:5px;
+  border: none;
+}
+.tab-buttons:hover{
+  cursor:pointer;
+}
 
-    
-    
-    .file-UPLOAD{
-      border: 1px solid #ccc;
-      padding: 10px;
-      border-radius: 4px;
-      margin-top: 5px;
-      margin-bottom: 25px;
-      border-radius: 4px;
-      background-color: #ccc;
-      justify-content: center;
-      border: 1px solid #9AA5AF;
-      box-shadow: 0px 2px 1px 0px rgba(0, 0, 0, 0.08) inset;
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-      font-size: 14px;
-      font-weight: 300;
-    }
-    
-    .file-UPLOAD:hover{
-      background-color: #ebebeb;
-    cursor: pointer;
-    }
-    input[type="file"] {
-      display: none;
-    }
-    
-    
-    /* Loader in Safari */
-    @-webkit-keyframes spin {
-      0% { -webkit-transform: rotate(0deg); }
-      100% { -webkit-transform: rotate(360deg); }
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .spinner-container{
-      display: flex;
-      gap: 50px;
-      padding: 10px;
-      justify-content: center;
-      align-items: center;
-    
-    }
+.panel{
+  width:100%;
+  background:#D9D9D9;
+  padding:5px;
+
+}
+
+.URLinput-DIV{
+  padding:10px;
+  justify-content: center;
+  align-items: center;
+  height:auto;
+  margin: 0 auto;
+  border-radius: 3px;
+  background: #FFF;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
+  box-shadow: 0px 0px 5px 6px rgba(0, 0, 0, 0.20);
+}
+
+input.selectprop{
+  display:flex;
+  align-items: left;
+}
+
+.multiselect {
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 300;
+  width: 200px;
+}
+
+.selectBox {
+  position: relative;
+}
+
+.selectBox select {
+  width: 100%;
+  font-weight: bold;
+}
+
+.overSelect {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.overSelect:hover{
+  cursor:pointer;
+}
+
+#checkboxes {
+  background-color: white;
+  display: none;
+  border: 1px #dadada solid;
+}
+
+#checkboxes label {
+  display: flex;
+  flex-direction: row;
+
+}
+
+#checkboxes label:hover {
+  background-color: #ebebeb;
+}
+
+ul.closeable_button {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.closeable_button li {
+  width: fit-content;
+  border: 1px solid #ddd;
+  background-color: #f6f6f6;
+  padding: 2px;
+  text-decoration: none;
+  font-size: 14px;
+  color: black;
+  position: relative;
+}
+
+.close {
+  cursor: pointer;
+  top: 0%;
+  right: 0%;
+  margin-left:5px;
+  padding-left:  5px;
+  padding-right:  5px;
+  padding-top:  -2px;
+  padding-bottom:  -2px;
+
+}
+
+.close:hover {background-color: #ebebeb;}
+
+.selectedProps-DIV{
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  background-color: #f6f6f6;
+  font-size: 14px;
+  color: rgb(255, 255, 255);
+  display: inline;
+  height:10px;
+  margin:0px;
+  margin-block-end: 0;
+  margin-block-start: 0;
+}
+
+.selected_props_warning{
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  background-color: #f6f6f6;
+  font-size: 14px;
+  color: rgb(255, 255, 255);
+  display: inline;
+  height:10px;
+  margin:0;
+  margin-block-end: 0;
+  margin-block-start: 0;
+
+}
+
+button.uploadcsv-button{
+  padding: 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  appearance: none;
+  background-color: inherit;
+  align-items: center;
+  justify-content: center;
+
+}
+
+button.uploadcsv-button:hover{
+cursor:pointer;
+}
+
+.twoButtonsonEdge{
+  display: flex;
+  justify-content: space-between;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 10px;
+}
+
+.tab-header{
+  color: #333;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.urlError{
+    color: red;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    font-style: italic;
+
+}
+
+.urlfield {
+  display: flex;
+  justify-content: space-between;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px 10px;
+
+}
+
+.urlfield-INPUT{
+  border: 1px solid #ccc;
+  width: 100%;
+  height:auto;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 5px;
+  border-radius: 4px;
+  justify-content: center;
+  border: 1px solid #9AA5AF;
+  box-shadow: 0px 2px 1px 0px rgba(0, 0, 0, 0.08) inset;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+}
+
+.file-UPLOAD{
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 5px;
+  margin-bottom: 25px;
+  border-radius: 4px;
+  background-color: #ccc;
+  justify-content: center;
+  border: 1px solid #9AA5AF;
+  box-shadow: 0px 2px 1px 0px rgba(0, 0, 0, 0.08) inset;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+}
+
+.file-UPLOAD:hover{
+  background-color: #ebebeb;
+  cursor: pointer;
+}
+input[type="file"] {
+  display: none;
+}
+
+/* Loader in Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner-container{
+  display: flex;
+  gap: 50px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+
+}
 .selectedURL-DIV{
       font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
       background-color: #f6f6f6;
@@ -687,17 +688,24 @@ button.select{
     font-style: normal;
     font-weight: 500;
     line-height: normal;
-    border-radius: 4px;
-    margin: 10px;
-    padding: 20px 30px 20px 30px;
+    /* border-radius: 4px; */
+    margin: 0px 10px 5px 10px;
+    padding: 10px 15px;
     justify-content: center;
     border: 0; 
-
 }
+
+.select:after {
+  content: '\002B';
+  color: white;
+  font-weight: bold;
+  float: right;
+  margin-left: 30px;
+}
+
 .select:active{
     cursor: pointer; 
     background: #4CAF50;
-
 }
 
 .select-container{
@@ -705,11 +713,6 @@ button.select{
     display:flex;
     justify-content: center;
 }
-
-
-
-
-
 
 .dropbtn {
     background-color: #4CAF50;
@@ -745,7 +748,7 @@ button.select{
     display: block;
     cursor: pointer;
   }
-  
 
-
-
+  .dropdown:hover .select:after {
+    content: "\2212";
+  }
