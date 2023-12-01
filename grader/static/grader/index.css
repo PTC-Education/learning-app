@@ -60,6 +60,19 @@ td:hover {
     color: red;
 }
 
+.table_title {
+  font-weight: bold;
+  margin: 5px 0px 0px 0px;
+}
+
+ul.summary {
+  margin-top: 0px;
+}
+
+.list_title {
+  margin-bottom: 0px;
+}
+
 /* Style the app logo at the center top of the page */ 
 #logo {
     display: block;
@@ -274,7 +287,7 @@ input.submiturl-button[type=submit]:hover {
     align-items: center;
     
   }
-  
+
 .documentlist{
     color: #333;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
