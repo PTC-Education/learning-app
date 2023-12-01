@@ -661,10 +661,6 @@ button.select{
   margin-left: 30px;
 }
 
-.select:hover:after {
-  content: "\2212";
-}
-
 .select:active{
     cursor: pointer; 
     background: #4CAF50;
@@ -709,4 +705,8 @@ button.select{
   .dropdown:hover .dropdown-content {
     display: block;
     cursor: pointer;
+  }
+
+  .dropdown:hover .select:after {
+    content: "\2212";
   }
