@@ -1,39 +1,49 @@
 <html>
     <head>
         <style>
-            body {
+            table.item_summary {
                 color: #333;
                 font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-            }
-            table {
                 border-collapse: collapse;
             }
-            thead, tbody {
+            .item_summary thead, .item_summary tbody {
                border: 1px solid #d3d7d9;
             }
-            thead {
+            .item_summary thead {
                font-weight: 700;
                background-color: #f5f5f5;
             }
-            td {
+            .item_summary td {
                 font-weight: 400;
             }
-            td, th {
+            .item_summary td, .item_summary th {
                 font-size: 9pt;   
                 line-height: 1.8em;
                 text-align: left;
                 padding: 0.5em 3em 0.5em 0.5em;
                 border-left: 1px solid #d3d7d9;
             }
-            tbody tr:nth-child(odd) {
+            .item_summary tbody tr:hover {
+                background-color: #e2f0fa !important;
+            }
+            .item_summary tbody tr:nth-child(odd) {
                 background-color: #fafafa;
             }
-            /* border-right-width: 1px;
-            border-right-style: solid;
-            #d3d7d9 */
         </style>
     </head>
     <body>
+        <table class="item_summary">
+            <thead>
+                <tr><th>Tab</th><th>Count</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Assemblies</td><td>3</td></tr>
+                <tr><td>Part Studios</td><td>2</td></tr>
+                <tr><td>Drawings</td><td>0</td></tr>
+                <tr><td>Other tabs</td><td>0</td></tr>
+            </tbody>
+        </table>
+        <p>&nbsp;</p>
         <table>
             <thead>
                 <tr><th>Tab</th><th>Count</th></tr>
