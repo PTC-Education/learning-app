@@ -161,10 +161,10 @@ tr.classlist:hover, .row_selector:hover {
 }
 
 .dropdown-content {
+  width:100%;
   display: none;
   position: absolute;
   background-color: #f9f9f9;
-  min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
 }
@@ -184,4 +184,37 @@ tr.classlist:hover, .row_selector:hover {
 
 .dropdown:hover .dropbtn {
   background-color: #3e8e41;
+}
+
+
+/* Style the submit button of forms  - for Grade button specific*/ 
+input.gradeButton[type=submit] {
+  border: 0 none;
+  margin-bottom: 5px;
+  margin-left: 10px;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  color: var(--zakim, #FFF);
+  background: var(--charles, #1651B0);
+  text-align: center;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 350;
+  line-height: normal;
+  border-radius: 4px;
+  width: 160px;
+  padding: 8px 0px 8px 0px;
+  justify-content: center;
+}
+
+input.gradeButton[type=submit]:hover {
+background-color: #769fcc;
+cursor:pointer;
+}
+
+.class_assignment_name{
+  color: var(--boston-terrier, #333);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: normal;
+  margin:0
 }

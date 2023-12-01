@@ -141,7 +141,7 @@ function compute_error(num_of_urls){
    
 
   //Function to show pop up
-  function show_popup(popup, msg1, msg2){
+  function show_popup_assignment(popup, msg1, msg2){
     var reasons = document.getElementById(popup);
     reasons.style.display = "block"; 
     var date = document.getElementById("date");
@@ -152,8 +152,23 @@ function compute_error(num_of_urls){
   }
 
   //Function to  hide pop up
-  function hide_popup(popup){
+  function hide_popup_assignment(popup){
     var reasons = document.getElementById(popup);
     reasons.style.display = "none";
   }
    
+    //Function to show pop up
+    function show_popup_member(popup, msg1, msg2){
+      var reasons = document.getElementById(popup);
+      reasons.style.display = "block"; 
+      var url = document.getElementById("url_member");
+      var text = document.getElementById("details_member");
+      url.innerHTML = msg1;
+      text.innerHTML = msg2;
+    }
+  
+    //Function to  hide pop up
+    function hide_popup_member(popup){
+      var reasons = document.getElementById(popup);
+      reasons.style.display = "none";
+    }

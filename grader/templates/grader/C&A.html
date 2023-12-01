@@ -34,7 +34,7 @@
                     <th class = "write_sideways bigger_font_th">Number of members</th>
                 </tr>
                 {% for class in classes %}
-                    <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id class.0|safe %}" onsubmit="loading_spinner('features')">
+                    <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id class.0|safe class.1|safe%}" onsubmit="loading_spinner('features')">
                         <tr class="classlist">
                             <td><input class="row_selector set_to_left_in_table small_font_td" type="submit" value="{{class.1|safe}}"></td>
                             <td><input class="row_selector small_font_td" type="submit" value="{{class.2|safe}}"></td>
@@ -47,23 +47,27 @@
         {% endif %}
 
         {% if assignments%}
+        <div class = "docinfo">
+            <p class = "class_assignment_name" id = "class_name">{{class_name}}</p>
+        </div>
+
         <div class="classes_assignments_box">
             <table>
                 <tr>
                     <th class = "set_to_left_in_table bigger_font_th">Assignment name</th>
-                    <th class = "status_column_34 bigger_font_th">Status</th>
+                    <th class = "status_column_34 set_to_left_in_table bigger_font_th">Status</th>
                     <th class = "write_sideways bigger_font_th">Submitted</th>
                     <th class = "write_sideways bigger_font_th">Not submitted</th>
                     <th class = "write_sideways bigger_font_th">In progress</th>
                 </tr>
                 {% for assignment in assignments %}
-                    <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id assignment.0|safe assignment.1|safe%}" onsubmit="loading_spinner('features')">
+                    <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id class_id|safe class_name|safe assignment.0|safe assignment.1|safe %}" onsubmit="loading_spinner('features')">
                         <tr class="classlist">
-                            <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.2}}" onmouseover = "show_popup('description_assignment','{{assignment.7}}', '{{assignment.8}}')" onmouseleave = "hide_popup('description_assignment')"></th>
-                            <th><input class = "row_selector status_column_34 small_font_td" type="submit" value="{{assignment.3}}"></th>
+                            <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.1}}" onmouseover = "show_popup_assignment('description_assignment','{{assignment.6}}', '{{assignment.7}}')" onmouseleave = "hide_popup_assignment('description_assignment')"></th>
+                            <th><input class = "row_selector status_column_34 set_to_left_in_table small_font_td" type="submit" value="{{assignment.2}}"></th>
+                            <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.3}}"></th>
                             <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.4}}"></th>
                             <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.5}}"></th>
-                            <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.6}}"></th>
 
                         </tr>
                     </form>
@@ -79,50 +83,82 @@
         {% endif %}
 
 
-        {% if studentworks %}
-        <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
-            <input id="ref_url_edu" hidden name="ref_url" type="text">
-
-            <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
-
-            <!-- To do - find a way to send the contents of the list to the views page-->  
-        </form>
+        {% if submitted_student_works %}
+        <div class = "docinfo">
+            <p class = "class_assignment_name" id = "class_name">{{class_name}}</p>
+            <p class = "class_assignment_name" id = "assignment_name">{{assignment_name}}</p>
+        </div>
         <div class="classes_assignments_box">
+
+            Submitted
+            <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
+                <input id="ref_url_edu" hidden name="ref_url" type="text">
+    
+                <input id="gradeButton" class="gradeButton" type="submit" value="Grade submitted works" onclick="loading_spinner('Grade')"/>
+    
+                <!-- To do - find a way to send the contents of the list to the views page-->  
+            </form>
             <table>
                 <tr>
                     <th class = "set_to_left_in_table bigger_font_th">Student name</th>
                     
                     <th class = "set_to_left_in_table bigger_font_th">Document name</th>
                     <th class = "set_to_left_in_table bigger_font_th">Document URL</th>
-                    <th class = "set_to_left_in_table bigger_font_th">Thumbnail</th>
+                    <th class = "bigger_font_th">Thumbnail</th>
 
                 </tr>
-                {% for studentwork in studentworks %}
+                {% for studentwork in submitted_student_works %}
                     <tr>
-                        <td class = "set_to_left_in_table small_font_td">{{studentwork.0}}</td>
-                        <td class = "set_to_left_in_table small_font_td">{{studentwork.3}}</td>
+                        <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                         <td class = "set_to_left_in_table small_font_td">{{studentwork.4}}</td>
+                        <td class = "set_to_left_in_table small_font_td">{{studentwork.5}}</td>
                         <td>
+                            <label hidden id = {{studentwork.0}}> {{studentwork.5}}</label> 
                             <div class="dropdown">
-                                <button class="dropbtn">Dropdown</button>
+                                <button class="dropbtn" onmouseover = "show_popup_member('description_member','{{studentwork.5}}', '{{studentwork.6.0.2 }}')" onmouseleave = "hide_popup_member('description_member')"></th>>
+                                    <img src = "{{studentwork.6.0.2 }}" alt = "" />
+                                </button>
+                                {% if studentwork.6|length > 1 %}
                                 <div class="dropdown-content">
-                                    {% for tab in studentwork.5 %}
-                                    <img src = "{{tab.2}}" alt = "" />
+                                    {% for tab in studentwork.6 %}
+                                    <img src = "{{tab.2}}" alt = ""  />
                                     {% endfor%}
-
                                 </div>
-                              </div>
-    
-                            
-                           
-                            
+                                {% endif%}
+                              </div>                     
                         </td>
                     </tr>  
                 {% endfor %}
             </table>{{studentwork|safe}} 
         </div>
+        <div hidden class = "description_box" id = "description_member">
+            <span class = "description_title">URL:  </span><div id = "url_member"> </div>
+            <span class = "description_title">Description: </span> <div id = "details_member"> </div>
+            </div>
+        </div> <!-- Place to show the description of assignment-->
 
         {% endif %}
+
+
+        {% if inprogress_student_works %}
+
+        <div class="classes_assignments_box">
+            In Progress
+            <table>
+                <tr>
+                    <th class = "set_to_left_in_table bigger_font_th">Student name</th>
+                    <th class = "set_to_left_in_table bigger_font_th">Document name</th>
+                </tr>
+                {% for studentwork in inprogress_student_works %}
+                    <tr>
+                        <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
+                        <td class = "set_to_left_in_table small_font_td"><a href="{{studentwork.4}}" target="_blank">{{studentwork.3}}</a></td>
+     
+                    </tr>  
+                {% endfor %}
+        {% endif %}
+
+
 
        
     </body>

@@ -281,7 +281,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
         context=context
     )
 
-def list_assignments(request: HttpRequest, os_user_id: str, class_id:str):
+def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class_name:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -298,24 +298,28 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str):
         curr_user.refresh_oauth_token() 
 
     assignments = []
-    items = get_assignment_list(curr_user.os_domain, class_id, auth_token = curr_user.access_token)["items"]
+    assignment_list = get_assignment_list(curr_user.os_domain, class_id, auth_token = curr_user.access_token)
+    items = assignment_list["items"]
     try:
         for item in items:
             assignment_id = item["id"]
-            name = item["name"]
+            assignment_name = item["name"]
             status = item["stateName"]
             in_progress = item["numberOfSubmissionsInProgress"]
             submitted = item["numberOfSubmissionsSubmitted"]
             not_submitted = item["numberOfSubmissionsNotStarted"]
             description = item["description"]
             published_date = item["publishedDate"]
-            assignments.append([class_id, assignment_id, name, status, submitted, not_submitted, in_progress, published_date, description,])
+            assignments.append([assignment_id, assignment_name, status, submitted, not_submitted, in_progress, published_date, description,])
 
     except:
         print("Error in assignment") #need better error message here
     context={
             "user": curr_user, 
             "assignments": assignments,
+            "class_name": class_name,
+            "class_id":class_id
+
         }
     return render(
         request, "grader/c&A.html", 
@@ -323,7 +327,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str):
     )
 
 
-def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment_id:str):
+def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -339,14 +343,16 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
-    student_works = [] 
+    submitted_student_works = [] 
+    inprogress_student_works = [] 
 
     full_submission_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
     submissions = full_submission_list["submissions"]
 
     type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
     for submission in submissions:
-        user_name = submission["memberName"]
+        member_id = submission["memberId"]
+        member_name = submission["memberName"]
         doc_name = submission["documents"][0]["metadata"]["dn"]
         state_name = submission["stateName"]
         url = submission["documents"][0]["viewRef"]
@@ -365,7 +371,6 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
 
             if not url.find("/e/") < 0: # if there is an element id
                 tab_id = splitted_url[4]
-
                 tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, tab_id, auth_token=curr_user.access_token)
                 tab_name = tab_info[0]["name"]
                 tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
@@ -383,10 +388,20 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, assignment
                         tab_names_and_ids.append([tab_name, tab_id, tab_image])  # bundle the tab name , id and image of each tab
 
                 
-        student_works.append([user_name, state_name, number_of_attempts, doc_name, url, tab_names_and_ids])
+            submitted_student_works.append([member_id, member_name, state_name, number_of_attempts, doc_name, url, tab_names_and_ids])
+        else:
+            inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
+
+
+
+
     context={
             "user": curr_user, 
-            "studentworks":student_works,
+            "submitted_student_works":submitted_student_works,
+            "inprogress_student_works": inprogress_student_works,
+            "class_name": class_name,
+            "assignment_name": assignment_name 
+
         }
     return render(
         request, "grader/c&A.html", 
