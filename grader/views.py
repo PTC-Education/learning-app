@@ -259,9 +259,9 @@ def list_classes(request: HttpRequest, os_user_id: str):
 
 
     #get information about classrooms created by the user
-    classinfo = get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
-    items = classinfo["items"]
     try:
+        classinfo = get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
+        items = classinfo["items"]
         for item in items:
             if(item["resourceType"]=="classroom"):
                 class_id = item["id"]

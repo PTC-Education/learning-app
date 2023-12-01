@@ -375,17 +375,17 @@ button.blue-button{
   gap: 5px; 
 }
 
-
-
     
-    .tab-buttons
-    {
-    width:100%;
-    display: inline-flex;
-    border-radius: 4px;
-    justify-content: center;
-    font-size: 14px;
-    }
+.tab-buttons
+{
+width:100%;
+display: inline-flex;
+border-radius: 4px;
+justify-content: center;
+font-size: 14px;
+}
+
+
 .twoButtonsonEdge{
   display: flex;
   justify-content: space-between;
