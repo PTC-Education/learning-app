@@ -91,42 +91,45 @@
         <div class="classes_assignments_box">
 
             Submitted
-            <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
+            <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
                 <input id="ref_url_edu" hidden name="ref_url" type="text">
-    
-                <input id="gradeButton" class="gradeButton" type="submit" value="Grade submitted works" onclick="loading_spinner('Grade')"/>
+                <input id="gradeButton" class="gradeButton" type="submit" value="Grade submitted works" onclick="loading_spinner('features')"/>
     
                 <!-- To do - find a way to send the contents of the list to the views page-->  
             </form>
-            <table>
+            <table id="submitted_work">
                 <tr>
                     <th class = "set_to_left_in_table bigger_font_th">Student name</th>
-                    
                     <th class = "set_to_left_in_table bigger_font_th">Document name</th>
-                    <th class = "set_to_left_in_table bigger_font_th">Document URL</th>
+                    <th class = "bigger_font_th">Tab name</th>
                     <th class = "bigger_font_th">Thumbnail</th>
-
                 </tr>
+
                 {% for studentwork in submitted_student_works %}
                     <tr>
                         <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                         <td class = "set_to_left_in_table small_font_td">{{studentwork.4}}</td>
-                        <td class = "set_to_left_in_table small_font_td">{{studentwork.5}}</td>
-                        <td>
-                            <label hidden id = {{studentwork.0}}> {{studentwork.5}}</label> 
+                        <td name = "doc_url" hidden id = url_{{studentwork.0}}></td> <!-- to save url-->
+                        <td>        
                             <div class="dropdown">
-                                <button class="dropbtn" onmouseover = "show_popup_member('description_member','{{studentwork.5}}', '{{studentwork.6.0.2 }}')" onmouseleave = "hide_popup_member('description_member')"></th>>
-                                    <img src = "{{studentwork.6.0.2 }}" alt = "" />
-                                </button>
+                                <button id = button_name_{{studentwork.0}} class="dropbtn"> {{studentwork.6.0.1 }}</button>
                                 {% if studentwork.6|length > 1 %}
-                                <div class="dropdown-content">
-                                    {% for tab in studentwork.6 %}
-                                    <img src = "{{tab.2}}" alt = ""  />
-                                    {% endfor%}
-                                </div>
+                                    <script>set_url('{{studentwork.0}}','{{studentwork.5}}','{{studentwork.6.0.0}}')</script> <!-- id, baseurl, eid  -->       
+                                    <div class="dropdown-content">
+                                        {% for tab in studentwork.6 %}
+                                            <button onclick="set_url('{{studentwork.0}}','{{studentwork.5}}','{{tab.0}}') , update_tab('{{studentwork.0}}','{{tab.1}}','{{tab.2}}')">
+                                                {{tab.1}}
+                                                <img src = "{{tab.2}}" alt = ""/>
+                                            </button>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <script>set_url('{{studentwork.0}}','{{studentwork.5}}')</script> <!-- id, baseurl -->       
                                 {% endif%}
+
                               </div>                     
                         </td>
+                        <td> <img id = preview_image_{{studentwork.0}} src = "{{studentwork.6.0.2 }}" alt = "" /></td>
                     </tr>  
                 {% endfor %}
             </table>{{studentwork|safe}} 

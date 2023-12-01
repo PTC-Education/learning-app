@@ -343,8 +343,8 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
-    submitted_student_works = [] 
-    inprogress_student_works = [] 
+    submitted_student_works = []  #store submitted work
+    inprogress_student_works = [] #store inprogress work
 
     full_submission_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
     submissions = full_submission_list["submissions"]
@@ -359,6 +359,8 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
 
         number_of_attempts = 0
         tab_names_and_ids =[] 
+
+        #If the document is submitted
         if (state_name == "Submitted"):
             number_of_attempts = submission["numberOfAttempts"]
 
@@ -367,14 +369,12 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
             wv      = splitted_url[1]
             wvid    = splitted_url[2]
 
-            
-
             if not url.find("/e/") < 0: # if there is an element id
                 tab_id = splitted_url[4]
                 tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, tab_id, auth_token=curr_user.access_token)
                 tab_name = tab_info[0]["name"]
                 tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
-                tab_names_and_ids.append([tab_name, tab_id, tab_image]) 
+                tab_names_and_ids.append([tab_id, tab_name, tab_image]) 
             
             else: #check if url has element id, if not try to find the eid 
                 tab_infos = get_element_info(curr_user.os_domain, did, wv, wvid, " ", auth_token=curr_user.access_token) #get all tab info
@@ -385,14 +385,28 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
                         tab_name    = tab_info["name"]
                         tab_id      = tab_info["id"]
                         tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token)
-                        tab_names_and_ids.append([tab_name, tab_id, tab_image])  # bundle the tab name , id and image of each tab
+                        tab_url = url + "/e/" + tab_id
+                        tab_names_and_ids.append([tab_url, tab_name, tab_image])  # bundle the tab name , id and image of each tab
+                        
+                url = tab_names_and_ids[0][0] # update the url to point to the first tab of the document  
 
-                
+            #Submitted work array has 7 elements
+            # element 0 - student id 
+            # element 1 - student name
+            # element 2 - submission status
+            # element 3 - number of submission attempts
+            # element 4 - submitted document name
+            # element 5 - submitted document url  - may or may not have element id
+            # element 6 - array of tabs with 3 elements
+                # subelement 0 - element id
+                # subelement 1 - element name
+                # subelement 2 - element thumbnail
+
             submitted_student_works.append([member_id, member_name, state_name, number_of_attempts, doc_name, url, tab_names_and_ids])
+        
+        #If the document is in progress
         else:
             inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
-
-
 
 
     context={
