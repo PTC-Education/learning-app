@@ -48,37 +48,43 @@
             <h3>Mates Summary</h3> 
             {% if summary_msg %}
                 <p class="list_title">This assembly contains:<ul class="summary">
-                    <li>{{ summary_msg.mates}} mates</li>
-                    <li>{{ summary_msg.mate_relations}} mate relations</li>
+                    <li>Mates: {{ summary_msg.mates}}</li>
+                    <li>Mate relations: {{ summary_msg.mate_relations}}</li>
                     </ul>
                 </p>
             {% endif %}
             {% if detail_msg %}
                 <p class="list_title">Of the mates and mate relations:<ul class="summary">
-                    <li>{{ detail_msg.renamed}} have been renamed</li>
-                    <li>{{ detail_msg.offsets}} have offests</li>
-                    <li>{{ detail_msg.limits}} have limits defined</li>
+                    <li>Renamed: {{ detail_msg.renamed}}</li>
+                    <li>Offsets: {{ detail_msg.offsets}}</li>
+                    <li>Limits: {{ detail_msg.limits}}</li>
                     </ul>
                 </p>
             {% endif %}
             <p class="table_title">Mates</p>
-            <table><tr><th>Type</th><th>Count</th></tr>
+            <table class="item_summary">
+                <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                <tbody>
                 {% for key, value in mates.items %}
                     <tr>
                         <td>{{ key }}</td>
                         <td>{{ value }}</td>
                         </tr>
                 {% endfor %}
+                </tbody>
             </table>
             {% if mate_relations|length > 0 %}
                 <p class="table_title">Mate Relations</p>
-                <table><tr><th>Type</th><th>Count</th></tr>
+                <table class="item_summary">
+                    <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                    <tbody>
                     {% for key, value in mate_relations.items %}
                         <tr>
                             <td>{{ key }}</td>
                             <td>{{ value }}</td>
                             </tr>
                     {% endfor %}
+                    </tbody>
                 </table>
             {% endif %}
         {% endif %}
@@ -89,7 +95,9 @@
             <input id="show_hide_checkbox" type="checkbox" onclick="showHideDetails(this,'mates_details')" style="margin:0;"></p>
             </div>
             <div id="mates_details">
-                <table><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr>
+                <table  class="item_summary">
+                    <thead><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr></thead>
+                    <tbody>
                     {% for mate in mate_details %}
                         <tr>
                             <td>{{ mate.name }}</td>
@@ -117,6 +125,7 @@
                             </td>
                         </tr>
                     {% endfor %}
+                    </tbody>
                 </table>
                 </div>
     {% endif %}

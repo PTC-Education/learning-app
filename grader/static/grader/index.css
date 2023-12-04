@@ -15,7 +15,7 @@ ol {
   margin-bottom: .2em;
 }
 
-table {
+/* table {
   table-layout: fixed;
   width: 100%;
   border: 1px solid rgb(5, 97, 25);
@@ -31,11 +31,10 @@ td {
 
 th:hover,
 td:hover {
-
   white-space: wrap;
   background-color: #ebebeb;
   color:red;
-}
+} */
 
 .details {
     margin:.5em 0em;
@@ -71,6 +70,36 @@ ul.summary {
 
 .list_title {
   margin-bottom: 0px;
+}
+
+/* Summary tables */
+table.item_summary {
+    color: #333;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    border-collapse: collapse;
+}
+.item_summary thead, .item_summary tbody {
+    border: 1px solid #d3d7d9;
+}
+.item_summary thead {
+    font-weight: 700;
+    background-color: #f5f5f5;
+}
+.item_summary td {
+    font-weight: 400;
+}
+.item_summary td, .item_summary th {
+    font-size: 9pt;   
+    /* line-height: 1.8em; */
+    text-align: left;
+    padding: 0.5em 3em 0.5em 0.5em;
+    border-left: 1px solid #d3d7d9;
+}
+.item_summary tbody tr:hover {
+    background-color: #e2f0fa !important;
+}
+.item_summary tbody tr:nth-child(odd) {
+    background-color: #fafafa;
 }
 
 /* Style the app logo at the center top of the page */ 
