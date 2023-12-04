@@ -29,9 +29,23 @@
             .item_summary tbody tr:nth-child(odd) {
                 background-color: #fafafa;
             }
+            .select-items div,.select-selected {
+                color: #ffffff;
+                padding: 8px 16px;
+                border: 1px solid transparent;
+                border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+                cursor: pointer;
+                }
         </style>
     </head>
     <body>
+        <select id="elements" name="elements" size="5">
+            <option value="partstudios bc6361d3b934e484e3c01e0e"> Part Studio 1</option>
+            <option value="partstudios 8e86c798d24dcad8a2346ca2"> Part Studio 2</option>
+            <option value="assemblies cf0cc798ce39e9fcb4b6b1e1">Assembly 2</option>
+            <option value="assemblies 94aec43fb93f82cb9e09ec48">Assembly 1</option>
+            <option value="assemblies 31f896f3bf4a0fd097c714bd">Wedding Cake</option>
+        </select>
         <table class="item_summary">
             <thead>
                 <tr><th>Tab</th><th>Count</th></tr>
