@@ -29,23 +29,95 @@
             .item_summary tbody tr:nth-child(odd) {
                 background-color: #fafafa;
             }
-            .select-items div,.select-selected {
-                color: #ffffff;
-                padding: 8px 16px;
-                border: 1px solid transparent;
-                border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+            /* == Radio button styling == */
+            .element_container {
+                color: #333;
+                font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+                display: block;
+                position: relative;
+                padding-left: 35px;
+                padding-top: 6px;
+                margin-bottom: 10px;
                 cursor: pointer;
-                }
+                font-size: 12px;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            /* Hide the browser's default radio button */
+            .element_container input {
+                position: absolute;
+                opacity: 0;
+                cursor: pointer;
+            }
+
+            /* Create a custom radio button */
+            .checkmark {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 25px;
+                width: 25px;
+                background-color: #eee;
+                /* border-radius: 50%; */
+            }
+
+            /* On mouse-over, add a grey background color */
+            .element_container:hover input ~ .checkmark {
+                background-color: #ccc;
+            }
+
+            /* When the radio button is checked, add a green background */
+            .element_container input:checked ~ .checkmark {
+                background-color: #40AA1D;
+            }
+
+            /* Create the indicator */
+            .checkmark:after {
+                content: "";
+                position: absolute;
+                display: none;
+            }
+
+            /* Show the indicator when checked */
+            .element_container input:checked ~ .checkmark:after {
+                display: block;
+            }
+
+            /* Style the indicator */
+            .element_container .checkmark:after {
+                top: 9px;
+                left: 9px;
+                width: 8px;
+                height: 8px;
+                /* border-radius: 50%; */
+                background: #ccc;
+            }
+            /* == End radio button styling == */
         </style>
     </head>
     <body>
-        <select id="elements" name="elements" size="5">
-            <option value="partstudios bc6361d3b934e484e3c01e0e"> Part Studio 1</option>
-            <option value="partstudios 8e86c798d24dcad8a2346ca2"> Part Studio 2</option>
-            <option value="assemblies cf0cc798ce39e9fcb4b6b1e1">Assembly 2</option>
-            <option value="assemblies 94aec43fb93f82cb9e09ec48">Assembly 1</option>
-            <option value="assemblies 31f896f3bf4a0fd097c714bd">Wedding Cake</option>
-        </select>
+        <!-- Radio Buttons -->
+        <label class="element_container">One
+            <input type="radio" checked="checked" name="radio">
+            <span class="checkmark"></span>
+          </label>
+          <label class="element_container">Two
+            <input type="radio" name="radio">
+            <span class="checkmark"></span>
+          </label>
+          <label class="element_container">Three
+            <input type="radio" name="radio">
+            <span class="checkmark"></span>
+          </label>
+          <label class="element_container">Four
+            <input type="radio" name="radio">
+            <span class="checkmark"></span>
+        </label>
+
+        <!-- Table -->
         <table class="item_summary">
             <thead>
                 <tr><th>Tab</th><th>Count</th></tr>
@@ -57,17 +129,4 @@
                 <tr><td>Other tabs</td><td>0</td></tr>
             </tbody>
         </table>
-        <p>&nbsp;</p>
-        <table>
-            <thead>
-                <tr><th>Tab</th><th>Count</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>Assemblies</td><td>3</td></tr>
-                <tr><td>Part Studios</td><td>2</td></tr>
-                <tr><td>Drawings</td><td>0</td></tr>
-                <tr><td>Other tabs</td><td>0</td></tr>
-            </tbody>
-        </table>
-    </body>
 </html>
