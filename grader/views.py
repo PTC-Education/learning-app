@@ -272,10 +272,11 @@ def list_classes(request: HttpRequest, os_user_id: str):
     except:
         print("Error in classes") #need better error message here
     
+    #If no classes were detected
     if ( len(classes) == 0): 
         context={
                 "user": curr_user, 
-                "error_message" : "No classes found for this user. Sign in to your educator account."
+                "error_message" : "No classes were found."
             }
         return render(
         request, "grader/index.html", 
@@ -284,6 +285,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
 
     
     context={
+            "page": "classes",
             "user": curr_user, 
             "classes":classes,
         }
@@ -326,12 +328,13 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
 
     except:
         print("Error in assignment") #need better error message here
+
     context={
             "user": curr_user, 
+            "page": "assignments",
             "assignments": assignments,
             "class_name": class_name,
             "class_id":class_id
-
         }
     return render(
         request, "grader/c&A.html", 
@@ -361,7 +364,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
     try:
         full_submission_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
         submissions = full_submission_list["submissions"]
-
+        print("submissin", submissions)
         type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
         for submission in submissions:
             member_id = submission["memberId"]
@@ -381,8 +384,8 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
                 did     = splitted_url[0]
                 wv      = splitted_url[1]
                 wvid    = splitted_url[2]
-
-                if not url.find("/e/") < 0: # if there is an element id
+                '''
+                if not url.find("/e/") < 0: # if there is an element id in the url of the submitted document
                     tab_id = splitted_url[4]
                     tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, tab_id, auth_token=curr_user.access_token)
                     tab_name = tab_info[0]["name"]
@@ -390,18 +393,21 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
                     tab_names_and_ids.append([tab_id, tab_name, tab_image]) 
                 
                 else: #check if url has element id, if not try to find the eid 
-                    tab_infos = get_element_info(curr_user.os_domain, did, wv, wvid, " ", auth_token=curr_user.access_token) #get all tab info
-                    
-                    for tab_info in tab_infos:
-                        tab_type = tab_info["elementType"]
-                        if( tab_type == type_dict[curr_user.etype]): # Only get information of the tabs that have same element type as the user document
-                            tab_name    = tab_info["name"]
-                            tab_id      = tab_info["id"]
-                            tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token)
-                            tab_url = url + "/e/" + tab_id
-                            tab_names_and_ids.append([tab_url, tab_name, tab_image])  # bundle the tab name , id and image of each tab
-                            
-                    url = tab_names_and_ids[0][0] # update the url to point to the first tab of the document  
+                '''
+                tab_infos = get_element_info(curr_user.os_domain, did, wv, wvid, " ", auth_token=curr_user.access_token) #get all tab info
+                
+
+                for tab_info in tab_infos:
+                    tab_type = tab_info["elementType"]
+                    if( tab_type == type_dict[curr_user.etype]): # Only get information of the tabs that have same element type as the user document
+                        tab_name    = tab_info["name"]
+                        tab_id      = tab_info["id"]
+                        tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token)
+                        tab_url = curr_user.os_domain + "/documents/" + did + "/" + wv + "/" + wvid + "/e/" + tab_id
+                        #tab_url = url + "/e/" + tab_id
+                        tab_names_and_ids.append([tab_url, tab_name, tab_image])  # bundle the tab name , id and image of each tab
+                        
+                url = tab_names_and_ids[0][0] # update the url to point to the first tab of the document  
 
                 #Submitted work array has 7 elements
                 # element 0 - student id 
@@ -425,9 +431,11 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
          print("Error in members") #need better error message here
     context={
             "user": curr_user, 
+            "page": "submissions",
             "submitted_student_works":submitted_student_works,
             "inprogress_student_works": inprogress_student_works,
             "class_name": class_name,
+            "class_id": class_id,
             "assignment_name": assignment_name 
 
         }

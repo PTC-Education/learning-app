@@ -44,6 +44,8 @@ function set_url(id, base_url, tab_id = ""){ //base array has member info and ta
     }
   }
 
+
+//Function to update the tab name and image when another element is selected from drop down menu  
 function update_tab(id, tab_name, tab_image){
   var button_text = document.getElementById("button_name_"+ id);
   button_text.innerHTML = tab_name;
@@ -63,4 +65,16 @@ function form_ref_url_array(){
   url_box = document.getElementById("ref_url_edu");
   url_box.value = url_array;
   return true; //return true
+}
+
+//Function to check if the number of assignment is greater than 0, only submit to get asignment details 
+//if there is assignment to check
+function check_assignments(assignment_count){
+ if (assignment_count == 0){
+  
+  return false;
+ }
+ else{
+  return true;
+ }
 }
