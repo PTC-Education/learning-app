@@ -271,6 +271,18 @@ def list_classes(request: HttpRequest, os_user_id: str):
                 classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
     except:
         print("Error in classes") #need better error message here
+    
+    if ( len(classes) == 0): 
+        context={
+                "user": curr_user, 
+                "error_message" : "No classes found for this user. Sign in to your educator account."
+            }
+        return render(
+        request, "grader/index.html", 
+        context=context
+    )
+
+    
     context={
             "user": curr_user, 
             "classes":classes,
