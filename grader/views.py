@@ -255,7 +255,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
 
     **Template:**
 
-    :template:`grader/c&A.html`
+    :template:`grader/c_and_a.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -295,7 +295,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
             "classes":classes,
         }
     return render(
-        request, "grader/C&A.html", 
+        request, "grader/c_and_a.html", 
         context=context
     )
 
@@ -309,7 +309,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
 
     **Template:**
 
-    :template:`grader/c&A.html`
+    :template:`grader/c_and_a.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -342,7 +342,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
             "class_id":class_id
         }
     return render(
-        request, "grader/c&A.html", 
+        request, "grader/c_and_a.html", 
         context=context
     )
 
@@ -357,7 +357,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
 
     **Template:**
 
-    :template:`grader/c&A.html`
+    :template:`grader/c_and_a.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 

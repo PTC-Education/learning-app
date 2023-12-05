@@ -48,7 +48,7 @@ function update_tab(id, tab_name, tab_image){
   preview_image.src = tab_image;
 }
 
-//Function to set the value of input ref_url in c&A.html to an array of ref_urls to submit to views.py
+//Function to set the value of input ref_url in c_and_a.html to an array of ref_urls to submit to views.py
 //returns true in the end
 function form_ref_url_array(){
   var url_array = [];
