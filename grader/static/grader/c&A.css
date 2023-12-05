@@ -1,0 +1,296 @@
+/* Main font and color style */
+body {
+    color: #333;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+    
+h3 {
+    margin-bottom: 0px;
+}
+.instructions{
+  width: 90%;
+  color: #000;
+  background-color: white;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 350;
+  line-height: normal;
+  margin-bottom:50px;
+}
+
+input.go_home[type=submit] {
+  padding: 10px 10px;
+  cursor: pointer;
+  background-color: #CCCCCC;
+  border: 0 none;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+input.go_home[type=submit]:hover {
+  background-color: #ebebeb;
+  cursor:pointer;
+}
+
+.classes_assignments_box{
+  width:95%;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-style: normal;
+  float:left;
+  padding:10px;
+  background-color: #efefef;
+  box-shadow: 0 5px 10px rgba(0,0,0,.25);
+  margin:10px auto;  
+}
+
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  font-size: 11px;
+  border: 0px;
+  border-spacing: 0px;
+
+
+}
+
+
+th.small_15{
+  width: 15%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+th.status_column_34{
+  width: 34%;
+   vertical-align: bottom;
+}
+
+
+tr,th,td {
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+}
+
+.row_selector{
+  background-color: transparent;
+  border: none;
+  width: 100%;
+  height:auto;
+}
+
+.small_font_td{
+  font-size: 11px;
+}
+
+.bigger_font_th{
+  font-size: 12px;
+}
+
+.set_to_left_in_table{
+  text-align: left;
+  vertical-align: bottom;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tr.classlist:hover, .row_selector:hover {
+  background-color: #90cef1;
+  cursor: pointer;
+}
+
+.description_box{
+  width:95%;
+  height: auto;
+  float: left;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-style: normal;
+  font-size: 11px;
+  padding:10px;
+  background-color: #efefef;
+  box-shadow: 0 5px 10px rgba(0,0,0,.25);
+  margin:10px auto; 
+}
+
+.description_title{
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Loader */
+.loader {
+  position: relative;
+}
+.loader:after {
+  content: " ";
+  z-index: 10;
+  display: block;
+  position: absolute;
+  border: 10px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 10px solid #3498db;
+  width: 80px;
+  height: 80px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+/* Loader in Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner-container{
+  display: flex;
+  gap: 50px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.docinfo{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+
+input.quick_link[type=submit]{
+  margin:0 5px auto;
+  display:block;
+  font-size: 11px;
+  padding: 10px;
+  border: none;
+  font-weight: 300;
+}
+input.quick_link[type=submit]:hover{
+cursor: pointer;
+}
+
+p.quick_link{
+  margin:0 5px auto;
+  display:block;
+  padding: 10px 0;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+
+.dropbtn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  width: 100%;
+
+}
+
+.dropdown {
+  font-size: 11px;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+}
+
+.dropdown-content {
+  font-size: 11px;
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  margin:auto;
+  padding: 5px;
+
+}
+
+
+
+.dropdown:hover .dropdown-content {
+  font-size: 11px;
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: #3e8e41;
+}
+
+.dropdown_tab_and_image{
+  border: none;
+  font-size: 11px;
+  color: black;
+  padding: 12px 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown_tab_and_image:hover{
+cursor: pointer;
+}
+
+/* Style the submit button of forms  - for Grade button specific*/ 
+input.gradeButton[type=submit] {
+  border: 0 none;
+  margin-bottom: 5px;
+  margin-left: 10px;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  color: var(--zakim, #FFF);
+  background: var(--charles, #1651B0);
+  text-align: center;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 350;
+  line-height: normal;
+  border-radius: 4px;
+  width: 160px;
+  padding: 8px 0px 8px 0px;
+  justify-content: center;
+  float: right;
+  margin: 20px;
+}
+
+input.gradeButton[type=submit]:hover {
+background-color: #769fcc;
+cursor:pointer;
+}
+
+.class_assignment_name{
+  color: var(--boston-terrier, #333);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: normal;
+  margin:0
+}
+
+
+.add_to_grade_button{
+  font-size: 9px;
+  padding: 5px;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 4px;
+  border: none;
+
+}
+
+.add_to_grade_button:hover{
+  cursor:copy;
+}
+
+.table_header{
+  float:left;
+  margin: 20px;
+}
