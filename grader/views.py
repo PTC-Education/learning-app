@@ -150,7 +150,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         }
     return render(request, "grader/url_input.html", context=context)
 
-def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
+def doc_info_checker(request: HttpRequest, os_user_id: str):
     """ 
     This function is for showing elements in a document for best practices checking. 
 
@@ -164,27 +164,22 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     # Get info and workspace for current document selected
+
     doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     doc_wid = doc_info['defaultWorkspace']['id']
 
     # Create HTML for list of elements
-    if element_list == "":
-        elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
-        element_list = '''
-        <label for="elements">Choose an element:</label>
-        <select id="elements" name="elements" size="5">'''
-        for element in elements_info:
-            if element['elementType'] == "PARTSTUDIO":
-                image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
-                element_list += f'''
-                <option value="partstudios {element['id']}"> {element['name']}</option>'''
-            elif element['elementType'] == "ASSEMBLY":
-                image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
-                element_list += f'''
-                <option value="assemblies {element['id']}">{element['name']}</option>'''
-        
-        element_list += "</select>"
-
+    element_list = []
+    elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
+    for element in elements_info:
+        if element['elementType'] == "PARTSTUDIO":
+            image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
+            element_dict = {'etype': 'partstudios', 'id': element['id'], 'name': element['name']}
+            element_list.append({'etype': 'partstudios', 'id': element['id'], 'name': element['name']})
+        elif element['elementType'] == "ASSEMBLY":
+            image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
+            element_dict = {'etype': 'assemblies', 'id': element['id'], 'name': element['name']}
+            element_list.append(element_dict)
     # Get element and check type that the user has selected
     element = request.GET.get('elements')
     check_type = request.GET.getlist('check_type')
@@ -194,6 +189,11 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
     except:
         pass
     check_message = ""
+    summary_msg = {}
+    detail_msg = {}
+    mates = {}
+    mate_relations = {}
+    mate_details = {}
     
     if "Features" in check_type and element:
         # Get feature list of model the user currently has opened
@@ -206,7 +206,9 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
         if etype == "partstudios":
             check_message += ps_feature_list_helper(feature_list)
         if etype == "assemblies":
-            check_message += as_feature_list_helper(feature_list)
+            # check_message += as_feature_list_helper(feature_list)
+            mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
+            mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type and element:
         # Get parts list of model the user currently has opened
@@ -232,7 +234,12 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=""):
         "user": curr_user, 
         "element_list": element_list,
         "check_type": check_type,
-        "check_message": check_message
+        "check_message": check_message,
+        "mates": mates,
+        "mate_relations": mate_relations, 
+        "summary_msg": summary_msg,
+        "mate_details": mate_details,
+        "detail_msg": detail_msg
     }
 
     return render(request, "grader/doc_info_checker.html", context=context)
