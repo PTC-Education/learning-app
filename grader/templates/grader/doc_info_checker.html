@@ -27,8 +27,8 @@
             <!-- Select element -->
             {% if element_list %}
                 {% for element in element_list %}
-                    <label class="element_container">{{ element.name }}
-                        <input type="radio" checked="checked" name="radio" value="{{ element.id }}">
+                    <label id="elements" name="elements" class="element_container">{{ element.name }}
+                        <input type="radio" checked="checked" name="radio" value="{{ element.etype }} {{ element.id }}">
                         <span class="checkmark"></span>
                     </label>
                 {% endfor %}

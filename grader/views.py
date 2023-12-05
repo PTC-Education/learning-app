@@ -179,6 +179,8 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=[]):
     # Get element and check type that the user has selected
     element = request.GET.get('elements')
     check_type = request.GET.getlist('check_type')
+    print(element)
+    print(check_type)
     try:
         etype = element.split(" ")[0]
         eid = element.split(" ")[1]
