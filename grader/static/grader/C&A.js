@@ -46,8 +46,6 @@ function update_tab(id, tab_name, tab_image){
   button_text.innerHTML = tab_name;
   var preview_image = document.getElementById("preview_image_"+ id);
   preview_image.src = tab_image;
-
-  document.getElementById("dropdown_"+ id).style.display="none";
 }
 
 //Function to set the value of input ref_url in c&A.html to an array of ref_urls to submit to views.py
