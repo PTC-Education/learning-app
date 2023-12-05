@@ -34,14 +34,9 @@
 
 
 
-function set_url(id, base_url, tab_id = ""){ //base array has member info and tab array has all tab info for that member
+function set_url(id, url){ //base array has member info and tab array has all tab info for that member
     var url_text = document.getElementById("url_"+ id);
-    if(tab_id == ""){
-      url_text.innerHTML = base_url
-    }
-    else{
-      url_text.innerHTML = tab_id;
-    }
+      url_text.innerHTML = url;
   }
 
 
@@ -80,6 +75,73 @@ function check_assignments(assignment_count){
 }
 
 
-function add_to_grade_list(array_student){
-  console.log(array_student);
+function add_to_grade_list(id){
+
+  //get data from required action table
+  const sourceRow = document.getElementById("tab_" + id);
+  let source_user = sourceRow.cells[0].innerHTML;
+  let source_doc = sourceRow.cells[1].innerHTML;
+  let source_url = sourceRow.cells[2].innerHTML;
+  let source_part = document.getElementById("button_name_" + id).innerHTML;
+  let source_thumbnail = document.getElementById("preview_image_" + id).src;
+
+  sourceRow.remove(); //remove the row from required action table
+
+  //add a new row to the submitted work table
+  var submitTable = document.getElementById('submitted_work');
+  let row = submitTable.insertRow(-1); // We are adding at the end
+   
+  // Create new cells
+  let user = row.insertCell(0);
+  let doc = row.insertCell(1);
+  let url = row.insertCell(2);
+  let part = row.insertCell(3);
+  let thumbnail_cell = row.insertCell(4);
+
+  // add properties to the new cells
+  user.innerHTML = source_user;
+  user.classList.add("set_to_left_in_table");
+  user.classList.add("small_font_td");
+
+  doc.innerHTML = source_doc;
+  doc.classList.add("set_to_left_in_table");
+  doc.classList.add("small_font_td");
+
+  url.innerHTML = source_url;
+  url.setAttribute("name","doc_url"); //= "doc_url";
+  url.hidden = true ;
+  url.id = "url_" + id;
+  
+  part.innerHTML = source_part;
+  part.classList.add("set_to_left_in_table");
+  part.classList.add("small_font_td");
+
+  var img = document.createElement('img');
+  img.src = source_thumbnail;
+  img.id = "preview_image_" + id;
+  thumbnail_cell.appendChild(img);
+
+
+  //function to check the content of submitted table to show 
+  check_submitted_content();
+  //function to check the content of required action to hide if blank
+  check_required_action_content();
+}
+
+
+function check_required_action_content(){
+  required_action_table = document.getElementById("action_required_work");
+  if(required_action_table.rows.length == 1){ //if there is only one row left
+    document.getElementById("action_required_box").hidden = true; //hide the enitre box with the table
+  }
+}
+
+function check_submitted_content(){
+  submitted_table = document.getElementById("submitted_work");
+  if(submitted_table.rows.length == 1){ //if there is only one row left
+    document.getElementById("submitted_box").hidden = true; //hide the enitre box with the table
+  }
+  else{
+    document.getElementById("submitted_box").hidden = false; //show the enitre box with the table
+  }
 }
