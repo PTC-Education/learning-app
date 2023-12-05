@@ -295,7 +295,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
             "classes":classes,
         }
     return render(
-        request, "grader/C&A.html", 
+        request, "grader/c_and_a.html", 
         context=context
     )
 
@@ -342,7 +342,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
             "class_id":class_id
         }
     return render(
-        request, "grader/c&A.html", 
+        request, "grader/c_and_a.html", 
         context=context
     )
 
