@@ -83,7 +83,7 @@
         <div class = "adjust-container">
             <div class = "slidecontainer">
                 <p>Tolerance: <span id = "slider_value"></span> %</p>
-                <input type = "range" min = "1" max = "500" value = "50" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{all_ref_props|length}}')">
+                <input type = "range" min = "0" max = "100" value = "2" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{all_ref_props|length}}')">
             </div>
             <div class = "propselector" onchange= "reform_result('{{all_ref_props|length}}')" >
                 <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1" name = "mass" value = "mass" checked = "True" /> Mass</label>
