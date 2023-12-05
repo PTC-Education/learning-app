@@ -471,10 +471,10 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
 
         }
     return render(
-        request, "grader/c&A.html", 
+        request, "grader/c_and_a.html", 
         context = context
     )
-    
+
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
