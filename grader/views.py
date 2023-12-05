@@ -174,11 +174,11 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     for element in elements_info:
         if element['elementType'] == "PARTSTUDIO":
             image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
-            element_dict = {'etype': 'partstudios', 'id': element['id'], 'name': element['name']}
-            element_list.append({'etype': 'partstudios', 'id': element['id'], 'name': element['name']})
+            element_dict = {'etype': 'partstudios', 'id': element['id'], 'name': element['name'], 'image': image}
+            element_list.append(element_dict)
         elif element['elementType'] == "ASSEMBLY":
             image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
-            element_dict = {'etype': 'assemblies', 'id': element['id'], 'name': element['name']}
+            element_dict = {'etype': 'assemblies', 'id': element['id'], 'name': element['name'], 'image': image}
             element_list.append(element_dict)
     # Get element and check type that the user has selected
     element = request.GET.get('elements')
