@@ -27,14 +27,16 @@
             <!-- Select element -->
             {% if element_list %}
                 {% for element in element_list %}
-                    <label class="element_container">{{ element.name }}
+                    <label class="element_container">
+                        <div class="element_label">{{ element.name }}</div>
                         <input type="radio" id="elements" name="elements" value="{{ element.etype }} {{ element.id }}">
                         <span class="checkmark"></span>
+                        <img height="40px" src="{{ element.image }}">
                     </label>
                 {% endfor %}
             {% endif %}
             <p>Select the type of check(s) you would like to perform:</p>
-            <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features<br>      
+            <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features/Mates<br>      
             <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>      
             <input type="submit" value="Check model"/>
         </form>
