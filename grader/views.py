@@ -148,7 +148,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         }
     return render(request, "grader/url_input.html", context=context)
 
-def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=[]):
+def doc_info_checker(request: HttpRequest, os_user_id: str):
     """ 
     This function is for showing elements in a document for best practices checking. 
 
@@ -162,19 +162,21 @@ def doc_info_checker(request: HttpRequest, os_user_id: str, element_list=[]):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     # Get info and workspace for current document selected
+
     doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     doc_wid = doc_info['defaultWorkspace']['id']
 
     # Create HTML for list of elements
-    if element_list == []:
-        elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
-        for element in elements_info:
-            if element['elementType'] == "PARTSTUDIO":
-                image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
-                element_dict = {'etype': 'partstudios', 'id': element['id'], 'name': element['name']}
-            elif element['elementType'] == "ASSEMBLY":
-                image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
-                element_dict = {'etype': 'assemblies', 'id': element['id'], 'name': element['name']}
+    element_list = []
+    elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
+    for element in elements_info:
+        if element['elementType'] == "PARTSTUDIO":
+            image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
+            element_dict = {'etype': 'partstudios', 'id': element['id'], 'name': element['name']}
+            element_list.append({'etype': 'partstudios', 'id': element['id'], 'name': element['name']})
+        elif element['elementType'] == "ASSEMBLY":
+            image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
+            element_dict = {'etype': 'assemblies', 'id': element['id'], 'name': element['name']}
             element_list.append(element_dict)
     # Get element and check type that the user has selected
     element = request.GET.get('elements')
