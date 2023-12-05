@@ -264,7 +264,6 @@ def list_classes(request: HttpRequest, os_user_id: str):
     classes=[]          # to store the names of classes
     assignments=[]      #array to store assisgnments within the classes
 
-
     #get information about classrooms created by the user
     try:
         classinfo = get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
@@ -289,7 +288,6 @@ def list_classes(request: HttpRequest, os_user_id: str):
         request, "grader/index.html", 
         context=context
     )
-
     
     context={
             "page": "classes",
@@ -297,7 +295,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
             "classes":classes,
         }
     return render(
-        request, "grader/c&A.html", 
+        request, "grader/C&A.html", 
         context=context
     )
 
@@ -476,6 +474,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
         request, "grader/c&A.html", 
         context = context
     )
+    
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
