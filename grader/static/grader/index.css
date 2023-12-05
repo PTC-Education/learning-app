@@ -109,7 +109,7 @@ table.item_summary {
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
     display: block;
     position: relative;
-    padding-left: 50px;
+    padding-left: 60px;
     padding-top: 6px;
     padding-bottom: 6px;
     margin-bottom: 10px;
@@ -123,7 +123,7 @@ table.item_summary {
 
 .element_container .element_label {
     float: left;
-    margin-top: 12px;
+    margin-top: 22px;
     margin-right: 10px;
 }
 
@@ -137,10 +137,10 @@ table.item_summary {
 /* Create a custom radio button */
 .checkmark {
     position: absolute;
-    top: 12px;
-    left: 12px;
-    height: 26px;
-    width: 26px;
+    top: 22px;
+    left: 22px;
+    height: 30px;
+    width: 30px;
     background-color: #617480;
     /* border-radius: 50%; */
 }
@@ -169,12 +169,18 @@ table.item_summary {
 
 /* Style the indicator */
 .element_container .checkmark:after {
-    top: 9px;
-    left: 9px;
-    width: 8px;
-    height: 8px;
+    top: 8px;
+    left: 8px;
+    width: 13px;
+    height: 13px;
     /* border-radius: 50%; */
     background: #ccc;
+}
+
+.element_container .element_ps_assem {
+  margin-top: 16px;
+  margin-right: 10px;
+  float: right;
 }
 /* == End radio button styling == */
 
