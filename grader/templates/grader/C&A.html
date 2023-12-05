@@ -54,7 +54,7 @@
                 <form action="{% url 'grader:list_classes' user.os_user_id%}">
                     <input class="quick_link" type="submit" value="Classes">
                 </form>
-                <p class = "options" id = "class_name">{{class_name}}</p>
+                <p class = "quick_link" id = "class_name">{{class_name}}</p>
             </div>
             {% if assignments %}
                 <div class="instructions">
@@ -112,17 +112,17 @@
 
 
                 <div class="classes_assignments_box" id="submitted_box">
-                    <p class = "table_header">Submitted</p>
+                    <p class = "table_header">Grading list</p>
                     <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
-                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade submitted works" onclick="loading_spinner('features')"/>             
+                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
                     </form>
 
                     <table id="submitted_work">
                         <tr>
                             <th class = "set_to_left_in_table bigger_font_th">Student name</th>
                             <th class = "set_to_left_in_table bigger_font_th">Document name</th>
-                            <th class = "bigger_font_th">Tab name</th>
+                            <th class = "set_to_left_in_table bigger_font_th">Tab name</th>
                             <th class = "bigger_font_th">Thumbnail</th>
                         </tr>
                         <!--
@@ -142,7 +142,7 @@
                                 <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                                 <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
                                 <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
-                                <td> {{studentwork.5.0.1 }}</td>
+                                <td class = "set_to_left_in_table small_font_td"> {{studentwork.5.0.1 }}</td>
                                 <td> <img id = preview_image_{{studentwork.0}} src = "{{studentwork.5.0.2 }}" alt = "" /></td>
                             </tr>  
                         {% endfor %}   
@@ -158,9 +158,9 @@
                         <tr>
                             <th class = "set_to_left_in_table bigger_font_th">Student name</th>
                             <th class = "set_to_left_in_table bigger_font_th">Document name</th>
-                            <th class = "bigger_font_th">Tab name</th>
+                            <th class = "bigger_font_th">Select file below</th>
                             <th class = "bigger_font_th">Thumbnail</th>
-                            <th> </th>
+                            <th class = "bigger_font_th">Add to grading list</th>
                         </tr>
 
                         <!--
@@ -182,9 +182,9 @@
                                 <td>        
                                     <div class="dropdown">
                                         <button id = button_name_{{studentwork.0}} class="dropbtn"> {{studentwork.5.0.1 }}</button>    
-                                        <div class="dropdown-content">
+                                        <div class="dropdown-content" id = dropdown_{{studentwork.0}}>
                                             {% for tab in studentwork.5 %}
-                                                <button onclick="set_url('{{studentwork.0}}','{{tab.0}}') , update_tab('{{studentwork.0}}','{{tab.1}}','{{tab.2}}')">
+                                                <button class="dropdown_tab_and_image" onclick="set_url('{{studentwork.0}}','{{tab.0}}') , update_tab('{{studentwork.0}}','{{tab.1}}','{{tab.2}}')">
                                                     {{tab.1}}
                                                     <img src = "{{tab.2}}" alt = ""/>
                                                 </button>
@@ -208,7 +208,7 @@
 
             {% if inprogress_student_works %}
                 <div class="classes_assignments_box">
-                    In Progress
+                    <p class = "table_header">In progress</p>
                     <table>
                         <tr>
                             <th class = "set_to_left_in_table bigger_font_th">Student name</th>
