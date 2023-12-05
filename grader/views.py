@@ -359,72 +359,97 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
         curr_user.refresh_oauth_token() 
 
     submitted_student_works = []  #store submitted work
+    action_required_student_works = [] # submitted work that requires user action
     inprogress_student_works = [] #store inprogress work
+
+    #submitted_student_works
+    #action_required_student_works
+    #both have 6 elements
+        # element 0 - student id 
+        # element 1 - student name
+        # element 2 - number of submission attempts
+        # element 3 - submitted document name
+        # element 4 - submitted document url
+        # element 5 - array of tabs with 3 elements
+            # subelement 0 - element url
+            # subelement 1 - element name
+            # subelement 2 - element thumbnail
 
     try:
         full_submission_list = get_submission_list(curr_user.os_domain, class_id, assignment_id, auth_token = curr_user.access_token)
         submissions = full_submission_list["submissions"]
-        print("submissin", submissions)
+
         type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
         for submission in submissions:
             member_id = submission["memberId"]
             member_name = submission["memberName"]
-            doc_name = submission["documents"][0]["metadata"]["dn"]
             state_name = submission["stateName"]
-            url = submission["documents"][0]["viewRef"]
 
+            require_user_action = True 
             number_of_attempts = 0
-            tab_names_and_ids =[] 
-
+            tab_names_and_ids =[]  
+            
             #If the document is submitted
             if (state_name == "Submitted"):
+                doc_name = submission["documents"][0]["metadata"]["dn"]
+                url = submission["documents"][0]["viewRef"]
                 number_of_attempts = submission["numberOfAttempts"]
-
                 splitted_url = url.split("/documents/")[1].split("/")
-                did     = splitted_url[0]
-                wv      = splitted_url[1]
-                wvid    = splitted_url[2]
-                '''
+                did = splitted_url[0]
+                if(len(splitted_url)==1): # url has a document id only
+                    doc_info = get_doc_info(curr_user.os_domain, did,  auth_token=curr_user.access_token)
+                    wv = "w"
+                    wvid = doc_info["defaultWorkspace"]["id"]
+                else:
+                    wv      = splitted_url[1]
+                    wvid    = splitted_url[2]
+
                 if not url.find("/e/") < 0: # if there is an element id in the url of the submitted document
-                    tab_id = splitted_url[4]
+                    tab_id = splitted_url[4].split("?")[0]
                     tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, tab_id, auth_token=curr_user.access_token)
-                    tab_name = tab_info[0]["name"]
-                    tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
-                    tab_names_and_ids.append([tab_id, tab_name, tab_image]) 
+                    tab_type = tab_info[0]["elementType"]
+
+                    #if the type of eid in the url is the same as the current user etype
+                    if( tab_type == type_dict[curr_user.etype]):
+                        require_user_action = False  #dont require action from user
+                        tab_name = tab_info[0]["name"]
+                        tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
+                        tab_names_and_ids.append([url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
+                        submitted_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
+                    else:
+                        require_user_action = True #require action from user
+                                      
+                else:  # if there is no element id in the url of the submitted document
+                     require_user_action = True #require action from user
                 
-                else: #check if url has element id, if not try to find the eid 
-                '''
-                tab_infos = get_element_info(curr_user.os_domain, did, wv, wvid, " ", auth_token=curr_user.access_token) #get all tab info
-                
+                if require_user_action:
+                    tab_infos = get_element_info(curr_user.os_domain, did, wv, wvid, " ", auth_token=curr_user.access_token) #get all tab info
+                    
+                    for tab_info in tab_infos:
+                        tab_type = tab_info["elementType"]
+                        if( tab_type == type_dict[curr_user.etype]): # Only get information of the tabs that have same element type as the user document
+                            tab_name    = tab_info["name"]
+                            tab_id      = tab_info["id"]
+                            tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token)
+                            tab_url = curr_user.os_domain + "/documents/" + did + "/" + wv + "/" + wvid + "/e/" + tab_id
+                            tab_names_and_ids.append([tab_url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
+                    
 
-                for tab_info in tab_infos:
-                    tab_type = tab_info["elementType"]
-                    if( tab_type == type_dict[curr_user.etype]): # Only get information of the tabs that have same element type as the user document
-                        tab_name    = tab_info["name"]
-                        tab_id      = tab_info["id"]
-                        tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token)
-                        tab_url = curr_user.os_domain + "/documents/" + did + "/" + wv + "/" + wvid + "/e/" + tab_id
-                        #tab_url = url + "/e/" + tab_id
-                        tab_names_and_ids.append([tab_url, tab_name, tab_image])  # bundle the tab name , id and image of each tab
-                        
-                url = tab_names_and_ids[0][0] # update the url to point to the first tab of the document  
+                    url = tab_names_and_ids[0][0] # update the url to point to the first tab of the document  
+                    if(len(tab_names_and_ids) == 1): #If there is only one tab
+                        submitted_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
+                    else:
+                        action_required_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
 
-                #Submitted work array has 7 elements
-                # element 0 - student id 
-                # element 1 - student name
-                # element 2 - submission status
-                # element 3 - number of submission attempts
-                # element 4 - submitted document name
-                # element 5 - submitted document url  - may or may not have element id
-                # element 6 - array of tabs with 3 elements
-                    # subelement 0 - element id
-                    # subelement 1 - element name
-                    # subelement 2 - element thumbnail
-
-                submitted_student_works.append([member_id, member_name, state_name, number_of_attempts, doc_name, url, tab_names_and_ids])
-            
+                           
             #If the document is in progress
             else:
+                doc_name = "Not included"
+                url = ""
+                if submission["documents"]: # if the user has started a document
+                    doc_name = submission["documents"][0]["metadata"]["dn"]
+                    url = submission["documents"][0]["viewRef"]
+                    
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
 
     except:
@@ -433,6 +458,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
             "user": curr_user, 
             "page": "submissions",
             "submitted_student_works":submitted_student_works,
+            "action_required_student_works": action_required_student_works,
             "inprogress_student_works": inprogress_student_works,
             "class_name": class_name,
             "class_id": class_id,
@@ -777,6 +803,9 @@ def get_feature_list(
     else: 
         return None
 
+
+
+
 def get_doc_info(
     domain: str, did: str, auth_token: str
 ) -> Any: 
@@ -857,10 +886,6 @@ def get_assignment_list(
 def get_submission_list(
     domain: str, classid:str , assignmentid: str, auth_token: str
 ) -> Any: 
-    print("URL",os.path.join(
-            domain, 
-            "api/classrooms/{}/assignments/{}".format(classid, assignmentid)
-        ))
     response = requests.get(
         os.path.join(
             domain, 

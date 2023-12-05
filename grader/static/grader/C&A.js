@@ -71,10 +71,15 @@ function form_ref_url_array(){
 //if there is assignment to check
 function check_assignments(assignment_count){
  if (assignment_count == 0){
-  
+
   return false;
  }
  else{
   return true;
  }
+}
+
+
+function add_to_grade_list(array_student){
+  console.log(array_student);
 }

@@ -43,10 +43,11 @@ table {
 
 }
 
-th.write_sideways{
-  writing-mode: vertical-lr;
-  text-orientation: mixed;
+
+th.small_15{
   width: 15%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 th.status_column_34{
