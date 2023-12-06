@@ -27,13 +27,13 @@ function tableToCSV(num_of_urls) {
 	var docname = document.getElementById("usr_docname").innerHTML;
 	var username = document.getElementById("usr_username").innerHTML;
 	var userurl = document.getElementById("usr_url").innerHTML;
-	csvrow.push(username,"", "Reference document",docname,"", usreurl); //element name and score are left blank
+	csvrow.push(username,"", "Reference document",docname,"", userurl); //element name and score are left blank
 	csv_data.push(csvrow.join(",")); //Next row with document information 
 	
 	//Document property information of the user
 	var all_parts = refTable.querySelectorAll('tr');
 	for (let r = 1; r < all_parts.length ; r++){ //excluding the first row
-		csvrow = ["","","","",""]; //first six blank cells 
+		csvrow = ["","","","","",""]; //first six blank cells 
 		var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
 		for (let i = 0; i < part.length ; i++){
 			if(column_info[0].clasName == "col_0") { 
