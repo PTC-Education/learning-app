@@ -118,7 +118,7 @@ background-color: #769fcc;
     font-weight: 700;
     vertical-align: top;
 
-}
+  }
 
 .unit{
 font-size: 10px;
@@ -153,8 +153,6 @@ td.symbols{
 .adjust-container{
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   font-style: normal;
-  display: flex;
-  flex-direction: row;
   justify-content: space-between;
   max-width: 100%;
   margin: 0 auto;
@@ -170,16 +168,18 @@ td.symbols{
 
 
 .slidecontainer {
-    font-size: 12px;
-    width: 20%;
-    align-items: center;
-    padding: 20px;
-    justify-content: space-between;
+  font-size: 12px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   }
 
   .propselector{
   display: flex;
   font-size: 12px;
+  justify-content: center;
+
   }
   
   .prop-selector-box-text{
@@ -187,7 +187,6 @@ td.symbols{
     display: flex;
   }
 .slider {
-
     -webkit-appearance: none;
     width: 40%;
     height: 3px;
