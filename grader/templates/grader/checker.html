@@ -43,7 +43,7 @@
             {{ check_message|safe }}
         {% endif %}
 
-        {% if mates and mate_relations %}   
+        {% if mates or mate_relations %}   
             <h3>Mates Summary</h3> 
             {% if summary_msg %}
                 <p class="list_title">This assembly contains:<ul class="summary">
@@ -86,6 +86,9 @@
                     </tbody>
                 </table>
             {% endif %}
+            {% else %}
+            <h3>Mates Summary</h3>
+            This assembly has no mates.
         {% endif %}
         
         {% if mate_details %}
