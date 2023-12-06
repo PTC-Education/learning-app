@@ -95,10 +95,15 @@ function tableToCSV(num_of_urls) {
 		//console.log(failedurls); //add to the report 
 		for(let i = 0; i < failedurls.length; i++){
 			csvrow = [];
-			csvrow.push(failedurls[i].innerHTML, "", "", "Failed to grade!");
+			csvrow.push("", "❗" , "Failed URL", "", "",  failedurls[i].innerHTML);
 			csv_data.push(csvrow.join(","));
 		}
 	}
+
+
+
+	//for failed URLS
+
 	csv_data=csv_data.join("\n");
     downloadCSVFile(csv_data);
 }
