@@ -31,7 +31,14 @@
                         <div class="element_label">{{ element.name }}</div>
                         <input type="radio" id="elements" name="elements" value="{{ element.etype }} {{ element.id }}">
                         <span class="checkmark"></span>
-                        <img height="40px" src="{{ element.image }}">
+                        <img height="60px" src="{{ element.image }}">
+                        <div class="element_ps_assem">
+                            {% if element.etype == 'assemblies' %}
+                                <img height="30px" src="{% static 'grader/images/assem.svg' %}"/>
+                            {% else %}
+                                <img height="30px" src="{% static 'grader/images/ps.svg' %}"/>
+                            {% endif %}
+                        </div>
                     </label>
                 {% endfor %}
             {% endif %}
