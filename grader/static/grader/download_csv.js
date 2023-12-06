@@ -9,7 +9,7 @@ function tableToCSV(num_of_urls) {
 // ******************* /
 	//Header start
 	csvrow = [];
-	csvrow.push("URL", "Owner", "Score", "Comment", "Document", "Tab name");
+	csvrow.push("Owner", "Score", "Comment", "Document", "Tab name","URL");
 	//csvrow.push("Document", "Owner","Tab name","Score","Comment","URL");
 
 	if(column_info[0].className == "col_0") { // if Part Name column exists
@@ -27,7 +27,7 @@ function tableToCSV(num_of_urls) {
 	var docname = document.getElementById("usr_docname").innerHTML;
 	var username = document.getElementById("usr_username").innerHTML;
 	var userurl = document.getElementById("usr_url").innerHTML;
-	csvrow.push(userurl, username,"", "Reference document",docname, ""); //element name and score are left blank
+	csvrow.push(username,"", "Reference document",docname,"", userurl); //element name and score are left blank
 	csv_data.push(csvrow.join(",")); //Next row with document information 
 	
 	//Document property information of the user
@@ -39,7 +39,10 @@ function tableToCSV(num_of_urls) {
 			if(column_info[0].clasName == "col_0") { 
 				csvrow.push(part[0].innerHTML);  // add part name to the list if part name column exist
 			}
-			else if(column_info[i].style.visibility != "collapse"){ //if the column is not collapsed
+			else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
+				csvrow.push(""); 
+			}
+			else if(column_info[i].style.visibility != "collapse"){
 				csvrow.push(part[i].innerHTML); 
 			}
 		}
@@ -57,11 +60,11 @@ function tableToCSV(num_of_urls) {
 		var elname =   document.getElementById('elname_' + u).innerHTML;
 		var score = document.getElementById("ref_score_" + u).innerHTML;
 		var url =   document.getElementById('url_' + u).innerHTML;
-		var mismatcherror = document.getElementById("error_message_" + u).innerHTML;
+		var error_message = document.getElementById("error_message_" + u).innerHTML;
 	
-		csvrow.push(url, username,  score, mismatcherror, docname, elname); 
+		csvrow.push(username,  score, error_message, docname, elname, url); 
 		csv_data.push(csvrow.join(",")); //Next row with document information 
-		if(mismatcherror == ""){ //Ignore the data if there is any mismatch error
+		if(error_message == ""){ //Ignore the data if there is any  error message
 			var refTable = document.getElementById('table_' + u);
 			var all_parts = refTable.querySelectorAll('tr');
 			for (let r = 1; r < all_parts.length ; r++){ //excluding the first row
@@ -70,6 +73,9 @@ function tableToCSV(num_of_urls) {
 				for (let i = 0; i < part.length ; i++){
 					if(column_info[0].clasName == "col_0") { 
 						csvrow.push(part[0].innerHTML);  // add part name to the list if part name column exist
+					}
+					else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
+						csvrow.push(""); 
 					}
 					else if(column_info[i].style.visibility != "collapse"){
 						csvrow.push(part[i].innerHTML); 
@@ -86,7 +92,7 @@ function tableToCSV(num_of_urls) {
 	var urllist = document.getElementById('failed_url_list');
 	if(urllist != null){
 		var failedurls = urllist.querySelectorAll('a');
-		console.log(failedurls);
+		//console.log(failedurls); //add to the report 
 		for(let i = 0; i < failedurls.length; i++){
 			csvrow = [];
 			csvrow.push(failedurls[i].innerHTML, "", "", "Failed to grade!");
