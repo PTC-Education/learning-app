@@ -9,7 +9,7 @@ function tableToCSV(num_of_urls) {
 // ******************* /
 	//Header start
 	csvrow = [];
-	csvrow.push("URL", "Owner", "Score", "Comment", "Document", "Tab name");
+	csvrow.push("Owner", "Score", "Comment", "Document", "Tab name","URL");
 	//csvrow.push("Document", "Owner","Tab name","Score","Comment","URL");
 
 	if(column_info[0].className == "col_0") { // if Part Name column exists
@@ -27,13 +27,13 @@ function tableToCSV(num_of_urls) {
 	var docname = document.getElementById("usr_docname").innerHTML;
 	var username = document.getElementById("usr_username").innerHTML;
 	var userurl = document.getElementById("usr_url").innerHTML;
-	csvrow.push(userurl, username,"", "Reference document",docname, ""); //element name and score are left blank
+	csvrow.push(username,"", "Reference document",docname,"", usreurl); //element name and score are left blank
 	csv_data.push(csvrow.join(",")); //Next row with document information 
 	
 	//Document property information of the user
 	var all_parts = refTable.querySelectorAll('tr');
 	for (let r = 1; r < all_parts.length ; r++){ //excluding the first row
-		csvrow = ["","","","","",""]; //first six blank cells 
+		csvrow = ["","","","",""]; //first six blank cells 
 		var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
 		for (let i = 0; i < part.length ; i++){
 			if(column_info[0].clasName == "col_0") { 
@@ -62,7 +62,7 @@ function tableToCSV(num_of_urls) {
 		var url =   document.getElementById('url_' + u).innerHTML;
 		var error_message = document.getElementById("error_message_" + u).innerHTML;
 	
-		csvrow.push(url, username,  score, error_message, docname, elname); 
+		csvrow.push(username,  score, error_message, docname, elname, url); 
 		csv_data.push(csvrow.join(",")); //Next row with document information 
 		if(error_message == ""){ //Ignore the data if there is any  error message
 			var refTable = document.getElementById('table_' + u);
