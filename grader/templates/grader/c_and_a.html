@@ -4,14 +4,30 @@
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
         <script src="{% static 'grader/c_and_a.js' %}" type="text/javascript"></script>
 
-      <!-- Return to the home page -->
+     
         <br>
         <body>
+        <!-- Return to the home page -->
         <form action="{% url 'grader:index' user.os_user_id %}">
             <input class = "go_home" type="submit" value="Return to Home Page">
         </form>
 
         
+        <!--Instructions section for each page-->
+        <div class="instructions">
+            <h3>
+                Instuctions:
+            </h3>
+            {% if page == "classes" %}
+                Click on the class name to view assignments list.
+            {% endif %}
+            {% if page == "assignments" %}
+                Click on the assignment's name to view submission list and grade.
+            {% endif %}
+            {% if page == "submissions" %}
+                Click on grade to grade the submitted assignments.
+            {% endif %}
+        </div>
 
         <div class="spinner-container">
             <div id="features">
@@ -20,14 +36,13 @@
         </div>
 
         {% if page == "classes" %}
-            <div class="instructions">
-                <h3>
-                    Instuctions:
-                </h3>
-                    Click on the class name to view the assignments.
-            </div>
             <!-- No classes error message is generated from views.Error is displayed on index.html page-->
-
+            <div class = "docinfo">
+                <!-- Return to classes home page -->
+                <form action="{% url 'grader:list_classes' user.os_user_id%}">
+                    <input class="quick_link" type="submit" value="Classes">
+                </form>
+            </div>
             <div class="classes_assignments_box">
                 <table>
                     <tr>
@@ -54,15 +69,12 @@
                 <form action="{% url 'grader:list_classes' user.os_user_id%}">
                     <input class="quick_link" type="submit" value="Classes">
                 </form>
-                <p class = "quick_link" id = "class_name">{{class_name}}</p>
+                <form action="{% url 'grader:list_assignments' user.os_user_id class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
+                    <input class="quick_link" type="submit" value="{{class_name}}" title="{{class_name}}">
+                </form>
+                <p class = "quick_link" id = "class_name">Assignments</p>
             </div>
             {% if assignments %}
-                <div class="instructions">
-                    <h3>
-                        Instuctions:
-                    </h3>
-                        Click on the assignment's name.
-                </div>
                 <div class="classes_assignments_box">
                     <table>
                         <tr>
@@ -93,11 +105,13 @@
                 <span class = "description_title">Published date: </span><div id = "date"> </div>
                 <span class = "description_title">Description: </span> <div id = "description_text"> </div>
                 </div>
-            </div> <!-- Place to show the description of assignment-->
+            </div> <!-- Place to show the description of assignment on hover-->
         {% endif %}
 
 
         {% if page == "submissions" %}
+
+            <!-- Navigation buttons-->
             <div class = "docinfo">
                 <!-- Return to classes home page -->
                 <form action="{% url 'grader:list_classes' user.os_user_id%}">
@@ -110,44 +124,43 @@
                 <p class = "quick_link" id = "assignment_name">{{assignment_name}}</p>
             </div>
 
+            <div class="classes_assignments_box" id="submitted_box">
+                <p class = "table_header">Grading list</p>
+                <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
+                    <input id="ref_url_edu" hidden name="ref_url" type="text">
+                    <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
+                </form>
 
-                <div class="classes_assignments_box" id="submitted_box">
-                    <p class = "table_header">Grading list</p>
-                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
-                        <input id="ref_url_edu" hidden name="ref_url" type="text">
-                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
-                    </form>
+                <table id="submitted_work">
+                    <tr>
+                        <th class = "set_to_left_in_table bigger_font_th">Student name</th>
+                        <th class = "set_to_left_in_table bigger_font_th">Document name</th>
+                        <th class = "set_to_left_in_table bigger_font_th">Tab name</th>
+                        <th class = "bigger_font_th">Thumbnail</th>
+                    </tr>
+                    <!--
+                    # element 0 - student id 
+                    # element 1 - student name
+                    # element 2 - number of submission attempts
+                    # element 3 - submitted document name
+                    # element 4 - submitted document url
+                    # element 5 - array of tabs with 3 elements
+                        # subelement 0 - element url
+                        # subelement 1 - element name
+                        # subelement 2 - element thumbnail
+                    -->
 
-                    <table id="submitted_work">
+                    {% for studentwork in submitted_student_works %}
                         <tr>
-                            <th class = "set_to_left_in_table bigger_font_th">Student name</th>
-                            <th class = "set_to_left_in_table bigger_font_th">Document name</th>
-                            <th class = "set_to_left_in_table bigger_font_th">Tab name</th>
-                            <th class = "bigger_font_th">Thumbnail</th>
-                        </tr>
-                        <!--
-                        # element 0 - student id 
-                        # element 1 - student name
-                        # element 2 - number of submission attempts
-                        # element 3 - submitted document name
-                        # element 4 - submitted document url
-                        # element 5 - array of tabs with 3 elements
-                            # subelement 0 - element url
-                            # subelement 1 - element name
-                            # subelement 2 - element thumbnail
-                        -->
-
-                        {% for studentwork in submitted_student_works %}
-                            <tr>
-                                <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
-                                <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
-                                <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
-                                <td class = "set_to_left_in_table small_font_td"> {{studentwork.5.0.1 }}</td>
-                                <td> <img id = preview_image_{{studentwork.0}} src = "{{studentwork.5.0.2 }}" alt = "" /></td>
-                            </tr>  
-                        {% endfor %}   
-                    </table>
-                </div>
+                            <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
+                            <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
+                            <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
+                            <td class = "set_to_left_in_table small_font_td"> {{studentwork.5.0.1 }}</td>
+                            <td> <img id = preview_image_{{studentwork.0}} src = "{{studentwork.5.0.2 }}" alt = "" /></td>
+                        </tr>  
+                    {% endfor %}   
+                </table>
+            </div>
 
             <script>check_submitted_content();</script> <!-- hide submitted table if there is no content-->
 
