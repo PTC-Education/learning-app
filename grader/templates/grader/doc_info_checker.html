@@ -57,15 +57,16 @@
             {{ check_message|safe }}
         {% endif %}
 
-        {% if mates or mate_relations %}   
+        {% if summary_msg %}
             <h3>Mates Summary</h3> 
-            {% if summary_msg %}
-                <p class="list_title">This assembly contains:<ul class="summary">
-                    <li>Mates: {{ summary_msg.mates}}</li>
-                    <li>Mate relations: {{ summary_msg.mate_relations}}</li>
-                    </ul>
-                </p>
-            {% endif %}
+            <p class="list_title">This assembly contains:<ul class="summary">
+                <li>Mates: {{ summary_msg.mates}}</li>
+                <li>Mate relations: {{ summary_msg.mate_relations}}</li>
+                </ul>
+            </p>
+        {% endif %}
+
+        {% if mates or mate_relations %}   
             {% if detail_msg %}
                 <p class="list_title">Of the mates and mate relations:<ul class="summary">
                     <li>Renamed: {{ detail_msg.renamed}}</li>

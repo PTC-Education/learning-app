@@ -407,30 +407,6 @@ input.submiturl-button[type=submit]:hover {
     
   }
 
-
-table {
-    table-layout: fixed;
-    width: 100%;
-    border: 1px solid rgb(5, 97, 25);
-  }
-  
-  th,
-  td {
-    border: 1px solid black;
-    width: 100%;
-    overflow: hidden;
-    font-size:11px;
-  }
-  th:hover,
-  td:hover {
-
-    white-space: wrap;
-    background-color: #ebebeb;
-    color:red;
-  }
-  
-
-
 .documentlist{
     color: #333;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
