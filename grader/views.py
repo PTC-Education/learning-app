@@ -42,11 +42,18 @@ def login(request: HttpRequest):
         user = AuthUser(os_user_id=user_id)
     
     user.os_domain = request.GET.get('server')
-    user.did = request.GET.get('did')
-    user.wv = request.GET.get('wvm')
-    user.wvid = request.GET.get('wvmid')
-    user.eid = request.GET.get('eid')
     user.etype = request.GET.get('etype')
+    if request.GET.get('etype') == "appelement":
+        user.did = request.GET.get('documentId')
+        user.wv = 'w'
+        user.wvid = request.GET.get('workspaceId')
+        user.eid = request.GET.get('elementId')
+    else:
+        user.did = request.GET.get('did')
+        user.wv = request.GET.get('wvm')
+        user.wvid = request.GET.get('wvmid')
+        user.eid = request.GET.get('eid')
+    
     user.save() 
     
 
@@ -103,6 +110,8 @@ def authorize(request: HttpRequest):
 
     if user.etype == "infopanel":
         return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
+    elif user.etype == "appelement":
+        return HttpResponseRedirect(reverse("grader:app_element", args=[user.os_user_id]))
     else:
         return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
@@ -149,6 +158,31 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         "user_type": user_type,
         }
     return render(request, "grader/url_input.html", context=context)
+
+def app_element(request: HttpRequest, os_user_id: str):
+    """ 
+    This function is for showing elements in a document for best practices checking. 
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/app_element.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    tutorial_url = request.GET.get("tutorial")
+    ref_url = request.GET.get("reference")
+    
+    
+    
+    context={
+        "user": curr_user
+    }
+
+    return render(request, "grader/app_element.html", context=context)
 
 def doc_info_checker(request: HttpRequest, os_user_id: str):
     """ 

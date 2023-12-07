@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'grader/index.css' %}">
+    <!-- Load loading_index function to enable loading screen -->
+    <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+    <script src="{% static 'grader/url_input.js' %}" type="text/javascript"></script>
+</head>
+
+<body>
+    <!-- Load app logo at the top of the page -->
+    <div id="logo">
+        <img id="app_logo" src="{% static 'grader/images/teacherstudents.svg' %}" alt="app_logo" />
+    </div>
+
+    <!-- Print out error message if any -->
+    <div>
+        {% if error_message %}
+        <p id="err_msg"><strong>{{ error_message }}</strong></p>
+        {% endif %}
+    </div>
+
+    <!-- General instructions -->
+    <div class="instructions">
+        <h3>
+            Instuctions:
+        </h3>
+        <p>This page allows you to specify a tutorial for user to follow along with as well as a reference model that they can compare
+            their model to.
+        </p>
+    </div>
+    <div class="URLinput-DIV">
+        <div class="twoButtonsonEdge">
+            <p id="tab-header" class="tab-header">URL's for self-paced tutorial</p>
+        </div>
+
+        <div>
+            <p  class="urlError"  id="urlError">
+                <!--Error message here-->
+            </p>
+        </div>
+        <div class="spinner-container">
+            <div id="spin">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
+        <div id="urlfield">
+            <form  name="tutorial_urls" action="{% url 'grader:app_element' user.os_user_id %}" onsubmit="return appElementValidateUrls()" required>
+                <div>
+                    <input class="urlfield-INPUT" type="text" name="tutorial" id="tutorial" placeholder="Onshape URL of the PDF tutorial.">  
+                    <br />
+                    <input class="urlfield-INPUT" type="text" name="referece" id="reference" placeholder="Onshape URL of the reference model.">  
+                </div>
+                <br/>
+                <br>
+                <input class="gradeButton" type="submit" value="Load self-paced tutorial" onclick="loading_spinner('spin')"/>
+            </form>
+            
+        </div>
+    </div>
+
+
+</body>
+
+</html>
