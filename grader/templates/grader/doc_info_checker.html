@@ -17,35 +17,56 @@
             {
                 document.getElementById('mates_details').style.display = "none";
             }
+            function selectRadio(selectedDiv) {
+                // Deselect all divs
+                const radios = document.querySelectorAll('.single-radio');
+                radios.forEach(div => div.classList.remove('selected'));
+                // Select the clicked div
+                selectedDiv.classList.add('selected');
+                const selectedRadio = document.querySelector('.single-radio.selected');
+                if (selectedRadio) {
+                    const selectedValue = selectedRadio.getAttribute('data-value');
+                    document.getElementById("elements").value = selectedValue;
+                }
+            }
+            function formSubmit() {
+                const selectedRadio = document.querySelector('.single-radio.selected');
+                if (selectedRadio) {
+                    document.getElementById("msg").innerHTML = "";
+                    loading_spinner('features')
+                } else {
+                    document.getElementById("msg").innerHTML = "Please select an element.";
+                    return false;
+                }
+                return true;
+            }
             window.onload = hide;
         </script>
     </head>
     <body>
         <p>Select the element you would like to check:</p>
         <!-- Check model -->
-        <form action="{% url 'grader:doc_info_checker' user.os_user_id %}" onsubmit="loading_spinner('features')">
+        <form action="{% url 'grader:doc_info_checker' user.os_user_id %}" onsubmit="return formSubmit()">
             <!-- Select element -->
             {% if element_list %}
                 {% for element in element_list %}
-                    <label class="element_container">
-                        <div class="element_label">{{ element.name }}</div>
-                        <input type="radio" id="elements" name="elements" value="{{ element.etype }} {{ element.id }}">
-                        <span class="checkmark"></span>
-                        <img height="60px" src="{{ element.image }}">
-                        <div class="element_ps_assem">
-                            {% if element.etype == 'assemblies' %}
-                                <img height="30px" src="{% static 'grader/images/assem.svg' %}"/>
-                            {% else %}
-                                <img height="30px" src="{% static 'grader/images/ps.svg' %}"/>
-                            {% endif %}
-                        </div>
-                    </label>
+                    <div class="single-radio" onclick="selectRadio(this)" data-value="{{ element.etype }} {{ element.id }}">
+                        {% if element.etype == 'assemblies' %}
+                            <div class="radio-svg"><img src="{% static 'grader/images/assem.svg' %}"></div>
+                        {% else %}
+                            <div class="radio-svg"><img src="{% static 'grader/images/ps.svg' %}"></div>
+                        {% endif %}
+                        <div class="radio-img"><img src="{{ element.image }}"></div>
+                        <div class="radio-label">{{ element.name }}</div>
+                    </div>
                 {% endfor %}
             {% endif %}
             <p>Select the type of check(s) you would like to perform:</p>
             <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features/Mates<br>      
-            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>      
+            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>    
+            <input type="hidden" name="elements" id="elements" value="">  
             <input type="submit" value="Check model"/>
+            <p class="msg" id="msg">&nbsp;</p>
         </form>
         <div class="spinner-container">
             <div id="features">
