@@ -15,27 +15,6 @@ ol {
   margin-bottom: .2em;
 }
 
-/* table {
-  table-layout: fixed;
-  width: 100%;
-  border: 1px solid rgb(5, 97, 25);
-}
-
-th,
-td {
-  border: 1px solid black;
-  width: 100%;
-  overflow: hidden;
-  font-size:11px;
-}
-
-th:hover,
-td:hover {
-  white-space: wrap;
-  background-color: #ebebeb;
-  color:red;
-} */
-
 .details {
     margin:.5em 0em;
     font-style: italic;
@@ -57,6 +36,12 @@ td:hover {
   
 #err_msg {
     color: red;
+}
+
+.msg {
+  margin: 0px;
+  font-size: 14px;
+  color: #900;
 }
 
 .table_title {
@@ -103,84 +88,34 @@ table.item_summary {
 }
 
 /* == Radio button styling == */
-.element_container {
-    color: #333;
-    background-color: #f6f6f6;
-    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    display: block;
-    position: relative;
-    padding-left: 60px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    font-size: 12px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+.single-radio {
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  font-size: 12px;
+  background-color: #eee;
+  margin: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  transition: background-color 0.3s ease;
 }
-
-.element_container .element_label {
-    float: left;
-    margin-top: 22px;
-    margin-right: 10px;
+.single-radio.selected {
+  background-color: #b9daf2; /* Highlight color */
 }
-
-/* Hide the browser's default radio button */
-.element_container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
+.single-radio:hover {
+  background-color: #dfecf7; /* Hover color */
 }
-
-/* Create a custom radio button */
-.checkmark {
-    position: absolute;
-    top: 22px;
-    left: 22px;
-    height: 30px;
-    width: 30px;
-    background-color: #617480;
-    /* border-radius: 50%; */
+.radio-svg {
+  margin: 10px;
 }
-
-/* On mouse-over, add a grey background color */
-.element_container:hover input ~ .checkmark {
-    background-color: #ccc;
+.radio-svg img {
+  height: 30px;
 }
-
-/* When the radio button is checked, add a green background */
-.element_container input:checked ~ .checkmark {
-    background-color: #40AA1D;
+.radio-img {
+  margin: 0px 10px;
 }
-
-/* Create the indicator */
-.checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-/* Show the indicator when checked */
-.element_container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-/* Style the indicator */
-.element_container .checkmark:after {
-    top: 8px;
-    left: 8px;
-    width: 13px;
-    height: 13px;
-    /* border-radius: 50%; */
-    background: #ccc;
-}
-
-.element_container .element_ps_assem {
-  margin-top: 16px;
-  margin-right: 10px;
-  float: right;
+.radio-img img {
+  height: 50px;
 }
 /* == End radio button styling == */
 
@@ -406,30 +341,6 @@ input.submiturl-button[type=submit]:hover {
     align-items: center;
     
   }
-
-
-table {
-    table-layout: fixed;
-    width: 100%;
-    border: 1px solid rgb(5, 97, 25);
-  }
-  
-  th,
-  td {
-    border: 1px solid black;
-    width: 100%;
-    overflow: hidden;
-    font-size:11px;
-  }
-  th:hover,
-  td:hover {
-
-    white-space: wrap;
-    background-color: #ebebeb;
-    color:red;
-  }
-  
-
 
 .documentlist{
     color: #333;
