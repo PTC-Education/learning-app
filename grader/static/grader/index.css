@@ -99,10 +99,10 @@ table.item_summary {
   padding: 5px;
   transition: background-color 0.3s ease;
 }
-.single-radio.selected {
+.single-radio.selected, .single-radio.selected:hover {
   background-color: #b9daf2; /* Highlight color */
 }
-.single-radio:hover {
+.single-radio:hover:not(.selected) {
   background-color: #dfecf7; /* Hover color */
 }
 .radio-svg {
