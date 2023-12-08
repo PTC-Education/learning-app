@@ -195,6 +195,8 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     mates = {}
     mate_relations = {}
     mate_details = {}
+    features = {}
+    renamed = []
     
     if "Features" in check_type and element:
         # Get feature list of model the user currently has opened
@@ -205,7 +207,7 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
         if etype == "partstudios":
-            check_message += ps_feature_list_helper(feature_list)
+            features, renamed = ps_feature_list_helper(feature_list)
         if etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
             mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
@@ -236,6 +238,8 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
         "element_list": element_list,
         "check_type": check_type,
         "check_message": check_message,
+        "features": features,
+        "renamed": renamed,
         "mates": mates,
         "mate_relations": mate_relations, 
         "summary_msg": summary_msg,
@@ -639,6 +643,9 @@ def check_model(request: HttpRequest, os_user_id: str):
     mates = {}
     mate_relations = {}
     mate_details = {}
+    features = {}
+    renamed = []
+
 
     if "Features" in check_type:
         # Get feature list of model the user currently has opened
@@ -649,7 +656,7 @@ def check_model(request: HttpRequest, os_user_id: str):
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
         if curr_user.etype == "partstudios":
-            check_message += ps_feature_list_helper(feature_list)
+            features, renamed = ps_feature_list_helper(feature_list)
         if curr_user.etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
             mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
@@ -679,6 +686,8 @@ def check_model(request: HttpRequest, os_user_id: str):
         "user": curr_user,
         "check_type": check_type,
         "check_message": check_message,
+        "features": features,
+        "renamed": renamed,
         "mates": mates,
         "mate_relations": mate_relations, 
         "summary_msg": summary_msg,
@@ -778,34 +787,29 @@ def make_props(mass_props, partId_to_name):
 
 # Extract useful information from featurelist for partstudios
 def ps_feature_list_helper(feature_list):
-    feature_count = {} # initialize dictionary for number of features used
+    default_features = ['sketch', 'extrude', 'revolve', 'sweep', 'loft', 'thicken', 'fill', 'enclose', 'fillet', 'faceblend', 'chamfer', 'draft', 'shell', 'rib', 'externalthread', 'curvepattern', 'linearpattern', 'circularpattern', 'plane', 'mirror', 'boolean', 'split', 'wrap', 'transform', 'deletepart', 'moveface', 'replaceface', 'offsetsurface', 'boundarysurface', 'moveboundary', 'ruledsurface', 'transform', 'mutualtrim', 'helix', '3dfitspline', 'projectedcurve', 'bridgingcurve', 'compositecurve', 'intersectioncurve', 'trimcurve', 'isocline', 'mateconnector', 'derived', 'transform', 'compositepart', 'sheetmetalmodel', 'flange', 'hem', 'tab', 'flange', 'makejoint', 'corner', 'bendrelief', 'finishsheetmetalmodel', 'frame', 'frametrim', 'gusset', 'endcap', 'cutlist', 'dfitspline']
+    types_to_check = ['booleanBodies', 'boundarySurface', 'bridgingCurve', 'chamfer', 'circularPattern', 'compositeCurve', 'compositePart', 'cPlane', 'curvePattern', 'cutlist', 'deleteBodies', 'draft', 'enclose', 'endcap', 'extendSurface', 'externalThread', 'extrude', 'faceBlend', 'fill', 'fillet', 'fitSpline', 'frame', 'frameTrim', 'gusset', 'helix', 'importDerived', 'intersectionCurve', 'isocline', 'linearPattern', 'loft', 'mateConnector', 'mirror', 'moveFace', 'mutualTrim', 'newSketch', 'offsetSurface', 'projectCurves', 'replaceFace', 'revolve', 'rib', 'ruledSurface', 'sheetMetalBendRelief', 'sheetMetalCorner', 'sheetMetalEnd', 'sheetMetalFlange', 'sheetMetalHem', 'sheetMetalMakeJoint', 'sheetMetalStart', 'sheetMetalTab', 'shell', 'splitPart', 'sweep', 'thicken', 'transform', 'trimCurve', 'wrap']
+    features = {}
     renamed_count = 0
     number_of_features = len(feature_list['features'])
+
     for feature in feature_list['features']:
-        if feature['featureType'] == "newSketch":
-            feature['featureType'] = "sketch"
         try:
-            feature_count[feature['featureType']] += 1
+            features[feature['featureType']] += 1
         except:
-            feature_count[feature['featureType']] = 1
+            features[feature['featureType']] = 1
 
-        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","")
+        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","").lower()
         
-        if feature_name.lower() != feature['featureType'].lower():
-            renamed_count += 1
-    
-    feature_count = dict(sorted(feature_count.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
+        # don't check hole, variable, and custom feature
+        if feature['featureType'] in types_to_check:
+            if feature_name not in default_features:
+                renamed_count += 1
 
-    feature_message = f'''
-    <h3>Feature Checking</h3>
-    <p>{renamed_count} out of {number_of_features} features are currently renamed from their defaults.</p>
-    <p>List of how many times each feature is used:
-    <ul>
-    '''
-    for k, v in feature_count.items():
-        feature_message += f'<li>{k} - {v}</li>'
+    features = dict(sorted(features.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
+    renamed = [number_of_features, renamed_count]
 
-    return feature_message + '</ul>'
+    return features, renamed
 
 # Extract useful information from featurelist for assemblies
 def as_feature_list_helper(feature_list):
