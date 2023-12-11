@@ -173,14 +173,30 @@ def app_element(request: HttpRequest, os_user_id: str):
     :template:`grader/app_element.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    
+    app_element_json = get_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
 
-    tutorial_url = request.GET.get("tutorial")
-    ref_url = request.GET.get("reference")
-    
-    
-    
+    if "tutorial_url" in app_element_json['tree']:
+        tutorial_url = app_element_json['tree']['tutorial_url']
+        if tutorial_url != request.GET.get("tutorial"):
+            update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", request.GET.get("tutorial"), curr_user.access_token)
+    else:
+        tutorial_url = ""
+        insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", tutorial_url, curr_user.access_token)
+
+    if "ref_url" in app_element_json['tree']:
+        ref_url = app_element_json['tree']['tutorial_url']
+        if ref_url != request.GET.get("reference"):
+            update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", request.GET.get("reference"), curr_user.access_token)
+    else:
+        ref_url = ""
+        insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", ref_url, curr_user.access_token)
+
+
     context={
-        "user": curr_user
+        "user": curr_user,
+        "tutorial_url": tutorial_url,
+        "ref_url": ref_url
     }
 
     return render(request, "grader/app_element.html", context=context)

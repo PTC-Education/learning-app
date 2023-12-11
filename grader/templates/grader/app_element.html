@@ -49,13 +49,13 @@
         <div id="urlfield">
             <form  name="tutorial_urls" action="{% url 'grader:app_element' user.os_user_id %}" onsubmit="return appElementValidateUrls()" required>
                 <div>
-                    <input class="urlfield-INPUT" type="text" name="tutorial" id="tutorial" placeholder="Onshape URL of the PDF tutorial.">  
+                    <input class="urlfield-INPUT" type="text" name="tutorial" id="tutorial" placeholder="Onshape URL of the PDF tutorial." {% if tutorial_url != "" %} value = {{ tutorial_url }} {% endif %}>  
                     <br />
-                    <input class="urlfield-INPUT" type="text" name="referece" id="reference" placeholder="Onshape URL of the reference model.">  
+                    <input class="urlfield-INPUT" type="text" name="referece" id="reference" placeholder="Onshape URL of the reference model." {% if ref_url != "" %} value = {{ ref_url }} {% endif %}>  
                 </div>
                 <br/>
                 <br>
-                <input class="gradeButton" type="submit" value="Load self-paced tutorial" onclick="loading_spinner('spin')"/>
+                <input class="gradeButton" type="submit" value="Load self-paced tutorial" onsubmit="loading_spinner('spin')"/>
             </form>
             
         </div>
