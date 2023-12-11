@@ -614,6 +614,22 @@ def grade_model(request: HttpRequest, os_user_id: str):
         context=context
     )
 
+def check_microversions(request: HttpRequest, os_user_id: str):
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+    
+    context={
+        "user": curr_user,
+    }
+
+    return render(
+        request, "grader/microversions_checker.html",
+        context=context
+    )
+
 def check_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits, model best practices are checkd for 
