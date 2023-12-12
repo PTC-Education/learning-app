@@ -56,13 +56,37 @@
                         <!-- ignore doc info element -->
                         {% else %}
                         <tr>
-                            {% if etype == 'partstudios' %}
-                            <td id = "usr_0_{{forloop.counter0}}">{{prop_array.4}}</td>
+                            {% if prop_array.0 == 'PARTSTUDIO' %}
+                            <td id = "usr_0_{{forloop.counter0}}">{{prop_array.1}}</td>
+                            <td id = "usr_1_{{forloop.counter0}}">{{prop_array.2}}</td>
+                            <td> 20 </td>
                             {% endif %}
-                            <td id = "usr_1_{{forloop.counter0}}">{{prop_array.0}}</td>
-                            <td id = "usr_2_{{forloop.counter0}}">{{prop_array.1}}</td>
-                            <td id = "usr_3_{{forloop.counter0}}">{{prop_array.2}}</td>
-                            <td id = "usr_4_{{forloop.counter0}}">{{prop_array.3}}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if etype == 'assemblies' %}
+                    <col class = "col_0">
+                    {% endif %}
+                    <col class = "col_1">
+                    <col class = "col_2">
+                    <tr>
+                        <!-- {% if etype == 'assemblies' %} -->
+                        <th>Assembly Name</th>
+                        <!-- {% endif %} -->
+                        <th>Mass <span class = unit>(kg)</span></th>
+                        <th>Points </th>
+                    </tr>
+                    {% for prop_array in user_props %}
+                        {% if prop_array == user_props.0 %}
+                        <!-- ignore doc info element -->
+                        {% else %}
+                        <tr>
+                            {% if prop.array.0 == 'ASSEMBLY' %}
+                            <td id = "usr_0_{{forloop.counter0}}">{{prop_array.1}}</td>
+                            <td id = "usr_1_{{forloop.counter0}}">{{prop_array.2}}</td>
+                            <td> 20 </td>
+                            {% endif %}
                         </tr>
                         {% endif %}
                     {% endfor %}
