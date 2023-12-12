@@ -38,6 +38,7 @@
                 <ul>
                     <li>Select <i>Grade list of URLs</i> if you have URLs of your students' documents.</li>
                     <li>Select <i>Grade from C&A submission list</i> if you assigned student work through Classes and Assignments.</li>
+                    <li>Select <i>Grade for Science Olympiad Competitions</i> if you have are an event supervisor or volunteer grading the "Engineering CAD" category.</li>
                 </ul>
             </ul>
     </div>
@@ -74,7 +75,11 @@
                     <form action="{% url 'grader:list_classes' user.os_user_id%}">
                         <input class="options" type="submit" value="Grade from C&A submission list">
                     </form>
-                
+
+                 <!--Load url page for SCIENCE OLYMPIAD USERS-->
+                    <form action="{% url 'grader:url_input_page' user.os_user_id 'scioly'%}">
+                        <input class="options" type="submit" value="Grade for Science Olympiad Competitions">
+                    </form>
 
             </div>
         </div>
