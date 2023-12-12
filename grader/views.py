@@ -60,12 +60,7 @@ def login(request: HttpRequest):
             os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
             )
 
-    context = {
-            "type" : "login",
-            "redirect_link": OAUTH_REDIRECT,
-            }
-    
-    return render(request, "grader/home.html", context=context)
+    return redirect(OAUTH_REDIRECT)
 
 
 
