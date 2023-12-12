@@ -6,7 +6,12 @@
     <link rel="stylesheet" href="{% static 'grader/index.css' %}">
     <!-- Load loading_index function to enable loading screen -->
     <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
-    <meta http-equiv = "refresh" content = "0; URL={% url 'grader:doc_info_checker' user.os_user_id %}" />
+    {%if type == "login" %}
+        <meta http-equiv = "refresh" content = "0; url={{redirect_link}}" />
+    {% else %}
+        <meta http-equiv = "refresh" content = "0; URL={% url redirect_link user_id %}" />
+    {% endif %}
+   
 </head>
 
 <body>

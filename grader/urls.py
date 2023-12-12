@@ -13,5 +13,4 @@ urlpatterns = [
     path('checker/<str:os_user_id>/', views.check_model, name="check_model"),
     path('doc_info_checker/<str:os_user_id>/', views.doc_info_checker, name="doc_info_checker"),
     path('doc_info_checker/<str:os_user_id>/<str:element_list>/', views.doc_info_checker, name="doc_info_checker"),
-    path('doc_info_index/<str:os_user_id>/', views.doc_info_index, name="doc_info_index")
 ]

@@ -17,6 +17,7 @@ from .models import *
 
 # Create your views here.
 
+
 def login(request: HttpRequest): 
     """ 
     When the app extension is first opened, this view should be called. 
@@ -43,6 +44,7 @@ def login(request: HttpRequest):
         # Create a new user 
         user = AuthUser(os_user_id=user_id)
     
+
     user.os_domain = request.GET.get('server')
     user.did = request.GET.get('did')
     user.wv = request.GET.get('wvm')
@@ -51,15 +53,20 @@ def login(request: HttpRequest):
     user.etype = request.GET.get('etype')
     user.save() 
     
-
-    return redirect(
-        os.path.join(
+    OAUTH_REDIRECT = os.path.join(
             os.environ['OAUTH_URL'], 
             "oauth/authorize"
-        ) + "?response_type=code&client_id={}".format(
+            ) + "?response_type=code&client_id={}".format(
             os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
-        )
-    )
+            )
+
+    context = {
+            "type" : "login",
+            "redirect_link": OAUTH_REDIRECT,
+            }
+    
+    return render(request, "grader/home.html", context=context)
+
 
 
 def authorize(request: HttpRequest): 
@@ -104,9 +111,20 @@ def authorize(request: HttpRequest):
     user.save() 
 
     if user.etype == "infopanel":
-        return HttpResponseRedirect(reverse("grader:doc_info_index", args=[user.os_user_id]))
+        context = {
+        
+        "redirect_link": "grader:doc_info_checker",
+        "user_id" : user.os_user_id
+        }
+        # return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
     else:
-        return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
+        context = {
+        "redirect_link": "grader:index",
+        "user_id" : user.os_user_id
+        }
+    
+    return render(request, "grader/home.html", context=context)
+        # return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
 def index(request: HttpRequest, os_user_id: str): 
     """ 
@@ -126,23 +144,7 @@ def index(request: HttpRequest, os_user_id: str):
     context = {"user": curr_user}
     return render(request, "grader/index.html", context=context)
 
-def doc_info_index(request: HttpRequest, os_user_id: str): 
-    """ 
-    The index view of the app. 
-    
-    **Context:**
-    
-    **Arguments:**
-    
-    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
-    
-    **Template:**
-    
-    :template:`grader/index.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    context = {"user": curr_user}
-    return render(request, "grader/doc_info_index.html", context=context)
+
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
