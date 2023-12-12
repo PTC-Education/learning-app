@@ -124,12 +124,16 @@
                 <p class = "quick_link" id = "assignment_name">{{assignment_name}}</p>
             </div>
 
+
+            <p id = "submission_error" > </p>
+
             <div class="classes_assignments_box" id="submitted_box">
                 <p class = "table_header">Grading list</p>
                 <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
                     <input id="ref_url_edu" hidden name="ref_url" type="text">
                     <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
                 </form>
+
 
                 <table id="submitted_work">
                     <tr>
