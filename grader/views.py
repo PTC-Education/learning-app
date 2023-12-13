@@ -650,9 +650,16 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                 )
             elem_mass_prop = [] #initialize
             if elem["elementType"] == "PARTSTUDIO":
-                elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
+                if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == "false": # checks if the PS is empty or material is not assigned
+                    elem_mass_prop = 0
+                    
+                else:
+                    elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
             else: #elem["elementType"] == "ASSEMBLY"
-                elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
+                if mass_props["hasMass"] == "false": #checks if the assembly is empty or if ALL parts do not have material assigned.
+                    elem_mass_prop = [0,0,0]
+                else:
+                    elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
             elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
             user_props.append(elem_props)
             
