@@ -7,7 +7,7 @@ import re
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse 
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseNotFound, JsonResponse
 from django.utils import timezone 
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
@@ -614,13 +614,13 @@ def grade_model(request: HttpRequest, os_user_id: str):
         context=context
     )
 
-def check_microversions(request: HttpRequest, os_user_id: str):
+def microversions_checker(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
-    
+
     context={
         "user": curr_user,
     }
@@ -629,6 +629,42 @@ def check_microversions(request: HttpRequest, os_user_id: str):
         request, "grader/microversions_checker.html",
         context=context
     )
+
+def update_html(request: HttpRequest, os_user_id: str, wm: str, wmid: str): 
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+    # wm = "w"
+    if wm == 'w':
+        wmid = doc_info["defaultWorkspace"]["id"]
+
+    context={
+        "user": curr_user,
+    }
+
+    latest_microversions = get_microversions(curr_user.os_domain, curr_user.did, wm, wmid, auth_token=curr_user.access_token)
+    next_microversion = ""
+    s = "<table class='item_summary'>"
+    s += "<thead><tr><th>Date</th><th>Description</th><th>User Name</th></tr></thead>"
+    s += "<tbody>"
+    for microversion in latest_microversions:
+        s += "<tr>"
+        date_arr = microversion['date'].split('.')
+        s += "<td>" + date_arr[0].replace('T', ' ') + "</td>"
+        s += "<td>" + microversion['description'] + "</td>"
+        s += "<td>" + microversion['username'] + "</td>"
+        s += "</tr>"
+        next_microversion = microversion['nextMicroversionId']
+    s += "</tbody>"
+    s += "</table>"
+    updated_html = s
+
+    # Return the updated HTML
+    return JsonResponse({'updated_html': updated_html, 'next_microversion': next_microversion})
 
 def check_model(request: HttpRequest, os_user_id: str): 
     """ 
