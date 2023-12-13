@@ -83,6 +83,10 @@
             <p>This part studio has {{ renamed.0 }} features (not including Origin and default planes).<br>
                 Of those features, {{ renamed.1 }} have been renamed.</p>
         {% endif %}
+        
+        {% if ps_errorCount %}
+            <p>Total number of errors: {{ps_errorCount}}</p>
+        {% endif %}
 
         {% if features %}
             <p class="table_title">Feature Count</p>
@@ -99,6 +103,8 @@
             </table>
         {% endif %}
 
+
+
         {% if summary_msg %}
             <h3>Mates Summary</h3> 
             <p class="list_title">This assembly contains:<ul class="summary">
@@ -106,7 +112,11 @@
                 <li>Mate relations: {{ summary_msg.mate_relations}}</li>
                 </ul>
             </p>
+            
         {% endif %}
+
+
+            
 
         {% if mates or mate_relations %}   
             {% if detail_msg %}
@@ -114,6 +124,7 @@
                     <li>Renamed: {{ detail_msg.renamed}}</li>
                     <li>Offsets: {{ detail_msg.offsets}}</li>
                     <li>Limits: {{ detail_msg.limits}}</li>
+                    <li>Total errors: {{as_errorCount}}</li>
                     </ul>
                 </p>
             {% endif %}
