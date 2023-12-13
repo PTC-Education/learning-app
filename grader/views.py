@@ -653,7 +653,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                 elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
             else: #elem["elementType"] == "ASSEMBLY"
                 elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
-            elem_props = [elem["elementType"], elem["name"], elem_mass_prop]
+            elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
             user_props.append(elem_props)
             
     # Get info about the document the user currently has opened
@@ -661,12 +661,13 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     user_doc_name = user_doc_info['name']
     user_user_name = user_doc_info["createdBy"]["name"]
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
+    totalpoints = 20.00 * float((len(user_props))) # This will be the max score, since its the total points of the answer key
 
     user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
 
     
     # Append user related information along with mass properties
-    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url])
+    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url, totalpoints])
     
             
     # Here, I go through all the URLs and get their necessary info and GRADE THEM
@@ -699,12 +700,16 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                     if elem["elementType"] == "PARTSTUDIO":
                         elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
                         points = 20 - 100*abs((elem_mass_prop - user_props[elemcount][2])/user_props[elemcount][2])
+                        if points < 0:
+                            points = 0
                         points = round(points, 2)
                         elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
                         
                     else: #elem["elementType"] == "ASSEMBLY"
                         elem_mass_prop = mass_props["centroid"][0:3]
                         points = 20 - 100*(((1/3)*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2][0])) + ((1/3)*abs((elem_mass_prop[1] - user_props[elemcount][2][1])/user_props[elemcount][2][1])) + ((1/3)*abs((elem_mass_prop[2] - user_props[elemcount][2][2])/user_props[elemcount][2][2])))
+                        if points < 0:
+                            points = 0
                         points = round(points, 2)
                         for i in range(3):
                             elem_mass_prop[i] = '{:.2e}'.format(elem_mass_prop[i])
@@ -746,8 +751,6 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
             for i in range(3):
                 elem[2][i] = '{:.2e}'.format(elem[2][i])
             elem[2] = '( ' + elem[2][0] + ', ' + elem[2][1] + ', ' + elem[2][2] + ' )'
-            
-    print("user_props", user_props)
     
     if len(failed_urls) == 0:
         failed_urls = None
