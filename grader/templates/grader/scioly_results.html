@@ -78,14 +78,13 @@
                         <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
                         <p hidden id = "elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
                         <img src = "{{ref_props.0.4}}" alt = "" />
-                        <div class = "score" id = "ref_score_{{forloop.counter0}}"></div>
+                        <div class = "score" id = "ref_score_{{forloop.counter0}}">{{ref_props.0.6}}</div>
                     </div>
                     <div class = "docinfo">
                         <p class = "docname" id = "ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
                         <p class = "username" id = "ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
 
                         <p class = "doctime" id = "ref_doctime_{{forloop.counter0}}">{{ref_props.0.3}}</p>
-                        <p class = "totalpoints" id = "usr_points_{{forloop.counter0}}">{{ref_props.0.6}}</p>
                     </div>
                     <div class = "table_error_message" id = "error_message_{{forloop.counter0}}"></div>
 
@@ -105,6 +104,8 @@
                                     <!-- {% endif %} -->
                                     <th>Mass <span class = unit>(kg)</span></th>
                                     <th>Points </th>
+                                    <th hidden></th>
+                                    <th hidden> </th>
                                 </tr>
                                 {% for prop_array in ref_props %}
                                     {% if prop_array == ref_props.0 %}
@@ -112,10 +113,10 @@
                                     {% else %}
                                         <tr>
                                             <!-- {% if etype == 'partstudios' %} -->
-                                            <td id = "ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.0}}</td>
+                                            <td id = "ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
                                             <!-- {% endif %} -->
-                                            <td id = "ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
-                                            <td id = "ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
+                                            <td id = "ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
+                                            <td id = "ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
                                         </tr>
                                     {% endif %}
                                 {% endfor %}
@@ -127,8 +128,8 @@
             {% endfor %}
             
         {% endif %}
-        <script>round_off_table_contents('{{user_props|length}}','{{all_ref_props|length}}')</script>
 
+        
 {% if failed_urls %}
 
 <div class = "failed_url_box">

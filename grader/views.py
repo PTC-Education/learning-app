@@ -650,10 +650,9 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                 )
             elem_mass_prop = [] #initialize
             if elem["elementType"] == "PARTSTUDIO":
-                print(elem_mass_prop)
                 elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
             else: #elem["elementType"] == "ASSEMBLY"
-                elem_mass_prop = mass_props["centroid"] # this array has 9 values: first three are COM best fit, second three are COM min, and last three are COM max
+                elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
             elem_props = [elem["elementType"], elem["name"], elem_mass_prop]
             user_props.append(elem_props)
             
@@ -681,10 +680,8 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
         ref_url = get_ref_url_ids(url)
 
         try:         
-            
             ref_elems = get_elems(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], 
                 massAsGroup=True, auth_token=curr_user.access_token) # get all the elems from one URL
-            
             
             ref_props=[] # initialize empty array of ref props
             elemcount = 1
@@ -693,7 +690,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
             for elem in ref_elems:
                 if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
                     mass_props = get_mass_props(
-                            curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, elem["id"], type_dict[elem["elementType"]], 
+                            curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
                             massAsGroup=True, auth_token=curr_user.access_token
                         )
                     
@@ -702,19 +699,21 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                     if elem["elementType"] == "PARTSTUDIO":
                         elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
                         points = 20 - 100*abs((elem_mass_prop - user_props[elemcount][2])/user_props[elemcount][2])
+                        points = round(points, 2)
+                        elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
+                        
                     else: #elem["elementType"] == "ASSEMBLY"
-                        elem_mass_prop = mass_props["centroid"]
-                        print("elemcounts",elemcount)
-                        print("user_props", user_props)
+                        elem_mass_prop = mass_props["centroid"][0:3]
                         points = 20 - 100*(((1/3)*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2][0])) + ((1/3)*abs((elem_mass_prop[1] - user_props[elemcount][2][1])/user_props[elemcount][2][1])) + ((1/3)*abs((elem_mass_prop[2] - user_props[elemcount][2][2])/user_props[elemcount][2][2])))
+                        points = round(points, 2)
+                        for i in range(3):
+                            elem_mass_prop[i] = '{:.2e}'.format(elem_mass_prop[i])
+                        elem_mass_prop = '( ' + elem_mass_prop[0] + ', ' + elem_mass_prop[1] + ', ' + elem_mass_prop[2] + ' )'
                         
                     ref_elem_props = [elem["elementType"], elem["name"], elem_mass_prop, points]
                     ref_props.append(ref_elem_props)
                     totalpoints = totalpoints + points
                     elemcount = elemcount + 1
-                    
-                
-            print("totalpoints", totalpoints)
 
             # Get all additional info from the reference document
             image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
@@ -727,12 +726,28 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
 
             # Insert first element of array 
             ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url, totalpoints])
-            print("ref_props:", ref_props)
 
             all_ref_props.append((ref_props))
         except:
             # If anything above failed, add url to the fairled URL list
             failed_urls.append(url)
+            
+    #Here, I am converting the user_props mass and centroid to scientific notation (type:str)
+    #Remember, the user_props is a 2D array of all the PS and Assemblies in the document (does NOT include drawings, pdfs, etc.)
+    #Each value in the array is an array with these values in it: [elem["elementType"], elem["name"], elem_mass_prop]
+    #elem_mass_prop is a number (mass in kg) for PS and an array (center of mass for the three axis in [x,y,z])
+    
+    for elem in user_props:
+        if elem == user_props[0]:
+            continue
+        if elem[0] == "PARTSTUDIO":
+            elem[2] = '{:.2e}'.format(elem[2])
+        else: #elem["elementType"] == "ASSEMBLY"
+            for i in range(3):
+                elem[2][i] = '{:.2e}'.format(elem[2][i])
+            elem[2] = '( ' + elem[2][0] + ', ' + elem[2][1] + ', ' + elem[2][2] + ' )'
+            
+    print("user_props", user_props)
     
     if len(failed_urls) == 0:
         failed_urls = None
