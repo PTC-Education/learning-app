@@ -650,10 +650,10 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                 )
             elem_mass_prop = [] #initialize
             if elem["elementType"] == "PARTSTUDIO":
+                print(elem_mass_prop)
                 elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
             else: #elem["elementType"] == "ASSEMBLY"
-                elem_mass_prop = mass_props["centroid"][0]
-                
+                elem_mass_prop = mass_props["centroid"] # this array has 9 values: first three are COM best fit, second three are COM min, and last three are COM max
             elem_props = [elem["elementType"], elem["name"], elem_mass_prop]
             user_props.append(elem_props)
             
@@ -668,7 +668,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     
     # Append user related information along with mass properties
     user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url])
-    print("user props:", user_props)
+    
             
     # Here, I go through all the URLs and get their necessary info and GRADE THEM
      ## Initialize arrays for ref docs
@@ -679,15 +679,15 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     # Get info and mass props for all url's in ref doc list
     for i, url in enumerate(ref_urls): 
         ref_url = get_ref_url_ids(url)
-        print("ref_url:", ref_url)
 
         try:         
             
-            ref_elems = get_elems(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'],ref_url['eid'], curr_user.etype, 
+            ref_elems = get_elems(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], 
                 massAsGroup=True, auth_token=curr_user.access_token) # get all the elems from one URL
             
+            
             ref_props=[] # initialize empty array of ref props
-            elemcount = 0
+            elemcount = 1
             totalpoints = 0
             
             for elem in ref_elems:
@@ -696,19 +696,25 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                             curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, elem["id"], type_dict[elem["elementType"]], 
                             massAsGroup=True, auth_token=curr_user.access_token
                         )
-                    elem_mass_prop = [] #initialize
+                    
+                    elem_mass_prop = 0 #initialize
                     points = 0
                     if elem["elementType"] == "PARTSTUDIO":
                         elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
-                        points = 20 - 100*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2])
+                        points = 20 - 100*abs((elem_mass_prop - user_props[elemcount][2])/user_props[elemcount][2])
                     else: #elem["elementType"] == "ASSEMBLY"
-                        elem_mass_prop = mass_props["centroid"][0]
+                        elem_mass_prop = mass_props["centroid"]
+                        print("elemcounts",elemcount)
+                        print("user_props", user_props)
                         points = 20 - 100*(((1/3)*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2][0])) + ((1/3)*abs((elem_mass_prop[1] - user_props[elemcount][2][1])/user_props[elemcount][2][1])) + ((1/3)*abs((elem_mass_prop[2] - user_props[elemcount][2][2])/user_props[elemcount][2][2])))
                         
                     ref_elem_props = [elem["elementType"], elem["name"], elem_mass_prop, points]
                     ref_props.append(ref_elem_props)
                     totalpoints = totalpoints + points
-                elemcount = elemcount + 1
+                    elemcount = elemcount + 1
+                    
+                
+            print("totalpoints", totalpoints)
 
             # Get all additional info from the reference document
             image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
@@ -721,6 +727,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
 
             # Insert first element of array 
             ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url, totalpoints])
+            print("ref_props:", ref_props)
 
             all_ref_props.append((ref_props))
         except:
