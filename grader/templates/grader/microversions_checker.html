@@ -10,6 +10,7 @@
             $(document).ready(function () {
                 // Attach a submit event handler to the form
                 $("#update_form").submit(function (event) {
+                    loading_spinner('features');
                     console.log("loading first batch");
                     // Prevent the default form submission behavior
                     event.preventDefault();
@@ -21,6 +22,7 @@
                             $('#results-container').append(data.updated_html);
                             $('#load-more-container').css('display', 'block');
                             $('#wmid').val(data.next_microversion);
+                            $('#features').html(" ");
                         },
                         error: function (error) {
                             console.log("Error:", error);
@@ -28,6 +30,11 @@
                     });
                 });
                 $("#load_more").submit(function (event) {
+                    loading_spinner('features');
+                    var newYpos = $('#load-more-container').offset().top;
+                    console.log(newYpos);
+                    $('#features').css('position', 'absolute');
+                    $('#features').css('top', newYpos + 'px');
                     console.log("loading second batch");
                     var wmidVal = $('#wmid').val();
                     // Prevent the default form submission behavior
@@ -40,6 +47,7 @@
                         success: function (data) {
                             $('#results-container').append(data.updated_html);
                             $('#wmid').val(data.next_microversion);
+                            $('#features').html(" ");
                         },
                         error: function (error) {
                             console.log("Error:", error);
@@ -69,6 +77,11 @@
             </div>
         </div>
         <div id="results-container"></div>
+        <div class="spinner-container">
+            <div id="features">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
         <div id="load-more-container">
             <form method="get" id="load_more">
                 <input type="hidden" id="wm" value="m">
