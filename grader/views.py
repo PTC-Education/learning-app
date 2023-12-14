@@ -774,16 +774,16 @@ def make_props(mass_props, partId_to_name):
         except:
             return None
     else:
-        # assemblies ref_props = [mass, vol, periphery, principalInertia]
+        # assemblies user_props = [mass, vol, periphery, principalInertia]
         try: 
-            ref_props = [[
+            user_props = [[
                 mass_props['mass'][0], 
                 mass_props['volume'][0], 
                 mass_props['periphery'][0],
                 mass_props['principalInertia'][0],
                 mass_props['centroid'][0:3]
             ]]
-            return ref_props
+            return user_props
         except:
             return None
 
