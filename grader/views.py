@@ -524,6 +524,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
             # Get parts list for part studio and create dictionary of IDs to names
             part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
             partId_to_name = {} 
+            
             for item in part_list: 
                 if 'material' in item:
                     material = item['material']['displayName']
@@ -531,7 +532,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
                     material = "No material"
                 partId_to_name[item['partId']] = [item['name'], material]
             
+
             mass_props = ignore_surfaces(mass_props)
+
             # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
             user_props = make_props(mass_props, partId_to_name)
 
@@ -570,6 +573,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, 
                 massAsGroup=False, auth_token=curr_user.access_token
             )
+
 
             if curr_user.etype == "partstudios":
                 # Get parts list for part studio and create dictionary of IDs to names
@@ -760,42 +764,47 @@ def ignore_surfaces(mass_props):
 
 def make_props(mass_props, partId_to_name):
     if partId_to_name:
-        # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-        try:
-            user_props = [
-                [prt['mass'][0] for prt in mass_props['bodies'].values()], 
-                [prt['volume'][0] for prt in mass_props['bodies'].values()], 
-                [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
-                [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
-                [partId_to_name[prt] for prt in mass_props['bodies'].keys()],
-                [prt['centroid'][0:3] for prt in mass_props['bodies'].values()],
-                
-                
-            ]
-            user_props = sorted([
-                [
-                    user_props[0][i], user_props[1][i], 
-                    user_props[2][i], user_props[3][i], 
-                    user_props[4][i], user_props[5][i]
-                ] 
-                for i in range(len(user_props[0]))
-            ], key=lambda x : x[1])
-            return user_props
-        except:
-            return None
+        if(mass_props['bodies']):
+            # partstudios user_props = [[mass, vol, periphery, principalInertia, partName, centroid],[...]] sorted by vol decending
+            try:
+                user_props = [
+                    [prt['mass'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['volume'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
+                    [partId_to_name[prt] for prt in mass_props['bodies'].keys()],
+                    [prt['centroid'][0:3] for prt in mass_props['bodies'].values()],
+                ]
+                user_props = sorted([
+                    [
+                        user_props[0][i], user_props[1][i], 
+                        user_props[2][i], user_props[3][i], 
+                        user_props[4][i], user_props[5][i]
+                    ] 
+                    for i in range(len(user_props[0]))
+                ], key=lambda x : x[1])
+                return user_props
+            except:
+                return None
+        else:
+            return [[None,0,0,0,0]]
     else:
-        # assemblies user_props = [mass, vol, periphery, principalInertia]
-        try: 
-            user_props = [[
-                mass_props['mass'][0], 
-                mass_props['volume'][0], 
-                mass_props['periphery'][0],
-                mass_props['principalInertia'][0],
-                mass_props['centroid'][0:3]
-            ]]
-            return user_props
-        except:
-            return None
+        if('mass' in mass_props):
+            # assemblies ref_props = [mass, vol, periphery, principalInertia,centroid]
+            try: 
+                ref_props = [[
+                    mass_props['mass'][0], 
+                    mass_props['volume'][0], 
+                    mass_props['periphery'][0],
+                    mass_props['principalInertia'][0],
+                    mass_props['centroid'][0:3]
+                ]]
+                return ref_props
+            except:
+                return None
+        else:
+            return [[0,0,0,0]]
+
 
 # Extract useful information from featurelist for partstudios
 def ps_feature_list_helper(feature_list):
