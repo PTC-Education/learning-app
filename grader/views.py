@@ -759,13 +759,14 @@ def make_props(mass_props, partId_to_name):
                 [prt['volume'][0] for prt in mass_props['bodies'].values()], 
                 [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
                 [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
-                [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
+                [partId_to_name[prt] for prt in mass_props['bodies'].keys()],
+                [prt['centroid'][0:3] for prt in mass_props['bodies'].values()]
             ]
             user_props = sorted([
                 [
                     user_props[0][i], user_props[1][i], 
                     user_props[2][i], user_props[3][i], 
-                    user_props[4][i]
+                    user_props[4][i], user_props[5][i]
                 ] 
                 for i in range(len(user_props[0]))
             ], key=lambda x : x[1])
@@ -779,7 +780,8 @@ def make_props(mass_props, partId_to_name):
                 mass_props['mass'][0], 
                 mass_props['volume'][0], 
                 mass_props['periphery'][0],
-                mass_props['principalInertia'][0]
+                mass_props['principalInertia'][0],
+                mass_props['centroid'][0:3]
             ]]
             return ref_props
         except:
