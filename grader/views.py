@@ -525,7 +525,11 @@ def grade_model(request: HttpRequest, os_user_id: str):
             part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
             partId_to_name = {} 
             for item in part_list: 
-                partId_to_name[item['partId']] = item['name']
+                if 'material' in item:
+                    material = item['material']['displayName']
+                else: 
+                    material = "No material"
+                partId_to_name[item['partId']] = [item['name'], material]
             
             mass_props = ignore_surfaces(mass_props)
             # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
@@ -572,7 +576,11 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 part_list = get_part_list(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.access_token)
                 partId_to_name = {} 
                 for item in part_list: 
-                    partId_to_name[item['partId']] = item['name']
+                    if 'material' in item:
+                        material = item['material']['displayName']
+                    else: 
+                        material = "No material"
+                    partId_to_name[item['partId']] = [item['name'], material]
 
                 mass_props = ignore_surfaces(mass_props)
                 # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
@@ -760,7 +768,9 @@ def make_props(mass_props, partId_to_name):
                 [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
                 [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
                 [partId_to_name[prt] for prt in mass_props['bodies'].keys()],
-                [prt['centroid'][0:3] for prt in mass_props['bodies'].values()]
+                [prt['centroid'][0:3] for prt in mass_props['bodies'].values()],
+                
+                
             ]
             user_props = sorted([
                 [
