@@ -197,8 +197,8 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     mate_details = {}
     features = {}
     renamed = []
-    ps_errorCount = 0
-    as_errorCount = 0
+    ps_error_count = 0
+    as_error_count = 0
     
     if "Features" in check_type and element:
         # Get feature list of model the user currently has opened
@@ -209,10 +209,10 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
         if etype == "partstudios":
-            features, renamed, ps_errorCount = ps_feature_list_helper(feature_list)
+            features, renamed, ps_error_count = ps_feature_list_helper(feature_list)
         if etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg , as_errorCount = as_get_mate_summary(feature_list)
+            mates, mate_relations, summary_msg , as_error_count = as_get_mate_summary(feature_list)
             mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type and element:
@@ -243,8 +243,8 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
         "features": features,
         "renamed": renamed,
         "mates": mates,
-        "ps_errorCount": ps_errorCount,
-        "as_errorCount": as_errorCount,
+        "ps_error_count": ps_error_count,
+        "as_error_count": as_error_count,
         "mate_relations": mate_relations, 
         "summary_msg": summary_msg,
         "mate_details": mate_details,
@@ -651,8 +651,8 @@ def check_model(request: HttpRequest, os_user_id: str):
     mate_details = {}
     features = {}
     renamed = []
-    ps_errorCount = 0
-    as_errorCount = 0
+    ps_error_count = 0
+    as_error_count = 0
 
 
     if "Features" in check_type:
@@ -664,10 +664,11 @@ def check_model(request: HttpRequest, os_user_id: str):
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
         if curr_user.etype == "partstudios":
-            features, renamed, ps_errorCount = ps_feature_list_helper(feature_list)
+            features, renamed, ps_error_count = ps_feature_list_helper(feature_list)
+
         if curr_user.etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg, as_errorCount = as_get_mate_summary(feature_list)
+            mates, mate_relations, summary_msg, as_error_count = as_get_mate_summary(feature_list)
             mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type:
@@ -697,8 +698,8 @@ def check_model(request: HttpRequest, os_user_id: str):
         "features": features,
         "renamed": renamed,
         "mates": mates,
-        "ps_errorCount": ps_errorCount,
-        "as_errorCount": as_errorCount,
+        "ps_error_count": ps_error_count,
+        "as_error_count": as_error_count,
         "mate_relations": mate_relations, 
         "summary_msg": summary_msg,
         "mate_details": mate_details,
@@ -807,9 +808,9 @@ def ps_feature_list_helper(feature_list):
     for feature in feature_list['features']:
         try:
             features[feature['featureType']] += 1
-            featureIds.append(feature['featureId'])
         except:
             features[feature['featureType']] = 1
+        featureIds.append(feature['featureId'])
 
         feature_name = re.sub('[0-9]','',feature['name']).replace(" ","").lower()
         
@@ -817,14 +818,15 @@ def ps_feature_list_helper(feature_list):
         if feature['featureType'] in types_to_check:
             if feature_name not in default_features:
                 renamed_count += 1
-    errorCount = 0
+    error_count = 0
+
     for featureId in featureIds:
-        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR":
-            errorCount +=1
+        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
+            error_count +=1
 
     features = dict(sorted(features.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
     renamed = [number_of_features, renamed_count]
-    return features, renamed ,errorCount
+    return features, renamed ,error_count
 
 # Extract useful information from featurelist for assemblies
 def as_feature_list_helper(feature_list):
@@ -875,12 +877,12 @@ def as_get_mate_summary(feature_list):
                             mates.update({val : 1})
                         else:
                             mates[val] += 1
-    errorCount = 0
+    error_count = 0
     for featureId in featureIds:
-        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR":
-            errorCount +=1
+        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
+            error_count +=1
     
-    return mates, mate_relations, summary_msg , errorCount
+    return mates, mate_relations, summary_msg , error_count
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_details(feature_list):

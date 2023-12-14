@@ -84,8 +84,8 @@
                 Of those features, {{ renamed.1 }} have been renamed.</p>
         {% endif %}
         
-        {% if ps_errorCount %}
-            <p>Total number of errors: {{ps_errorCount}}</p>
+        {% if ps_error_count %}
+            <p>Total number of errors: {{ps_error_count}}</p>
         {% endif %}
 
         {% if features %}
@@ -124,7 +124,7 @@
                     <li>Renamed: {{ detail_msg.renamed}}</li>
                     <li>Offsets: {{ detail_msg.offsets}}</li>
                     <li>Limits: {{ detail_msg.limits}}</li>
-                    <li>Total errors: {{as_errorCount}}</li>
+                    <li>Total errors: {{as_error_count}}</li>
                     </ul>
                 </p>
             {% endif %}
