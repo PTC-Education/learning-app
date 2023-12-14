@@ -648,18 +648,21 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                     curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, elem["id"], type_dict[elem["elementType"]], 
                     massAsGroup=True, auth_token=curr_user.access_token
                 )
+
             elem_mass_prop = [] #initialize
             if elem["elementType"] == "PARTSTUDIO":
-                if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == "false": # checks if the PS is empty or material is not assigned
-                    elem_mass_prop = 0
+                if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
+                    return HttpResponse("The Answer Key's Part Studio(s) are empty or do not have a material assigned. Please check the current document and regrade.")
                     
                 else:
                     elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
             else: #elem["elementType"] == "ASSEMBLY"
-                if mass_props["hasMass"] == "false": #checks if the assembly is empty or if ALL parts do not have material assigned.
-                    elem_mass_prop = [0,0,0]
+                if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
+                    return HttpResponse("The Answer Key's Assembly is empty or does not have a materials assigned. Please check the current document and regrade.")
                 else:
                     elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
+                    if elem_mass_prop[0] == 0 or elem_mass_prop[1] == 0 or elem_mass_prop[2] == 0: #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
+                        return HttpResponse("The Answer Key's Assembly Center of Mass has an zero in it. Please check the current document and regrade.")
             elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
             user_props.append(elem_props)
             
@@ -697,6 +700,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
             
             for elem in ref_elems:
                 if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
+                    
                     mass_props = get_mass_props(
                             curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
                             massAsGroup=True, auth_token=curr_user.access_token
@@ -705,7 +709,12 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                     elem_mass_prop = 0 #initialize
                     points = 0
                     if elem["elementType"] == "PARTSTUDIO":
-                        elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
+                        
+                        if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
+                            elem_mass_prop = 0
+                        else:
+                            elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
+                            
                         points = 20 - 100*abs((elem_mass_prop - user_props[elemcount][2])/user_props[elemcount][2])
                         if points < 0:
                             points = 0
@@ -713,7 +722,10 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                         elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
                         
                     else: #elem["elementType"] == "ASSEMBLY"
-                        elem_mass_prop = mass_props["centroid"][0:3]
+                        if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
+                            elem_mass_prop = [0,0,0]
+                        else:
+                            elem_mass_prop = mass_props["centroid"][0:3]
                         points = 20 - 100*(((1/3)*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2][0])) + ((1/3)*abs((elem_mass_prop[1] - user_props[elemcount][2][1])/user_props[elemcount][2][1])) + ((1/3)*abs((elem_mass_prop[2] - user_props[elemcount][2][2])/user_props[elemcount][2][2])))
                         if points < 0:
                             points = 0

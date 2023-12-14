@@ -2,7 +2,7 @@
 
 <link rel = "stylesheet" href = "{% static 'grader/results.css' %}">
 <!-- Load js for handling export of csv -->
-<script src = "{% static 'grader/download_csv.js' %}" type = "text/javascript" defer = ""></script>
+<script src = "{% static 'grader/scioly_download_csv.js' %}" type = "text/javascript" defer = ""></script>
 <!-- Load loading_modelling function to enable loading screen -->
 <script src = "{% static 'grader/loading.js' %}" type = "text/javascript"></script>
 <script src = "{% static 'grader/results.js' %}" type = "text/javascript"></script>
@@ -33,7 +33,7 @@
             <p class = "docname" id = "usr_docname">{{user_props.0.0}}</p>
             <p class = "username" id = "usr_username">{{user_props.0.1}}</p>
             <p class = "doctime" id = "usr_doctime">{{user_props.0.2}}</p>
-            <p class = "score" id = "user_score">{{user_props.0.4}}</p>
+            <p class = "score" id = "usr_score">{{user_props.0.4}}</p>
             <p  hidden id = "usr_url">{{user_props.0.3}}</p>
         </div>
         <div>
