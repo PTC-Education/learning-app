@@ -132,7 +132,34 @@ def index(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     context = {"user": curr_user}
+
+    elements_info = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
+    for element in elements_info:
+        if element['elementType'] == "APPLICATION":
+            if element['applicationTarget']['clientId'] == os.environ['OAUTH_CLIENT_ID']:
+                return render(request, "grader/tutorial_extension.html", context=context)
+    # print(elements)
+    
     return render(request, "grader/index.html", context=context)
+
+def tutorial_extension(request: HttpRequest, os_user_id: str): 
+    """ 
+    The index view of the app. 
+    
+    **Context:**
+    
+    **Arguments:**
+    
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    
+    **Template:**
+    
+    :template:`grader/tutorial_extension.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    context = {"user": curr_user}
+    return render(request, "grader/tutorial_extension.html", context=context)
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 

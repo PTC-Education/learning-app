@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'grader/index.css' %}">
+    <!-- Load loading_index function to enable loading screen -->
+    <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' object-src: https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf; style-src 'self' 'unsafe-inline'; object src: https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf *;">
+
+</head>
+
+<body>
+    <!-- Load app logo at the top of the page -->
+    <div id="logo">
+        <img id="app_logo" src="{% static 'grader/images/teacherstudents.svg' %}" alt="app_logo" />
+    </div>
+
+    <!-- Print out error message if any -->
+    <div>
+        {% if error_message %}
+        <p id="err_msg"><strong>{{ error_message }}</strong></p>
+        {% endif %}
+    </div>
+
+    <!-- General instructions -->
+    
+    <object data= 
+"https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf" 
+                width="800"
+                height="500"> 
+        </object> 
+</body>
+
+</html>
