@@ -272,6 +272,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
 
     classes=[]          # to store the names of classes
     assignments=[]      #array to store assisgnments within the classes
+    error_message=False
 
     #get information about classrooms created by the user
     try:
