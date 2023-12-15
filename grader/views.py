@@ -377,6 +377,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
     submitted_student_works = []  #store submitted work
     action_required_student_works = [] # submitted work that requires user action
     inprogress_student_works = [] #store inprogress work
+    error_message=False
 
     #submitted_student_works
     #action_required_student_works
