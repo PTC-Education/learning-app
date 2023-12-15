@@ -12,7 +12,12 @@
             <input class = "go_home" type="submit" value="Return to Home Page">
         </form>
 
-        
+        <!-- Error message -->
+        <div>
+            {% if error_message %}
+            <p id="err_msg"><strong>{{ error_message }}</strong></p>
+            {% endif %}
+        </div>
         <!--Instructions section for each page-->
         <div class="instructions">
             <h3>

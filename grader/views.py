@@ -197,6 +197,8 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     mate_details = {}
     features = {}
     renamed = []
+    ps_error_count = 0
+    as_error_count = 0
     
     if "Features" in check_type and element:
         # Get feature list of model the user currently has opened
@@ -207,10 +209,10 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
         if etype == "partstudios":
-            features, renamed = ps_feature_list_helper(feature_list)
+            features, renamed, ps_error_count = ps_feature_list_helper(feature_list)
         if etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
+            mates, mate_relations, summary_msg , as_error_count = as_get_mate_summary(feature_list)
             mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type and element:
@@ -241,6 +243,8 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
         "features": features,
         "renamed": renamed,
         "mates": mates,
+        "ps_error_count": ps_error_count,
+        "as_error_count": as_error_count,
         "mate_relations": mate_relations, 
         "summary_msg": summary_msg,
         "mate_details": mate_details,
@@ -281,7 +285,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
                 number_of_members = item["numberOfMembers"]
                 classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
     except:
-        print("Error in classes") #need better error message here
+       error_message = "We encountered an issue. Please check your internet connection."
     
     #If no classes were detected
     if ( len(classes) == 0): 
@@ -298,6 +302,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
             "page": "classes",
             "user": curr_user, 
             "classes":classes,
+             "error_message" : error_message
         }
     return render(
         request, "grader/c_and_a.html", 
@@ -463,7 +468,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
 
     except:
-         print("Error in members") #need better error message here
+         error_message = "We encountered an issue. Please check your internet connection. "
     context={
             "user": curr_user, 
             "page": "submissions",
@@ -472,7 +477,8 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
             "inprogress_student_works": inprogress_student_works,
             "class_name": class_name,
             "class_id": class_id,
-            "assignment_name": assignment_name 
+            "assignment_name": assignment_name,
+            "error_message" : error_message
 
         }
     return render(
@@ -647,6 +653,8 @@ def check_model(request: HttpRequest, os_user_id: str):
     mate_details = {}
     features = {}
     renamed = []
+    ps_error_count = 0
+    as_error_count = 0
 
 
     if "Features" in check_type:
@@ -658,10 +666,11 @@ def check_model(request: HttpRequest, os_user_id: str):
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
         if curr_user.etype == "partstudios":
-            features, renamed = ps_feature_list_helper(feature_list)
+            features, renamed, ps_error_count = ps_feature_list_helper(feature_list)
+
         if curr_user.etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
+            mates, mate_relations, summary_msg, as_error_count = as_get_mate_summary(feature_list)
             mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type:
@@ -691,6 +700,8 @@ def check_model(request: HttpRequest, os_user_id: str):
         "features": features,
         "renamed": renamed,
         "mates": mates,
+        "ps_error_count": ps_error_count,
+        "as_error_count": as_error_count,
         "mate_relations": mate_relations, 
         "summary_msg": summary_msg,
         "mate_details": mate_details,
@@ -801,12 +812,13 @@ def ps_feature_list_helper(feature_list):
     features = {}
     renamed_count = 0
     number_of_features = len(feature_list['features'])
-
+    featureIds =[] #store all feature ids
     for feature in feature_list['features']:
         try:
             features[feature['featureType']] += 1
         except:
             features[feature['featureType']] = 1
+        featureIds.append(feature['featureId'])
 
         feature_name = re.sub('[0-9]','',feature['name']).replace(" ","").lower()
         
@@ -814,11 +826,15 @@ def ps_feature_list_helper(feature_list):
         if feature['featureType'] in types_to_check:
             if feature_name not in default_features:
                 renamed_count += 1
+    error_count = 0
+
+    for featureId in featureIds:
+        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
+            error_count +=1
 
     features = dict(sorted(features.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
     renamed = [number_of_features, renamed_count]
-
-    return features, renamed
+    return features, renamed ,error_count
 
 # Extract useful information from featurelist for assemblies
 def as_feature_list_helper(feature_list):
@@ -826,6 +842,7 @@ def as_feature_list_helper(feature_list):
     mate_relation_count = 0
 
     for feature in feature_list['features']:
+       
         if feature['featureType'] == "mate":
             mate_count += 1
         elif feature['featureType'] == "mateRelation":
@@ -846,8 +863,10 @@ def as_get_mate_summary(feature_list):
         'mates': 0,
         'mate_relations': 0,
     }
+    featureIds =[] #store all feature ids
 
     for feature in feature_list['features']:
+        featureIds.append(feature['featureId'])
         if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
             params = feature['parameters']
             for param in params:
@@ -866,8 +885,12 @@ def as_get_mate_summary(feature_list):
                             mates.update({val : 1})
                         else:
                             mates[val] += 1
+    error_count = 0
+    for featureId in featureIds:
+        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
+            error_count +=1
     
-    return mates, mate_relations, summary_msg
+    return mates, mate_relations, summary_msg , error_count
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_details(feature_list):
