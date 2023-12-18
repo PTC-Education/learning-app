@@ -7,97 +7,179 @@
       <!-- Return to the home page -->
         <br>
         <body>
+        
         <form action="{% url 'grader:index' user.os_user_id %}">
             <input type="submit" value="Return to Home Page">
         </form>
 
-        
-        <div class="instructions">
-            <h3>
-                Instuctions:
-            </h3>
-                    {% if user_type == "student" %}
-                        Enter the URL of the Onshape document you want to compare. Make sure the URL is properly formatted. 
-                    {% elif user_type == "educator" %}
-                        Make sure you have opened the app from the tab you want to use as an answer key within your reference document. You can enter the URLs of your students' Onshape documents in one of the following ways.
-                        <ul>
-                            <li>Copy and paste one Onshape URL at a time.</li>
-                            <li>Copy and paste multiple Onshape URLs that are either separated by comma or a space.</li>
-                            <li>Upload a CSV file containing Onshape URLs.</li>
-                        </ul>
+        {% if user_type == "scioly" %}
+            <a href="https://www.soinc.org/" title="Click to go to the Science Olympiad Homepage ">
+                <img class="scioly_img" src="{% static 'grader/images/scioly_logo.png' %}">
+            </a>
+            <br/>
+            <h3 class="title">Hello, Science Olympiad Grader! </h3>
+            <br/>
 
-                    {% endif %}
-        </div>
-        {% if user_type == "educator" %}
-            <div class="URLinput-DIV">
-                <div class="twoButtonsonEdge">
-                    <p id="tab-header" class="tab-header">URL</p>                    
-                    <label for="csvfile"  class="file-UPLOAD" title="Click to select csv file with Onshape URLs to grade ">
-                        <img src="{% static 'grader/images/Upload.png' %}"/>
-                    </label>
-                    <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
-                </div>   
-                <div>
-                    <p class="urlError" id="urlError">
-                        <!--Error message here-->
-                    </p>
-                </div>
-                <div class="spinner-container">
-                    <div id="Grade">
-                        <!--This is where the spinner will load-->
-                    </div>
-                </div>
-                <div id="urlfield">
-                    <form  name="urlform"  method="post" action="javascript:show_url_as_buttons()">
-                        <div class="twoButtonsonEdge">
-                            <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs">  
-                            <input class="submiturl-button" type="submit" value="Load document(s)">
-                        </div>
-                    </form>
-                </div>     
-                <div class="selectedURL-DIV">
-
-                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
-                        <input id="ref_url_edu" hidden name="ref_url" type="text">
-
-                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
-
-                    </form>
-
-                        <ul class="closeable_button" id="urlButtonContainer">
-                        </ul>    
-
-                </div>
-            </div>
-            <script>checkURLs_for_enabling_grade_button(); </script> <!--Run function to disable Grade button on load-->
-
-        {% elif user_type == "student" %}
-            <div class="URLinput-DIV">
-                <div class="twoButtonsonEdge">
-                    <p id="tab-header" class="tab-header">URL</p>
-                </div>
-
-                <div>
-                    <p  class="urlError"  id="urlError">
-                        <!--Error message here-->
-                    </p>
-                </div>
-                <div class="spinner-container">
-                    <div id="Grade">
-                        <!--This is where the spinner will load-->
-                    </div>
-                </div>
-                <div id="urlfield">
-                    <form  name="studenturl" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return validateForm()" required>
-                        <div class="twoButtonsonEdge">
-                            <input class="urlfield-INPUT" type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL of the reference document.">  
-                        </div>
-                        <input class="gradeButton" type="submit" value="Grade model" onclick="loading_spinner('Grade')"/>
-                    </form>
-                    
-                </div>
-            </div>        
         {% endif %}
+
+        <div class="content">
+            <div class="URLinput-DIV">
+            {% if user_type == "scioly" %}
+                
+                <p>Welcome to the CAD Engineering grading app. Make sure you have opened this app from the <strong>answer key document</strong>. </p>
+                </p>
+                <p>You can enter the URLs of your students' Onshape documents in one of the following ways: </p>
+                <ul>
+                    <li>Copy and paste one Onshape URL at a time.</li>
+                    <li>Copy and paste multiple Onshape URLs that are either separated by comma or a space.</li>
+                    <li>Upload a CSV file containing Onshape URLs.</li>
+                </ul>
+                <p class="external_link">
+                    <a href="{% url 'grader:list_classes' user.os_user_id%}">
+                        If you are using classes and assignments to administer this category, click here.
+                    </a> 
+
+            
+            {% else %}
+                <div class="instructions">
+                    <h3 class="title">
+                        Instructions:
+                    </h3>
+                            {% if user_type == "student" %}
+                                Enter the URL of the Onshape document you want to compare. Make sure the URL is properly formatted. 
+                            
+                            {% elif user_type == "educator" %}
+                                Make sure you have opened the app from the tab you want to use as an answer key within your reference document. You can enter the URLs of your students' Onshape documents in one of the following ways.
+                                <ul>
+                                    <li>Copy and paste one Onshape URL at a time.</li>
+                                    <li>Copy and paste multiple Onshape URLs that are either separated by comma or a space.</li>
+                                    <li>Upload a CSV file containing Onshape URLs.</li>
+                                </ul>
+
+                            {% endif %}
+                </div>
+            {% endif%}
+            </div>
+
+            {% if user_type == "educator" %}
+                <div class="URLinput-DIV">
+                    <div class="twoButtonsonEdge">
+                        <p id="tab-header" class="tab-header">URL</p>                    
+                        <label for="csvfile"  class="file-UPLOAD" title="Click to select csv file with Onshape URLs to grade ">
+                            <img src="{% static 'grader/images/Upload.png' %}"/>
+                        </label>
+                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
+                    </div>   
+                    <div>
+                        <p class="urlError" id="urlError">
+                            <!--Error message here-->
+                        </p>
+                    </div>
+                    <div class="spinner-container">
+                        <div id="Grade">
+                            <!--This is where the spinner will load-->
+                        </div>
+                    </div>
+                    <div id="urlfield">
+                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons()">
+                            <div class="twoButtonsonEdge">
+                                <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs">  
+                                <input class="submiturl-button" type="submit" value="Load document(s)">
+                            </div>
+                        </form>
+                    </div>     
+                    <div class="selectedURL-DIV">
+
+                        <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
+                            <input id="ref_url_edu" hidden name="ref_url" type="text">
+
+                            <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
+
+                        </form>
+
+                            <ul class="closeable_button" id="urlButtonContainer">
+                            </ul>    
+
+                    </div>
+                </div>
+                <script>checkURLs_for_enabling_grade_button(); </script> <!--Run function to disable Grade button on load-->
+            
+            {% elif user_type == "scioly" %}
+                <div class="URLinput-DIV">
+                    <div class="twoButtonsonEdge">
+                        <p id="tab-header" class="tab-header">Student URLs</p>                    
+                        <label for="csvfile"  class="file-UPLOAD" title="Click to select csv file with Onshape URLs to grade ">
+                            <img src="{% static 'grader/images/Upload.png' %}"/>
+                        </label>
+                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
+                    </div>   
+                    <div>
+                        <p class="urlError" id="urlError">
+                            <!--Error message here-->
+                        </p>
+                    </div>
+                    <div class="spinner-container">
+                        <div id="Grade">
+                            <!--This is where the spinner will load-->
+                        </div>
+                    </div>
+                    <div id="urlfield">
+                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons()">
+                            <div class="twoButtonsonEdge">
+                                <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs">  
+                                <input class="submiturl-button" type="submit" value="Upload">
+                            </div>
+                        </form>
+                    </div>     
+                    <div class="selectedURL-DIV">
+
+                        <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
+                            <input id="ref_url_edu" hidden name="ref_url" type="text">
+
+                            <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
+
+                        </form>
+
+                            <ul class="closeable_button" id="urlButtonContainer">
+                            </ul>    
+
+                    </div>
+                </div>
+
+                <p class="external_link">
+                    <a href="https://docs.google.com/document/d/1m4fMifwR76ODnmvDQXxo68cwWXsVjhHKTUBdmfLNRx8/edit?usp=sharing">
+                        For more information on grading and this category, please review the supervisor guide.
+                    </a> 
+                </p>
+
+            {% elif user_type == "student" %}
+                <div class="URLinput-DIV">
+                    <div class="twoButtonsonEdge">
+                        <p id="tab-header" class="tab-header">URL</p>
+                    </div>
+
+                    <div>
+                        <p  class="urlError"  id="urlError">
+                            <!--Error message here-->
+                        </p>
+                    </div>
+                    <div class="spinner-container">
+                        <div id="Grade">
+                            <!--This is where the spinner will load-->
+                        </div>
+                    </div>
+                    <div id="urlfield">
+                        <form  name="studenturl" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return validateForm()" required>
+                            <div class="twoButtonsonEdge">
+                                <input class="urlfield-INPUT" type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL of the reference document.">  
+                            </div>
+                            <input class="gradeButton" type="submit" value="Grade model" onclick="loading_spinner('Grade')"/>
+                        </form>
+                        
+                    </div>
+                </div>        
+            {% endif %}
+        </div>
     </body>
 
     
