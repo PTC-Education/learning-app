@@ -27,7 +27,7 @@ function tableToCSV(num_of_urls) {
 	var userurl = document.getElementById("usr_url").innerHTML;
     var userscore = document.getElementById("usr_score").innerHTML;
     var doctime = document.getElementById("usr_doctime").innerHTML;
-	csvrow.push(username,"Answer Key", docname, doctime, "", "", "", "", userscore, userurl); //element name and score are left blank
+	csvrow.push(username,"Answer Key", docname, doctime, "", "", "", userscore, userurl); //element name and score are left blank
 	csv_data.push(csvrow.join(",")); //Next row with document information 
 	
 	//Document property information of the user
@@ -36,14 +36,15 @@ function tableToCSV(num_of_urls) {
 		csvrow = ["","","",""]; //first four blank cells 
 		var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
 		for (let i = 0; i < part.length ; i++){
-            console.log(part[i].innerHTML)
             if (part[i].innerHTML.includes(",")){ // if the part is an assembly, COM is outputted in 3 cols
-                console.log("if triggered")
-                csvrow.push(part[i].innerHTML); 
+				com = part[i].innerHTML
+				strcom = ""
+				res = strcom.concat("\"", com, "\"")
+				console.log("res:", res)
+                csvrow.push(res);
             }
             else{
-                console.log("else triggered")
-                csvrow.push(part[i].innerHTML, "", "");
+				csvrow.push(part[i].innerHTML); 
             }
 		}
 		csv_data.push(csvrow.join(",")); //Next row with properties
@@ -56,18 +57,19 @@ function tableToCSV(num_of_urls) {
 		csvrow = [];
 		var docname = document.getElementById("ref_docname_" + u).innerHTML;
 		var username = document.getElementById("ref_username_" + u).innerHTML;
-		var score = document.getElementById("ref_score_" + u).innerHTML;
+		var docscore = document.getElementById("ref_score_" + u).innerHTML;
         var doctime = document.getElementById("ref_doctime_" + u).innerHTML;
 		var url =   document.getElementById('url_' + u).innerHTML;
 		var error_message = document.getElementById("error_message_" + u).innerHTML;
 	
-		csvrow.push(username, error_message, docname, doctime); 
+		csvrow.push(username, error_message, docname, doctime, "", "", "", docscore, url); 
 		csv_data.push(csvrow.join(",")); //Next row with document information 
+
 		if(error_message == ""){ //Ignore the data if there is any  error message
 			var refTable = document.getElementById('table_' + u);
 			var all_parts = refTable.querySelectorAll('tr');
 			for (let r = 1; r < all_parts.length ; r++){ //excluding the first row
-				csvrow = ["","","", score, url]; //blank row
+				csvrow = ["","","",""]; //blank row
 				var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
 				for (let i = 0; i < part.length ; i++){
 					if(column_info[0].clasName == "col_0") { 
@@ -77,7 +79,18 @@ function tableToCSV(num_of_urls) {
 						csvrow.push(""); 
 					}
 					else if(column_info[i].style.visibility != "collapse"){
-						csvrow.push(part[i].innerHTML); 
+						if (part[i].innerHTML.includes(",")){ // if the part is an assembly, COM is outputted in 3 cols
+							console.log("if triggered");
+							com = part[i].innerHTML
+							strcom = ""
+							res = strcom.concat("\"", com, "\"")
+							console.log("res:", res)
+							csvrow.push(res);
+						}
+						else{
+							console.log("else triggered");
+							csvrow.push(part[i].innerHTML); 
+						}
 					}
 				}
 			csv_data.push(csvrow.join(",")); //Next row with properties
