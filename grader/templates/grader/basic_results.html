@@ -26,7 +26,62 @@
     {% endif %}
 </div>
 
-
+<script src="{% static 'grader/jquery-3.7.1.js' %}" type="text/javascript"></script>
+<script>
+    $(document).ready(function () {
+        // Attach a submit event handler to the form
+        $("#update_form").submit(function (event) {
+            //loading_spinner('features');
+            console.log("loading first batch");
+            // Prevent the default form submission behavior
+            event.preventDefault();
+            var url = "{% url 'grader:update_result_page' user.os_user_id 'w' ' ' %}";
+            $.ajax({
+                url: url,
+                type: "GET",
+                success: function (data) {
+                    $('#results-container').append(data.updated_html);
+                    $('#load-more-container').css('display', 'block');
+                    $('#wmid').val(data.next_microversion);
+                    $('#features').html(" ");
+                },
+                error: function (error) {
+                    console.log("Error:", error);
+                }
+            });
+        });
+        $("#load_more").submit(function (event) {
+            loading_spinner('features');
+            var newYpos = $('#load-more-container').offset().top;
+            console.log(newYpos);
+            $('#features').css('position', 'absolute');
+            $('#features').css('top', newYpos + 'px');
+            console.log("loading second batch");
+            var wmidVal = $('#wmid').val();
+            // Prevent the default form submission behavior
+            event.preventDefault();
+            var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
+            var url = "{% url 'grader:update_html' user.os_user_id 'm' 'wmid' %}".replace('wmid', wmidVal);
+            $.ajax({
+                url: url,
+                type: "GET",
+                success: function (data) {
+                    $('#results-container').append(data.updated_html);
+                    $('#wmid').val(data.next_microversion);
+                    $('#features').html(" ");
+                },
+                error: function (error) {
+                    console.log("Error:", error);
+                }
+            });
+        });
+    });
+    function hide()
+    {
+        document.getElementById('load-more-container').style.display = "none";
+    }
+    window.onload = hide;
+</script>
 
 {% if user_props %}
     <p class = "resulttile">Reference properties</p>
@@ -92,6 +147,7 @@
                 <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_4" name = "PMOI" value = "Principal_MOI" checked = "True"/>Principal MOI</label>
             </div>
         </div>
+        <div id="results_for_ajax">
             {% for ref_props in all_ref_props %}
                 <div class = "property_box">
                     <div class = "display_thumbnail">
@@ -151,6 +207,7 @@
             {% endfor %}
             
             <script>compute_error('{{all_ref_props|length}}')</script>
+        </div>    
         {% endif %}
         <script>round_off_table_contents('{{user_props|length}}','{{all_ref_props|length}}')</script>
 

@@ -18,5 +18,6 @@ urlpatterns = [
     path('list_members/<str:os_user_id>/<str:class_id>/<str:class_name>/<str:assignment_id>/<str:assignment_name>', views.list_members, name="list_members"),
     path('doc_info_checker/<str:os_user_id>/', views.doc_info_checker, name="doc_info_checker"),
     path('microversions_checker/<str:os_user_id>/', views.microversions_checker, name="microversions_checker"),
-    path('update_html/<str:os_user_id>/<str:wm>/<str:wmid>', views.update_html, name='update_html')
+    path('update_html/<str:os_user_id>/<str:wm>/<str:wmid>', views.update_html, name='update_html'),
+    path('update_result_page/<str:os_user_id>/<str:did>/<str:wv>/<str:wvid>/<str:eid>', views.update_result_page, name='update_result_page'),
 ]

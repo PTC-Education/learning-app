@@ -512,25 +512,61 @@ def grade_model(request: HttpRequest, os_user_id: str):
     cs_ref_urls = request.GET.getlist('ref_url')
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
+    user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
 
+    context={
+        "user": curr_user, 
+        "user_url": user_url,
+        "ref_urls": ref_urls
+    }
+    return render(
+        request, "grader/basic_results.html", 
+        context=context
+    )
+
+
+
+
+def update_result_page(request: HttpRequest, os_user_id: str, did:str, wv:str, wvid:str, eid:str ): 
+    """ 
+    When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
+    to the selected elements or input urls (called all_ref_props)
+    
+    **Context:**
+    
+    View to get time to completion and mass props compared to reference model
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    - ``ref_urls``: the reference element for the model to be compared to
+    
+    **Template:**
+    
+    :template:`grader/results.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    props = [] 
+    failed_urls = []
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
-    
+
     # Get mass props of model the user currently has opened
     mass_props = get_mass_props(
-            curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, 
+            curr_user.os_domain, did, wv, wvid, eid, etype, 
             massAsGroup=False, auth_token=curr_user.access_token
         )
     
     if not mass_props: # API error 
         return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
-    # Set list of user_props - different for each etype
+    # Set list of props - different for each etype
     try:
         if curr_user.etype == "partstudios":
             # Get parts list for part studio and create dictionary of IDs to names
-            part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
+            part_list = get_part_list(curr_user.os_domain, did, wv, wvid, eid, curr_user.access_token)
             partId_to_name = {} 
             
             for item in part_list: 
@@ -543,91 +579,38 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
             mass_props = ignore_surfaces(mass_props)
 
-            # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-            user_props = make_props(mass_props, partId_to_name)
+            # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+            props = make_props(mass_props, partId_to_name)
 
         elif curr_user.etype == "assemblies":
-            # assemblies user_props = [mass, vol, periphery, principalInertia]
-            user_props = make_props(mass_props, None)
+            # assemblies props = [mass, vol, periphery, principalInertia]
+            props = make_props(mass_props, None)
+
+
+        
+        # Get all additional info from the reference document
+        url = curr_user.os_domain + "/documents/" + did + "/"+ wv + "/" + wvid + "/e/" + eid
+        image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token)
+        element_info = get_element_info(curr_user.os_domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
+        element_name = element_info[0]["name"]
+        doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+        user_name = doc_info["createdBy"]["name"]
+        doc_name = doc_info['name']
+        doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+        
+        # Insert first element of array 
+        props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
+
 
     except:
-        user_props = None
-
-    # Get info about the document the user currently has opened
-    user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
-    user_doc_name = user_doc_info['name']
-    user_user_name = user_doc_info["createdBy"]["name"]
-    user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
-
-    user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
-
+        # If anything above failed, add url to the fairled URL list
+        failed_url = url
     
-    # Append user related information along with mass properties
-    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url])
-
-    ## Initialize arrays for ref docs
-    all_ref_props = [] # 3D array - each 2D array corresponds to one URL
-    # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
-    # Rest is model props [[mass, vol, periphery, principalInertia, partName],[...]] (without partName for assemblies)
-    failed_urls = [] # Array of all URLs that we failed to get info from
-    # Get info and mass props for all url's in ref doc list
-    for i, url in enumerate(ref_urls): 
-        ref_url = get_ref_url_ids(url)
-
-        try:         
-            ref_props=[] # initialize empty array of ref props
-
-            mass_props = get_mass_props(
-                curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, 
-                massAsGroup=False, auth_token=curr_user.access_token
-            )
-
-
-            if curr_user.etype == "partstudios":
-                # Get parts list for part studio and create dictionary of IDs to names
-                part_list = get_part_list(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.access_token)
-                partId_to_name = {} 
-                for item in part_list: 
-                    if 'material' in item:
-                        material = item['material']['displayName']
-                    else: 
-                        material = "No material"
-                    partId_to_name[item['partId']] = [item['name'], material]
-
-                mass_props = ignore_surfaces(mass_props)
-                # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-                ref_props = make_props(mass_props, partId_to_name)
-
-            elif curr_user.etype == "assemblies":
-                # assemblies ref_props = [mass, vol, periphery, principalInertia]
-                ref_props = make_props(mass_props, None)
-
-            # Get all additional info from the reference document
-            image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
-            element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
-            element_name = element_info[0]["name"]
-            ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-            user_name = ref_doc_info["createdBy"]["name"]
-            doc_name = ref_doc_info['name']
-            doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
-
-            # Insert first element of array 
-            ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
-
-            all_ref_props.append((ref_props))
-        except:
-            # If anything above failed, add url to the fairled URL list
-            failed_urls.append(url)
-    
-    if len(failed_urls) == 0:
-        failed_urls = None
 
     context={
         "user": curr_user, 
-        "etype": curr_user.etype,
-        "failed_urls": failed_urls,
-        "user_props": user_props,
-        "all_ref_props": all_ref_props
+        "failed_url": failed_url,
+        "props": props, 
     }
     return render(
         request, "grader/basic_results.html", 
