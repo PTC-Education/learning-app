@@ -632,7 +632,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
         curr_user.refresh_oauth_token() 
         
     # Get all the relevant elements of the model that the user currently has open (PS and Assemblies)
-    user_elems = get_elems(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid,massAsGroup=True, auth_token=curr_user.access_token)
+    user_elems = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
     type_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
     
     if not user_elems: # API error 
@@ -691,8 +691,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
         ref_url = get_ref_url_ids(url)
 
         try:         
-            ref_elems = get_elems(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], 
-                massAsGroup=True, auth_token=curr_user.access_token) # get all the elems from one URL
+            ref_elems = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token) # get all the elems from one URL
             
             ref_props=[] # initialize empty array of ref props
             elemcount = 1
@@ -737,7 +736,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                     ref_elem_props = [elem["elementType"], elem["name"], elem_mass_prop, points]
                     ref_props.append(ref_elem_props)
                     totalpoints = totalpoints + points
-                    elemcount = elemcount + 1
+                    elemcount += 1
 
             # Get all additional info from the reference document
             image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
