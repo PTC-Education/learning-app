@@ -13,7 +13,7 @@
 
     <!-- Load app logo at the top of the page -->
     <div id="logo">
-        <img id="app_logo" src="{% static 'grader/images/teacherstudents.svg' %}" alt="app_logo" />
+        <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="95%"/>
     </div>
 
     <!-- Print out error message if any -->
@@ -93,13 +93,6 @@
         </div>
     </div>
               
-
-    <!-- Disclaimer -->
-    <div>
-        <p id="disclaimer"><a href="{% url 'grader:index' user.os_user_id %}#details">Detailed Instructions</a> | <a
-        href="https://docs.google.com/forms/d/e/1FAIpQLSeOcFJo3V05CMtQSAXmmiF22xdfsdaob7_tBCTCDEwZVdVRwA/viewform?usp=sf_link">Feedback</a>
-        </p>
-    </div>
 
 
 </body>
