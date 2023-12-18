@@ -17,17 +17,22 @@
             {
                 document.getElementById('mates_details').style.display = "none";
             }
-            function selectRadio(selectedDiv) {
+            function selectRadio(id) {
                 // Deselect all divs
+    
                 const radios = document.querySelectorAll('.single-radio');
                 radios.forEach(div => div.classList.remove('selected'));
                 // Select the clicked div
+                selectedDiv = document.getElementById("element_list_" + id);
                 selectedDiv.classList.add('selected');
+
                 const selectedRadio = document.querySelector('.single-radio.selected');
                 if (selectedRadio) {
-                    const selectedValue = selectedRadio.getAttribute('data-value');
+                    selectedValue = document.getElementById("data_value_" + id).value;
                     document.getElementById("elements").value = selectedValue;
                 }
+
+                document.getElementById("selected_radio").value = id;
             }
             function formSubmit() {
                 const selectedRadio = document.querySelector('.single-radio.selected');
@@ -48,9 +53,14 @@
         <!-- Check model -->
         <form action="{% url 'grader:doc_info_checker' user.os_user_id %}" onsubmit="return formSubmit()">
             <!-- Select element -->
-            {% if element_list %}
+            {% if element_list %} 
                 {% for element in element_list %}
-                    <div class="single-radio" onclick="selectRadio(this)" data-value="{{ element.etype }} {{ element.id }}">
+                    <!--prepping element list for views.py -->
+                    <input type="hidden" id="element_list_hidden"  name="element_list" type="text" value="{{element|safe}}">
+
+                    <div class="single-radio" id = "element_list_{{forloop.counter0}}" onclick="selectRadio('{{forloop.counter0}}')">
+                        <input type = "hidden" id = "data_value_{{forloop.counter0}}" value= "{{ element.etype }} {{ element.id }}">
+
                         {% if element.etype == 'assemblies' %}
                             <div class="radio-svg"><img src="{% static 'grader/images/assem.svg' %}"></div>
                         {% else %}
@@ -65,14 +75,21 @@
             <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features/Mates<br>      
             <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>    
             <input type="hidden" name="elements" id="elements" value="">  
+            <input type="hidden" name="selected_radio" id="selected_radio" value="">
             <input type="submit" value="Check model"/>
             <p class="msg" id="msg">&nbsp;</p>
         </form>
+
+        {% if select_Div %}
+            <script>selectRadio("{{select_Div|safe}}")</script>
+        {% endif %}
+
         <div class="spinner-container">
             <div id="features">
                 <!--This is where the spinner will load-->
             </div>
         </div>
+
 
         {% if check_message %}
             {{ check_message|safe }}
