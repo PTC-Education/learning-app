@@ -512,11 +512,23 @@ def grade_model(request: HttpRequest, os_user_id: str):
     cs_ref_urls = request.GET.getlist('ref_url')
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
-    user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
+    ref_url = []
+    for url in ref_urls:
+        ref = get_ref_url_ids(url)
+        ref_url.append(ref)
 
+    user_url = dict()
+    user_url['did'] =  curr_user.did 
+    user_url['wv'] = curr_user.wv
+    user_url['wvid'] = curr_user.wvid
+    user_url['eid'] = curr_user.eid
+    #user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
+
+
+    print("iser urls", user_url)
+    print("ref urls", ref_url)
     context={
         "user": curr_user, 
-        "user_url": user_url,
         "ref_urls": ref_urls
     }
     return render(
@@ -524,10 +536,99 @@ def grade_model(request: HttpRequest, os_user_id: str):
         context=context
     )
 
+def user_data_on_result_page(request: HttpRequest, os_user_id: str): 
+    """ 
+    When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
+    to the selected elements or input urls (called all_ref_props)
+    
+    **Context:**
+    
+    View to get time to completion and mass props compared to reference model
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    - ``ref_urls``: the reference element for the model to be compared to
+    
+    **Template:**
+    
+    :template:`grader/results.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    props = [] 
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    # Get mass props of model the user currently has opened
+    mass_props = get_mass_props(
+            curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, 
+            massAsGroup=False, auth_token=curr_user.access_token
+        )
+    
+    if not mass_props: # API error 
+        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+    error_msg = None
+    # Set list of props - different for each etype
+    try:
+        if curr_user.etype == "partstudios":
+            # Get parts list for part studio and create dictionary of IDs to names
+            part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
+            partId_to_name = {} 
+            
+            for item in part_list: 
+                if 'material' in item:
+                    material = item['material']['displayName']
+                else: 
+                    material = "No material"
+                partId_to_name[item['partId']] = [item['name'], material]
+            
+
+            mass_props = ignore_surfaces(mass_props)
+
+            # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+            props = make_props(mass_props, partId_to_name)
+
+        elif curr_user.etype == "assemblies":
+            # assemblies props = [mass, vol, periphery, principalInertia]
+            props = make_props(mass_props, None)
 
 
+        
+        # Get all additional info from the reference document
+        url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
+        image = get_shaded_views(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, auth_token=curr_user.access_token)
+        element_info = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token)
+        element_name = element_info[0]["name"]
+        doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+        user_name = doc_info["createdBy"]["name"]
+        doc_name = doc_info['name']
+        doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+        
+        # Insert first element of array 
+        props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
 
-def update_result_page(request: HttpRequest, os_user_id: str, did:str, wv:str, wvid:str, eid:str ): 
+
+    except:
+        # If anything above failed, add url to the fairled URL list
+        error_msg = "Something went wrong."
+    
+
+    context={
+        "user": curr_user, 
+        "error_msg": error_msg,
+        "user_props": props, 
+    }
+
+    return render(
+        request, "grader/basic_results.html", 
+        context=context
+    )
+
+
+def update_result_page(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
     to the selected elements or input urls (called all_ref_props)
@@ -547,15 +648,23 @@ def update_result_page(request: HttpRequest, os_user_id: str, did:str, wv:str, w
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
+
+    did = request.GET.get('did')
+    wv = request.GET.get('wv')
+    wvid = request.GET.get('wvid')
+    eid = request.GET.get('eid')
+    print("caaleed")
+    print(did, wv,wvid, eid)
+
     props = [] 
-    failed_urls = []
+    failed_url = None
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
     # Get mass props of model the user currently has opened
     mass_props = get_mass_props(
-            curr_user.os_domain, did, wv, wvid, eid, etype, 
+            curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, 
             massAsGroup=False, auth_token=curr_user.access_token
         )
     
@@ -593,7 +702,7 @@ def update_result_page(request: HttpRequest, os_user_id: str, did:str, wv:str, w
         image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token)
         element_info = get_element_info(curr_user.os_domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
         element_name = element_info[0]["name"]
-        doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+        doc_info = get_doc_info(curr_user.os_domain, did, auth_token=curr_user.access_token)
         user_name = doc_info["createdBy"]["name"]
         doc_name = doc_info['name']
         doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
@@ -612,6 +721,7 @@ def update_result_page(request: HttpRequest, os_user_id: str, did:str, wv:str, w
         "failed_url": failed_url,
         "props": props, 
     }
+
     return render(
         request, "grader/basic_results.html", 
         context=context
