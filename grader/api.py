@@ -245,3 +245,21 @@ def get_element_info(
         return response.json() 
     else:   
         return None
+
+def get_microversions(
+    domain: str, did: str, wm: str, wmid: str, auth_token: str
+) -> Any: 
+    """ Get microversions
+    """
+    response = requests.get(
+        os.path.join(domain, "api/documents/d/{}/{}/{}/documenthistory".format(did, wm, wmid)), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else:   
+        return None
