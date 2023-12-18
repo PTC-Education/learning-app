@@ -13,6 +13,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
 
 from .models import * 
+from .api import *
 
 
 # Create your views here.
@@ -194,6 +195,10 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     mates = {}
     mate_relations = {}
     mate_details = {}
+    features = {}
+    renamed = []
+    ps_error_count = 0
+    as_error_count = 0
     
     if "Features" in check_type and element:
         # Get feature list of model the user currently has opened
@@ -204,10 +209,10 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
         if etype == "partstudios":
-            check_message += ps_feature_list_helper(feature_list)
+            features, renamed, ps_error_count = ps_feature_list_helper(feature_list)
         if etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
+            mates, mate_relations, summary_msg , as_error_count = as_get_mate_summary(feature_list)
             mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type and element:
@@ -235,7 +240,11 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
         "element_list": element_list,
         "check_type": check_type,
         "check_message": check_message,
+        "features": features,
+        "renamed": renamed,
         "mates": mates,
+        "ps_error_count": ps_error_count,
+        "as_error_count": as_error_count,
         "mate_relations": mate_relations, 
         "summary_msg": summary_msg,
         "mate_details": mate_details,
@@ -263,6 +272,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
 
     classes=[]          # to store the names of classes
     assignments=[]      #array to store assisgnments within the classes
+    error_message=False
 
     #get information about classrooms created by the user
     try:
@@ -276,7 +286,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
                 number_of_members = item["numberOfMembers"]
                 classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
     except:
-        print("Error in classes") #need better error message here
+       error_message = "We encountered an issue. Please check your internet connection."
     
     #If no classes were detected
     if ( len(classes) == 0): 
@@ -293,6 +303,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
             "page": "classes",
             "user": curr_user, 
             "classes":classes,
+             "error_message" : error_message
         }
     return render(
         request, "grader/c_and_a.html", 
@@ -366,6 +377,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
     submitted_student_works = []  #store submitted work
     action_required_student_works = [] # submitted work that requires user action
     inprogress_student_works = [] #store inprogress work
+    error_message=False
 
     #submitted_student_works
     #action_required_student_works
@@ -458,7 +470,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
 
     except:
-         print("Error in members") #need better error message here
+         error_message = "We encountered an issue. Please check your internet connection. "
     context={
             "user": curr_user, 
             "page": "submissions",
@@ -467,7 +479,8 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
             "inprogress_student_works": inprogress_student_works,
             "class_name": class_name,
             "class_id": class_id,
-            "assignment_name": assignment_name 
+            "assignment_name": assignment_name,
+            "error_message" : error_message
 
         }
     return render(
@@ -519,10 +532,17 @@ def grade_model(request: HttpRequest, os_user_id: str):
             # Get parts list for part studio and create dictionary of IDs to names
             part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
             partId_to_name = {} 
-            for item in part_list: 
-                partId_to_name[item['partId']] = item['name']
             
+            for item in part_list: 
+                if 'material' in item:
+                    material = item['material']['displayName']
+                else: 
+                    material = "No material"
+                partId_to_name[item['partId']] = [item['name'], material]
+            
+
             mass_props = ignore_surfaces(mass_props)
+
             # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
             user_props = make_props(mass_props, partId_to_name)
 
@@ -562,12 +582,17 @@ def grade_model(request: HttpRequest, os_user_id: str):
                 massAsGroup=False, auth_token=curr_user.access_token
             )
 
+
             if curr_user.etype == "partstudios":
                 # Get parts list for part studio and create dictionary of IDs to names
                 part_list = get_part_list(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.access_token)
                 partId_to_name = {} 
                 for item in part_list: 
-                    partId_to_name[item['partId']] = item['name']
+                    if 'material' in item:
+                        material = item['material']['displayName']
+                    else: 
+                        material = "No material"
+                    partId_to_name[item['partId']] = [item['name'], material]
 
                 mass_props = ignore_surfaces(mass_props)
                 # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
@@ -814,6 +839,11 @@ def check_model(request: HttpRequest, os_user_id: str):
     mates = {}
     mate_relations = {}
     mate_details = {}
+    features = {}
+    renamed = []
+    ps_error_count = 0
+    as_error_count = 0
+
 
     if "Features" in check_type:
         # Get feature list of model the user currently has opened
@@ -824,10 +854,11 @@ def check_model(request: HttpRequest, os_user_id: str):
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
         if curr_user.etype == "partstudios":
-            check_message += ps_feature_list_helper(feature_list)
+            features, renamed, ps_error_count = ps_feature_list_helper(feature_list)
+
         if curr_user.etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
+            mates, mate_relations, summary_msg, as_error_count = as_get_mate_summary(feature_list)
             mate_details, detail_msg = as_get_mate_details(feature_list)
     
     if "Parts" in check_type:
@@ -854,7 +885,11 @@ def check_model(request: HttpRequest, os_user_id: str):
         "user": curr_user,
         "check_type": check_type,
         "check_message": check_message,
+        "features": features,
+        "renamed": renamed,
         "mates": mates,
+        "ps_error_count": ps_error_count,
+        "as_error_count": as_error_count,
         "mate_relations": mate_relations, 
         "summary_msg": summary_msg,
         "mate_details": mate_details,
@@ -864,262 +899,6 @@ def check_model(request: HttpRequest, os_user_id: str):
         request, "grader/checker.html", 
         context=context
     )
-
-#################### Helper API calls ####################
-
-def get_elems(domain: str, did: str, wvm: str, wvmid: str,auth_token: str, massAsGroup=True
-) -> Any: 
-    """ Get the list of parts and assemblies of the given document 
-    """
-    response = requests.get(
-        os.path.join(domain, "api/documents/d/{}/{}/{}/elements".format(did, wvm, wvmid)), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        },
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-def get_mass_props(
-    domain: str, did: str, wvm: str, wvmid: str, eid: str, etype: str, auth_token: str, massAsGroup=True
-) -> Any: 
-    """ Get the mass and geometry properties of the given element 
-    """
-    response = requests.get(
-        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/massproperties".format(etype, did, wvm, wvmid, eid)), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }, 
-        params={
-            "massAsGroup": massAsGroup
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-def get_part_list(
-    domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str
-) -> Any: 
-    """ Get all parts in an element
-    """
-    response = requests.get(
-        os.path.join(domain, "api/parts/d/{}/{}/{}/e/{}".format(did, wv, wvid, eid)), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-
-def get_assembly_definition(
-    domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str
-) -> Any: 
-    """ Get all parts in an element
-    """
-    response = requests.get(
-        os.path.join(domain, "api/assemblies/d/{}/{}/{}/e/{}".format(did, wv, wvid, eid)), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-def get_blob_data(
-    domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str
-) -> Any: 
-    """ Get the blob content of the given element
-    """
-    response = requests.get(
-        os.path.join(domain, "api/blobelements/d/{}/{}/{}/e/{}".format(did,wv,wvid,eid)), 
-        headers={
-            "Accept": "application/octet-stream", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.content
-    else: 
-        return None
-
-def get_shaded_views(
-    domain: str, did: str, wv:str, wvid:str, eid:str, etype:str,  auth_token: str
-) -> Any: 
-    """Get a thumbnail image of the question for display 
-    """
-    response = requests.get(
-        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/shadedviews".format(etype, did, wv, wvid, eid)), 
-        params={
-            "outputHeight": 60, 
-            "outputWidth": 60, 
-            "pixelSize": 0, 
-            "viewMatrix": "0.612,0.612,0,0,-0.354,0.354,0.707,0,0.707,-0.707,0.707,0"
-        }, 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization": "Bearer " + auth_token
-        }
-    )
-    
-    if response.ok: 
-        return f"data:image/png;base64,{response.json()['images'][0]}"
-    else: 
-        return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII="
-
-def get_feature_list(
-    domain: str, etype: str, did: str, wmv: str, wid: str, eid: str, auth_token: str
-) -> Any: 
-    """ Get the feature list from both part studios and assemblies
-    """
-    response = requests.get(
-        os.path.join(domain, "api/{}/d/{}/{}/{}/e/{}/features".format(etype, did, wmv, wid, eid)),   
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json()
-    else: 
-        return None
-
-
-
-
-def get_doc_info(
-    domain: str, did: str, auth_token: str
-) -> Any: 
-    """ Get the document info from the current document
-    """
-    response = requests.get(
-        os.path.join(
-            domain, "api/documents/{}".format(did)
-        ), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-def get_user_doc_list(
-    domain:str, auth_token: str
-) -> Any: 
-    """ Get list of documents - created by the user/ recently opened by the user and shared with the user
-    """
-    response = requests.get(
-        os.path.join(domain, "api/documents"), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-def get_class_list(
-    domain: str,  auth_token: str, massAsGroup=True
-) -> Any: 
-    """ Get the list of classes for the user
-    """
-    response = requests.get(
-        os.path.join(domain, "api/globaltreenodes/magic/15"), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else:   
-        return None
-
-
-def get_assignment_list(
-    domain: str, classid: str, auth_token: str
-) -> Any: 
-
-    response = requests.get(
-        os.path.join(
-            domain, 
-            "api/classrooms/{}/assignments".format(classid)
-        ), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-def get_submission_list(
-    domain: str, classid:str , assignmentid: str, auth_token: str
-) -> Any: 
-    response = requests.get(
-        os.path.join(
-            domain, 
-            "api/classrooms/{}/assignments/{}".format(classid, assignmentid)
-        ), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
-
-def get_element_info(
-    domain: str, did: str, wv: str, wvid: str, eid: str, auth_token: str, thumbnails="false"
-) -> Any: 
-    """ Get information about element 
-    """
-    response = requests.get(
-        os.path.join(domain, "api/documents/d/{}/{}/{}/elements?elementId={}&withThumbnails={}".format(did, wv, wvid, eid, thumbnails)), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        }
-    )
-    if response.ok: 
-        return response.json() 
-    else:   
-        return None
 
 #################### Other helper functions ####################
 
@@ -1174,69 +953,79 @@ def ignore_surfaces(mass_props):
 
 def make_props(mass_props, partId_to_name):
     if partId_to_name:
-        # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-        try:
-            user_props = [
-                [prt['mass'][0] for prt in mass_props['bodies'].values()], 
-                [prt['volume'][0] for prt in mass_props['bodies'].values()], 
-                [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
-                [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
-                [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
-            ]
-            user_props = sorted([
-                [
-                    user_props[0][i], user_props[1][i], 
-                    user_props[2][i], user_props[3][i], 
-                    user_props[4][i]
-                ] 
-                for i in range(len(user_props[0]))
-            ], key=lambda x : x[1])
-            return user_props
-        except:
-            return None
+        if(mass_props['bodies']):
+            # partstudios user_props = [[mass, vol, periphery, principalInertia, partName, centroid],[...]] sorted by vol decending
+            try:
+                user_props = [
+                    [prt['mass'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['volume'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
+                    [partId_to_name[prt] for prt in mass_props['bodies'].keys()],
+                    [prt['centroid'][0:3] for prt in mass_props['bodies'].values()],
+                ]
+                user_props = sorted([
+                    [
+                        user_props[0][i], user_props[1][i], 
+                        user_props[2][i], user_props[3][i], 
+                        user_props[4][i], user_props[5][i]
+                    ] 
+                    for i in range(len(user_props[0]))
+                ], key=lambda x : x[1])
+                return user_props
+            except:
+                return None
+        else:
+            return [[None,0,0,0,0]]
     else:
-        # assemblies ref_props = [mass, vol, periphery, principalInertia]
-        try: 
-            ref_props = [[
-                mass_props['mass'][0], 
-                mass_props['volume'][0], 
-                mass_props['periphery'][0],
-                mass_props['principalInertia'][0]
-            ]]
-            return ref_props
-        except:
-            return None
+        if('mass' in mass_props):
+            # assemblies ref_props = [mass, vol, periphery, principalInertia,centroid]
+            try: 
+                ref_props = [[
+                    mass_props['mass'][0], 
+                    mass_props['volume'][0], 
+                    mass_props['periphery'][0],
+                    mass_props['principalInertia'][0],
+                    mass_props['centroid'][0:3]
+                ]]
+                return ref_props
+            except:
+                return None
+        else:
+            return [[0,0,0,0]]
+
 
 # Extract useful information from featurelist for partstudios
 def ps_feature_list_helper(feature_list):
-    feature_count = {} # initialize dictionary for number of features used
+    default_features = ['sketch', 'extrude', 'revolve', 'sweep', 'loft', 'thicken', 'fill', 'enclose', 'fillet', 'faceblend', 'chamfer', 'draft', 'shell', 'rib', 'externalthread', 'curvepattern', 'linearpattern', 'circularpattern', 'plane', 'mirror', 'boolean', 'split', 'wrap', 'transform', 'deletepart', 'moveface', 'replaceface', 'offsetsurface', 'boundarysurface', 'moveboundary', 'ruledsurface', 'transform', 'mutualtrim', 'helix', '3dfitspline', 'projectedcurve', 'bridgingcurve', 'compositecurve', 'intersectioncurve', 'trimcurve', 'isocline', 'mateconnector', 'derived', 'transform', 'compositepart', 'sheetmetalmodel', 'flange', 'hem', 'tab', 'flange', 'makejoint', 'corner', 'bendrelief', 'finishsheetmetalmodel', 'frame', 'frametrim', 'gusset', 'endcap', 'cutlist', 'dfitspline']
+    # types_to_check is every feature type except holes and variables.  it also filters out custom features
+    types_to_check = ['booleanBodies', 'boundarySurface', 'bridgingCurve', 'chamfer', 'circularPattern', 'compositeCurve', 'compositePart', 'cPlane', 'curvePattern', 'cutlist', 'deleteBodies', 'draft', 'enclose', 'endcap', 'extendSurface', 'externalThread', 'extrude', 'faceBlend', 'fill', 'fillet', 'fitSpline', 'frame', 'frameTrim', 'gusset', 'helix', 'importDerived', 'intersectionCurve', 'isocline', 'linearPattern', 'loft', 'mateConnector', 'mirror', 'moveFace', 'mutualTrim', 'newSketch', 'offsetSurface', 'projectCurves', 'replaceFace', 'revolve', 'rib', 'ruledSurface', 'sheetMetalBendRelief', 'sheetMetalCorner', 'sheetMetalEnd', 'sheetMetalFlange', 'sheetMetalHem', 'sheetMetalMakeJoint', 'sheetMetalStart', 'sheetMetalTab', 'shell', 'splitPart', 'sweep', 'thicken', 'transform', 'trimCurve', 'wrap']
+    features = {}
     renamed_count = 0
     number_of_features = len(feature_list['features'])
+    featureIds =[] #store all feature ids
     for feature in feature_list['features']:
-        if feature['featureType'] == "newSketch":
-            feature['featureType'] = "sketch"
         try:
-            feature_count[feature['featureType']] += 1
+            features[feature['featureType']] += 1
         except:
-            feature_count[feature['featureType']] = 1
+            features[feature['featureType']] = 1
+        featureIds.append(feature['featureId'])
 
-        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","")
+        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","").lower()
         
-        if feature_name.lower() != feature['featureType'].lower():
-            renamed_count += 1
-    
-    feature_count = dict(sorted(feature_count.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
+        # don't check hole, variable, and custom feature
+        if feature['featureType'] in types_to_check:
+            if feature_name not in default_features:
+                renamed_count += 1
+    error_count = 0
 
-    feature_message = f'''
-    <h3>Feature Checking</h3>
-    <p>{renamed_count} out of {number_of_features} features are currently renamed from their defaults.</p>
-    <p>List of how many times each feature is used:
-    <ul>
-    '''
-    for k, v in feature_count.items():
-        feature_message += f'<li>{k} - {v}</li>'
+    for featureId in featureIds:
+        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
+            error_count +=1
 
-    return feature_message + '</ul>'
+    features = dict(sorted(features.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
+    renamed = [number_of_features, renamed_count]
+    return features, renamed ,error_count
 
 # Extract useful information from featurelist for assemblies
 def as_feature_list_helper(feature_list):
@@ -1244,6 +1033,7 @@ def as_feature_list_helper(feature_list):
     mate_relation_count = 0
 
     for feature in feature_list['features']:
+       
         if feature['featureType'] == "mate":
             mate_count += 1
         elif feature['featureType'] == "mateRelation":
@@ -1264,8 +1054,10 @@ def as_get_mate_summary(feature_list):
         'mates': 0,
         'mate_relations': 0,
     }
+    featureIds =[] #store all feature ids
 
     for feature in feature_list['features']:
+        featureIds.append(feature['featureId'])
         if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
             params = feature['parameters']
             for param in params:
@@ -1284,8 +1076,12 @@ def as_get_mate_summary(feature_list):
                             mates.update({val : 1})
                         else:
                             mates[val] += 1
+    error_count = 0
+    for featureId in featureIds:
+        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
+            error_count +=1
     
-    return mates, mate_relations, summary_msg
+    return mates, mate_relations, summary_msg , error_count
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_details(feature_list):

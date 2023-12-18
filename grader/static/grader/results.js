@@ -97,6 +97,21 @@ function compute_error(num_of_urls){
       
       var score = 0;
       for (let part = 1; part < Math.min(usr_number_of_parts, ref_number_of_parts) ; part++){
+        //get material data for user doc
+        if (document.getElementById("usr_0_" + part)){
+          user_material = document.getElementById("usr_0_" + part).title;
+          ref_material = document.getElementById("ref_0_" + url + "_" + part).title;
+
+          if(user_material == ref_material){
+            document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #00FF00";
+          }
+          else{
+            document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #FF0000";
+          }
+        }
+
+      //calculate error
+
         for (let p = 1; p < 5; p++){
           //get data for usr doc
           var usrdata = document.getElementById("usr_" + p + "_" + part).innerHTML;
