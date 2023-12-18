@@ -104,7 +104,6 @@ function compute_error(num_of_urls){
 
           if(user_material == ref_material){
             document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #00FF00";
-            console.log("entered");
           }
           else{
             document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #FF0000";
