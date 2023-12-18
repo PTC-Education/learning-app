@@ -103,7 +103,7 @@ def authorize(request: HttpRequest):
     user.save() 
 
     if user.etype == "infopanel":
-        return HttpResponseRedirect(reverse("grader:list_doc_element", args=[user.os_user_id]))
+        return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
     else:
         return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
@@ -151,7 +151,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         }
     return render(request, "grader/url_input.html", context=context)
 
-def list_doc_element(request: HttpRequest, os_user_id: str):
+def doc_info_checker(request: HttpRequest, os_user_id: str):
     """ 
     This function is for showing elements in a document for best practices checking. 
 
@@ -181,47 +181,9 @@ def list_doc_element(request: HttpRequest, os_user_id: str):
             image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
             element_dict = {'etype': 'assemblies', 'id': element['id'], 'name': element['name'], 'image': image}
             element_list.append(element_dict)
-
-    context={
-        "user": curr_user, 
-        "element_list": element_list,
-    }
-
-    return render(request, "grader/doc_info_checker.html", context=context)
-
-def doc_info_checker(request: HttpRequest, os_user_id: str):
-    """ 
-    This function is for showing elements in a document for best practices checking. 
-
-    **Arguments:**
-        
-    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-
-    **Template:**
-
-    :template:`grader/doc_info_checker.html`
-
-    """
-
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    # Get info and workspace for current document selected
-
-    doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
-    doc_wid = doc_info['defaultWorkspace']['id']
-
     # Get element and check type that the user has selected
     element = request.GET.get('elements')
     check_type = request.GET.getlist('check_type')
-
-    #getting elements list from the html page and reformatting as array to send it back to the html page
-    element_list = []
-    element_list_str = request.GET.getlist('element_list')
-    for element_str in element_list_str:
-        element_list.append(eval(element_str))
-
-    #getting selected Div for persistence of selection in html page
-    select_Div = request.GET.get('selected_radio')
-   
     try:
         etype = element.split(" ")[0]
         eid = element.split(" ")[1]
@@ -276,7 +238,6 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     context={
         "user": curr_user, 
         "element_list": element_list,
-        "select_Div" : select_Div,
         "check_type": check_type,
         "check_message": check_message,
         "features": features,
