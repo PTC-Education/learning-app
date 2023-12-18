@@ -866,23 +866,6 @@ def check_model(request: HttpRequest, os_user_id: str):
 
 #################### Helper API calls ####################
 
-def get_elems(domain: str, did: str, wvm: str, wvmid: str,auth_token: str, massAsGroup=True
-) -> Any: 
-    """ Get the list of parts and assemblies of the given document 
-    """
-    response = requests.get(
-        os.path.join(domain, "api/documents/d/{}/{}/{}/elements".format(did, wvm, wvmid)), 
-        headers={
-            "Content-Type": "application/json", 
-            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
-            "Authorization" : "Bearer " + auth_token
-        },
-    )
-    if response.ok: 
-        return response.json() 
-    else: 
-        return None
-
 def get_mass_props(
     domain: str, did: str, wvm: str, wvmid: str, eid: str, etype: str, auth_token: str, massAsGroup=True
 ) -> Any: 
