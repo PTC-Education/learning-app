@@ -17,60 +17,131 @@
             {
                 document.getElementById('mates_details').style.display = "none";
             }
+            function selectRadio(id) {
+                // Deselect all divs
+    
+                const radios = document.querySelectorAll('.single-radio');
+                radios.forEach(div => div.classList.remove('selected'));
+                // Select the clicked div
+                selectedDiv = document.getElementById("element_list_" + id);
+                selectedDiv.classList.add('selected');
+
+                const selectedRadio = document.querySelector('.single-radio.selected');
+                if (selectedRadio) {
+                    selectedValue = document.getElementById("data_value_" + id).value;
+                    document.getElementById("elements").value = selectedValue;
+                }
+
+                document.getElementById("selected_radio").value = id;
+            }
+            function formSubmit() {
+                const selectedRadio = document.querySelector('.single-radio.selected');
+                if (selectedRadio) {
+                    document.getElementById("msg").innerHTML = "";
+                    loading_spinner('features')
+                } else {
+                    document.getElementById("msg").innerHTML = "Please select an element.";
+                    return false;
+                }
+                return true;
+            }
             window.onload = hide;
         </script>
     </head>
     <body>
         <p>Select the element you would like to check:</p>
         <!-- Check model -->
-        <form action="{% url 'grader:doc_info_checker' user.os_user_id %}" onsubmit="loading_spinner('features')">
+        <form action="{% url 'grader:doc_info_checker' user.os_user_id %}" onsubmit="return formSubmit()">
             <!-- Select element -->
-            {% if element_list %}
+            {% if element_list %} 
                 {% for element in element_list %}
-                    <label class="element_container">
-                        <div class="element_label">{{ element.name }}</div>
-                        <input type="radio" id="elements" name="elements" value="{{ element.etype }} {{ element.id }}">
-                        <span class="checkmark"></span>
-                        <img height="60px" src="{{ element.image }}">
-                        <div class="element_ps_assem">
-                            {% if element.etype == 'assemblies' %}
-                                <img height="30px" src="{% static 'grader/images/assem.svg' %}"/>
-                            {% else %}
-                                <img height="30px" src="{% static 'grader/images/ps.svg' %}"/>
-                            {% endif %}
-                        </div>
-                    </label>
+                    <!--prepping element list for views.py -->
+                    <input type="hidden" id="element_list_hidden"  name="element_list" type="text" value="{{element|safe}}">
+
+                    <div class="single-radio" id = "element_list_{{forloop.counter0}}" onclick="selectRadio('{{forloop.counter0}}')">
+                        <input type = "hidden" id = "data_value_{{forloop.counter0}}" value= "{{ element.etype }} {{ element.id }}">
+
+                        {% if element.etype == 'assemblies' %}
+                            <div class="radio-svg"><img src="{% static 'grader/images/assem.svg' %}"></div>
+                        {% else %}
+                            <div class="radio-svg"><img src="{% static 'grader/images/ps.svg' %}"></div>
+                        {% endif %}
+                        <div class="radio-img"><img src="{{ element.image }}"></div>
+                        <div class="radio-label">{{ element.name }}</div>
+                    </div>
                 {% endfor %}
             {% endif %}
             <p>Select the type of check(s) you would like to perform:</p>
             <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features/Mates<br>      
-            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>      
+            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>    
+            <input type="hidden" name="elements" id="elements" value="">  
+            <input type="hidden" name="selected_radio" id="selected_radio" value="">
             <input type="submit" value="Check model"/>
+            <p class="msg" id="msg">&nbsp;</p>
         </form>
+
+        {% if select_Div %}
+            <script>selectRadio("{{select_Div|safe}}")</script>
+        {% endif %}
+
         <div class="spinner-container">
             <div id="features">
                 <!--This is where the spinner will load-->
             </div>
         </div>
 
+
         {% if check_message %}
             {{ check_message|safe }}
         {% endif %}
 
-        {% if mates or mate_relations %}   
+        {% if renamed %}
+            <h3>Feature Checking</h3>
+            <p>This part studio has {{ renamed.0 }} features (not including Origin and default planes).<br>
+                Of those features, {{ renamed.1 }} have been renamed.</p>
+        {% endif %}
+        
+        {% if ps_error_count %}
+            <p>Total number of errors: {{ps_error_count}}</p>
+        {% endif %}
+
+        {% if features %}
+            <p class="table_title">Feature Count</p>
+            <table class="item_summary">
+                <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                <tbody>
+                {% for key, value in features.items %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td>{{ value }}</td>
+                        </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+
+
+        {% if summary_msg %}
             <h3>Mates Summary</h3> 
-            {% if summary_msg %}
-                <p class="list_title">This assembly contains:<ul class="summary">
-                    <li>Mates: {{ summary_msg.mates}}</li>
-                    <li>Mate relations: {{ summary_msg.mate_relations}}</li>
-                    </ul>
-                </p>
-            {% endif %}
+            <p class="list_title">This assembly contains:<ul class="summary">
+                <li>Mates: {{ summary_msg.mates}}</li>
+                <li>Mate relations: {{ summary_msg.mate_relations}}</li>
+                </ul>
+            </p>
+            
+        {% endif %}
+
+
+            
+
+        {% if mates or mate_relations %}   
             {% if detail_msg %}
                 <p class="list_title">Of the mates and mate relations:<ul class="summary">
                     <li>Renamed: {{ detail_msg.renamed}}</li>
                     <li>Offsets: {{ detail_msg.offsets}}</li>
                     <li>Limits: {{ detail_msg.limits}}</li>
+                    <li>Total errors: {{as_error_count}}</li>
                     </ul>
                 </p>
             {% endif %}

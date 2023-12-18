@@ -27,6 +27,14 @@
             <input type="submit" value="Return to Home Page"/>
         </form>
         <br />
+        <!-- Error message -->
+        <div>
+            {% if error_message %}
+            <p id="err_msg"><strong>{{ error_message }}</strong></p>
+            {% endif %}
+        </div>
+
+
         <!-- Check model -->
         <form action="{% url 'grader:check_model' user.os_user_id %}" onsubmit="loading_spinner('features')">
             <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features/Mates<br>      
@@ -43,20 +51,53 @@
             {{ check_message|safe }}
         {% endif %}
 
-        {% if mates and mate_relations %}   
+        {% if renamed %}
+            <h3>Feature Checking</h3>
+            <p>This part studio has {{ renamed.0 }} features (not including Origin and default planes).<br>
+                Of those features, {{ renamed.1 }} have been renamed.</p>
+        {% endif %}
+
+        {% if ps_error_count %}
+            <p>Total number of errors: {{ps_error_count}}</p>
+        {% endif %}
+
+
+        {% if features %}
+            <p class="table_title">Feature Count</p>
+            <table class="item_summary">
+                <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                <tbody>
+                {% for key, value in features.items %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td>{{ value }}</td>
+                        </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+
+
+        {% if summary_msg %}
             <h3>Mates Summary</h3> 
-            {% if summary_msg %}
-                <p class="list_title">This assembly contains:<ul class="summary">
-                    <li>Mates: {{ summary_msg.mates}}</li>
-                    <li>Mate relations: {{ summary_msg.mate_relations}}</li>
-                    </ul>
-                </p>
-            {% endif %}
+            <p class="list_title">This assembly contains:<ul class="summary">
+                <li>Mates: {{ summary_msg.mates}}</li>
+                <li>Mate relations: {{ summary_msg.mate_relations}}</li>
+                </ul>
+            </p>
+
+           
+
+        {% endif %}
+
+        {% if mates or mate_relations %}   
             {% if detail_msg %}
                 <p class="list_title">Of the mates and mate relations:<ul class="summary">
                     <li>Renamed: {{ detail_msg.renamed}}</li>
                     <li>Offsets: {{ detail_msg.offsets}}</li>
                     <li>Limits: {{ detail_msg.limits}}</li>
+                    <li>Total errors: {{as_error_count}}</li>
                     </ul>
                 </p>
             {% endif %}
