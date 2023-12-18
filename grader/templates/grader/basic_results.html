@@ -62,7 +62,7 @@
                         {% else %}
                         <tr>
                             {% if etype == 'partstudios' %}
-                            <td id = "usr_0_{{forloop.counter0}}" title = "{{prop_array.4.1|safe}}">{{prop_array.4.0}}</td>
+                            <td id = "usr_0_{{forloop.counter0}}">{{prop_array.4}}</td>
                             {% endif %}
                             <td id = "usr_1_{{forloop.counter0}}">{{prop_array.0}}</td>
                             <td id = "usr_2_{{forloop.counter0}}">{{prop_array.1}}</td>
@@ -134,7 +134,7 @@
                                     {% else %}
                                         <tr>
                                             {% if etype == 'partstudios' %}
-                                            <td id = "ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}"  title = "{{prop_array.4.1|safe}}">{{prop_array.4.0}}</td>
+                                            <td id = "ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.4}}</td>
                                             {% endif %}
                                             <td id = "ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.0}}</td>
                                             <td id = "ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>

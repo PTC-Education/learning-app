@@ -83,16 +83,6 @@ tr,th,td {
   height:auto;
 }
 
-.student_name{
-  width: 30%;
-}
-.document_name{
-  width: 30%;
-}
-
-.add_button{
-  width: 5%;
-  }
 .small_font_td{
   font-size: 11px;
 }
@@ -111,28 +101,6 @@ tr,th,td {
 tr.classlist:hover, .row_selector:hover {
   background-color: #90cef1;
   cursor: pointer;
-}
-
-.single_line_text{
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.left_spaced_text{
-  padding-left:15px;
-}
-
-p.single_line_text{
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.preview_thumbnail{
-  width:20px;
-  height:20px;
-  padding-right: 5px;
 }
 
 .description_box{
@@ -194,68 +162,50 @@ p.single_line_text{
   display: flex;
   flex-direction: row;
   align-items: center;
-  align-items: baseline;
-  overflow: hidden;
-  -o-text-overflow: ellipsis;
-  text-overflow: ellipsis;
 }
 
 
 input.quick_link[type=submit]{
   margin:0 5px auto;
   display:block;
-  font-size: 12px;
+  font-size: 11px;
   padding: 10px;
   border: none;
   font-weight: 300;
-  background-color: transparent;
-  color: #666; 
 }
 input.quick_link[type=submit]:hover{
 cursor: pointer;
-text-decoration: underline;
-
 }
 
 p.quick_link{
-
+  margin:0 5px auto;
   display:block;
   padding: 10px 0;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 
 .dropbtn {
   background-color: #4CAF50;
   color: white;
-
+  padding: 10px;
   border: none;
   cursor: pointer;
   font-size: 11px;
   width: 100%;
 
-  color: black;
-  padding: 10px 5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: flex;
-  align-items: center;
-
 }
-
-
 
 .dropdown {
   font-size: 11px;
   position: relative;
   display: inline-block;
-  height: 100%;
   width: 100%;
+  height: 100%;
 }
 
 .dropdown-content {
-  width: 100%;
   font-size: 11px;
   display: none;
   position: absolute;
@@ -263,7 +213,7 @@ p.quick_link{
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
   margin:auto;
-
+  padding: 5px;
 
 }
 
@@ -280,21 +230,15 @@ p.quick_link{
 
 .dropdown_tab_and_image{
   border: none;
-  width: 100%;
-  background-color: transparent;
   font-size: 11px;
   color: black;
-  padding: 10px 5px;
+  padding: 12px 16px;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: flex;
-  align-items: center;
 }
-
 
 .dropdown_tab_and_image:hover{
 cursor: pointer;
-background-color: #90cef1;
 }
 
 /* Style the submit button of forms  - for Grade button specific*/ 
@@ -348,11 +292,5 @@ cursor:pointer;
 
 .table_header{
   float:left;
-  font-size: 14px;
-  margin: 2px ;
-}
-.table_sub_header{
-  float:left;
-  font-size: 11px;
-  margin: 2px;
+  margin: 20px;
 }
