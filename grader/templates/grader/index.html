@@ -9,8 +9,6 @@
 </head>
 
 <body>
-
-
     <!-- Load app logo at the top of the page -->
     <div id="logo">
         <img id="app_logo" src="{% static 'grader/images/teacherstudents.svg' %}" alt="app_logo" />
@@ -23,12 +21,6 @@
         {% endif %}
     </div>
 
-
-    <div class="spinner-container">
-        <div id="features">
-            <!--This is where the spinner will load-->
-        </div>
-    </div>
     <!-- General instructions -->
     
     <div class="instructions">
@@ -80,7 +72,7 @@
                 </form>
 
                 <!--Load url page for group comparison through classes and assignments -->
-                    <form action="{% url 'grader:list_classes' user.os_user_id%}" onsubmit="loading_spinner('features')">
+                    <form action="{% url 'grader:list_classes' user.os_user_id%}">
                         <input class="options" type="submit" value="Grade from C&A submission list">
                     </form>
 

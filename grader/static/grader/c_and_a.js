@@ -138,18 +138,10 @@ function check_required_action_content(){
 
 function check_submitted_content(){
   submitted_table = document.getElementById("submitted_work");
-  
   if(submitted_table.rows.length == 1){ //if there is only one row left
     document.getElementById("submitted_box").hidden = true; //hide the enitre box with the table
-    error_text = document.getElementById("submission_error");
-    error_text.innerHTML = "No submissions detected for grading. ";
-    console.log("done");
-
   }
   else{
     document.getElementById("submitted_box").hidden = false; //show the enitre box with the table
-    error_text = document.getElementById("submission_error");
-    error_text.innerHTML = "";
   }
-
 }
