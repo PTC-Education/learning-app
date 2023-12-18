@@ -134,7 +134,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     **Arguments:**
         
     - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-    - ``user_type:str``: type of user , options are student and educator
+    - ``user_type:str``: type of user , options are student, educator, and scioly
 
     **Template:**
 
@@ -634,6 +634,182 @@ def grade_model(request: HttpRequest, os_user_id: str):
         context=context
     )
 
+def grade_scioly(request: HttpRequest, os_user_id: str):
+    
+    '''the purpose of this is to grade the science olympiad cases.
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    - ``ref_urls``: the reference element for the model to be compared to
+    
+    **Template:**
+    
+    :template:`grader/results.html`'''
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    #grab reference urls , possibly in a csv format, from the generic_grader.html
+    cs_ref_urls = request.GET.getlist('ref_url')
+    #parse the csv file into array of urls
+    ref_urls = convert_cs_to_array(cs_ref_urls) 
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+        
+    # Get all the relevant elements of the model that the user currently has open (PS and Assemblies)
+    user_elems = get_elems(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid,massAsGroup=True, auth_token=curr_user.access_token)
+    type_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
+    
+    if not user_elems: # API error 
+        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+    
+    user_props = [] # a 3D array that lists all the PS and Assemblies in a document along with their corresponding mass properties
+    # first indexing is an array of the element labels and the corresponding mass property [eType, name, [mass/center of mass]]
+    # second indexing of the mass property is [mass] for part studios or [COM_xaxis, COM_yaxis, COM_zaxis] for assemblies
+    
+    for elem in user_elems:
+        if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
+            mass_props = get_mass_props(
+                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, elem["id"], type_dict[elem["elementType"]], 
+                    massAsGroup=True, auth_token=curr_user.access_token
+                )
+
+            elem_mass_prop = [] #initialize
+            if elem["elementType"] == "PARTSTUDIO":
+                if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
+                    return HttpResponse("The Answer Key's Part Studio(s) are empty or do not have a material assigned. Please check the current document and regrade.")
+                    
+                else:
+                    elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
+            else: #elem["elementType"] == "ASSEMBLY"
+                if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
+                    return HttpResponse("The Answer Key's Assembly is empty or does not have a materials assigned. Please check the current document and regrade.")
+                else:
+                    elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
+                    if elem_mass_prop[0] == 0 or elem_mass_prop[1] == 0 or elem_mass_prop[2] == 0: #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
+                        return HttpResponse("The Answer Key's Assembly Center of Mass has an zero in it. Please check the current document and regrade.")
+            elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
+            user_props.append(elem_props)
+            
+    # Get info about the document the user currently has opened
+    user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+    user_doc_name = user_doc_info['name']
+    user_user_name = user_doc_info["createdBy"]["name"]
+    user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
+    totalpoints = 20.00 * float((len(user_props))) # This will be the max score, since its the total points of the answer key
+
+    user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
+
+    
+    # Append user related information along with mass properties
+    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url, totalpoints])
+    
+            
+    # Here, I go through all the URLs and get their necessary info and GRADE THEM
+     ## Initialize arrays for ref docs
+    all_ref_props = [] # 3D array - each 2D array corresponds to one URL
+    # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
+    # Rest is model props [[mass, vol, periphery, principalInertia, partName],[...]] (without partName for assemblies)
+    failed_urls = [] # Array of all URLs that we failed to get info from
+    # Get info and mass props for all url's in ref doc list
+    for i, url in enumerate(ref_urls): 
+        ref_url = get_ref_url_ids(url)
+
+        try:         
+            ref_elems = get_elems(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], 
+                massAsGroup=True, auth_token=curr_user.access_token) # get all the elems from one URL
+            
+            ref_props=[] # initialize empty array of ref props
+            elemcount = 1
+            totalpoints = 0
+            
+            for elem in ref_elems:
+                if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
+                    
+                    mass_props = get_mass_props(
+                            curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
+                            massAsGroup=True, auth_token=curr_user.access_token
+                        )
+                    
+                    elem_mass_prop = 0 #initialize
+                    points = 0
+                    if elem["elementType"] == "PARTSTUDIO":
+                        
+                        if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
+                            elem_mass_prop = 0
+                        else:
+                            elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
+                            
+                        points = 20 - 100*abs((elem_mass_prop - user_props[elemcount][2])/user_props[elemcount][2])
+                        if points < 0:
+                            points = 0
+                        points = round(points, 2)
+                        elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
+                        
+                    else: #elem["elementType"] == "ASSEMBLY"
+                        if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
+                            elem_mass_prop = [0,0,0]
+                        else:
+                            elem_mass_prop = mass_props["centroid"][0:3]
+                        points = 20 - 100*(((1/3)*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2][0])) + ((1/3)*abs((elem_mass_prop[1] - user_props[elemcount][2][1])/user_props[elemcount][2][1])) + ((1/3)*abs((elem_mass_prop[2] - user_props[elemcount][2][2])/user_props[elemcount][2][2])))
+                        if points < 0:
+                            points = 0
+                        points = round(points, 2)
+                        for i in range(3):
+                            elem_mass_prop[i] = '{:.2e}'.format(elem_mass_prop[i])
+                        elem_mass_prop = '( ' + elem_mass_prop[0] + ', ' + elem_mass_prop[1] + ', ' + elem_mass_prop[2] + ' )'
+                        
+                    ref_elem_props = [elem["elementType"], elem["name"], elem_mass_prop, points]
+                    ref_props.append(ref_elem_props)
+                    totalpoints = totalpoints + points
+                    elemcount = elemcount + 1
+
+            # Get all additional info from the reference document
+            image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
+            element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
+            element_name = element_info[0]["name"]
+            ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+            user_name = ref_doc_info["createdBy"]["name"]
+            doc_name = ref_doc_info['name']
+            doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
+
+            # Insert first element of array 
+            ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url, totalpoints])
+
+            all_ref_props.append((ref_props))
+        except:
+            # If anything above failed, add url to the fairled URL list
+            failed_urls.append(url)
+            
+    #Here, I am converting the user_props mass and centroid to scientific notation (type:str)
+    #Remember, the user_props is a 2D array of all the PS and Assemblies in the document (does NOT include drawings, pdfs, etc.)
+    #Each value in the array is an array with these values in it: [elem["elementType"], elem["name"], elem_mass_prop]
+    #elem_mass_prop is a number (mass in kg) for PS and an array (center of mass for the three axis in [x,y,z])
+    
+    for elem in user_props:
+        if elem == user_props[0]:
+            continue
+        if elem[0] == "PARTSTUDIO":
+            elem[2] = '{:.2e}'.format(elem[2])
+        else: #elem["elementType"] == "ASSEMBLY"
+            for i in range(3):
+                elem[2][i] = '{:.2e}'.format(elem[2][i])
+            elem[2] = '( ' + elem[2][0] + ', ' + elem[2][1] + ', ' + elem[2][2] + ' )'
+    
+    if len(failed_urls) == 0:
+        failed_urls = None
+    
+    context={
+        "user": curr_user, 
+        "etype": curr_user.etype,
+        "failed_urls": failed_urls,
+        "user_props": user_props,
+        "all_ref_props": all_ref_props
+    }
+    return render(
+        request, "grader/scioly_results.html", 
+        context=context
+    )
 def check_model(request: HttpRequest, os_user_id: str): 
     """ 
     When a user submits, model best practices are checkd for 

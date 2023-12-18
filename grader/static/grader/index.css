@@ -470,6 +470,7 @@ font-size: 14px;
   align-items: center;
   height:auto;
   margin: 0 auto;
+  margin-top: 5%;
   border-radius: 3px;
   background: #FFF;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
@@ -684,7 +685,7 @@ input[type="file"] {
 .spinner-container{
   display: flex;
   gap: 50px;
-  padding: 10px;
+  padding: 10px; 
   justify-content: center;
   align-items: center;
 
@@ -773,4 +774,34 @@ button.select{
 
   .dropdown:hover .select:after {
     content: "\2212";
+  }
+
+  /* Science Olympiad style components */
+
+  .scioly_img {
+    position: absolute;
+    top: 3%;
+    right: 5%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 15%;
+  }
+
+  .content {
+    background-color: rgba(215, 232, 195, 0.7);
+    box-shadow: 0 0 5px 5px rgba(215, 232, 195, 0.7);
+    border-radius: 2%;
+    padding: 3%;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: -2%;
+    margin-right: -2%;
+  }
+
+  .title {
+    text-align: center;
+  }
+
+  .external_link{
+    font-size: x-small;
   }
