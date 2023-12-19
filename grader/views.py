@@ -512,17 +512,11 @@ def grade_model(request: HttpRequest, os_user_id: str):
     cs_ref_urls = request.GET.getlist('ref_url')
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
+    
     ref_url_ids = []
     for url in ref_urls:
         ref = get_ref_url_ids(url)
         ref_url_ids.append(ref)
-
-    user_url = dict()
-    user_url['did'] =  curr_user.did 
-    user_url['wv'] = curr_user.wv
-    user_url['wvid'] = curr_user.wvid
-    user_url['eid'] = curr_user.eid
-    #user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
 
     context={
         "user": curr_user, 
@@ -545,7 +539,6 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
     
     **Template:**
     
@@ -612,7 +605,7 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
         # If anything above failed, add url to the fairled URL list
         error_msg = "Something went wrong."
     
-
+   
     context = {
         'etype': curr_user.etype,
         'error_msg': error_msg,
@@ -646,18 +639,46 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     :template:`grader/results.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-
-
+    domain = request.GET.get('domain')
     did = request.GET.get('did')
     wv = request.GET.get('wv')
     wvid = request.GET.get('wvid')
     eid = request.GET.get('eid')
+    url = domain + "/documents/" + did + "/"+ wv + "/" + wvid + "/e/" + eid
 
     props = [] 
-    failed_url = None
+    failed_url = "None"
+
+    element_info = get_element_info(domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
+    # Get all additional info from the reference document
+    try:
+        elementType = element_info[0]['elementType']
+        element_name = element_info[0]["name"]
+        doc_info = get_doc_info(domain, did, auth_token=curr_user.access_token)
+        user_name = doc_info["createdBy"]["name"]
+        doc_name = doc_info['name']
+        doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+        image = get_shaded_views(domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token)
+        
+    except:
+        error_msg = "Couldn't access the document. Make sure it is shared with you."
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': error_msg}),
+            content_type="application/json"
+            )
+ 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
+
+    # Throw a proper error when the element type doesn't match    
+    type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
+    if( not elementType == type_dict[curr_user.etype]):
+        error_msg = 'The element types mismatched.'
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': error_msg}),
+            content_type="application/json"
+            )
 
     # Get mass props of model the user currently has opened
     mass_props = get_mass_props(
@@ -666,7 +687,11 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         )
     
     if not mass_props: # API error 
-        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+        error_msg = "Couldn't access the mass properties."
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': error_msg }),
+            content_type="application/json"
+        )
 
     # Set list of props - different for each etype
     try:
@@ -691,35 +716,18 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         elif curr_user.etype == "assemblies":
             # assemblies props = [mass, vol, periphery, principalInertia]
             props = make_props(mass_props, None)
-
-
-        
-        # Get all additional info from the reference document
-        url = curr_user.os_domain + "/documents/" + did + "/"+ wv + "/" + wvid + "/e/" + eid
-        image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token)
-        element_info = get_element_info(curr_user.os_domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
-        element_name = element_info[0]["name"]
-        doc_info = get_doc_info(curr_user.os_domain, did, auth_token=curr_user.access_token)
-        user_name = doc_info["createdBy"]["name"]
-        doc_name = doc_info['name']
-        doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
-        
-        # Insert first element of array 
-        props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
-
-
     except:
         # If anything above failed, add url to the fairled URL list
         failed_url = url
     
-
+    props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
     context={ 
-         "etype": curr_user.etype,
+        "etype": curr_user.etype,
         "failed_url": failed_url,
+        'error_msg': 'Unknown error has occured. Click the link to investigate the document.',
         "ref_props": props, 
     }
 
-    print("context",context)
     return HttpResponse(
         json.dumps(context),
         content_type="application/json"
@@ -882,11 +890,14 @@ def elapsed_time(start_time: str, stop_time: str):
 def get_ref_url_ids(ref_url: str):
     try:
         ref = dict()
+        ref['domain'] = ref_url.split("/documents/")[0]
         ref['did'] = ref_url.split("documents/")[1].split("/")[0]
         ref['wv'] = ref_url.split("documents/")[1].split("/")[1].split("/")[0]
         ref['wvid'] = ref_url.split("/e/")[0].split("/")[-1]
         ref['eid'] = ref_url.split("/e/")[1].split("?")[0]
         return ref
+
+        
     except:
         return None
     

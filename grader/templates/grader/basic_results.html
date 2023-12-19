@@ -16,11 +16,7 @@
 <form action = "{% url 'grader:index' user.os_user_id %}">
     <input type = "submit" value= "Return to Home Page">
 </form>
-<div class = "spinner-container">
-    <div id = "lists">
-        <!--This is where the spinner will load-->
-    </div>
-</div>
+
 <div>
     {% if error_message %}
     <p id = "err_msg"><strong>{{ error_message }}</strong></p>
@@ -29,16 +25,20 @@
 
 
 
+
+
 <script>
     $(document).ready(function () {
+        loading_spinner('user_props_loader');
         var url = "{% url 'grader:user_data_on_result_page' user.os_user_id %}";
         $.ajax({
             url: url,
             type: "GET",
             data:{},
             success: function (response) {
-                console.log(response);
                 build_user(response);
+                $('#user_props_loader').html(" ");
+
             },
             error: function (error) {
             console.log("Error:", error);
@@ -50,6 +50,8 @@
 {% for url in ref_urls %} 
     <script>
         $(document).ready(function () {
+            loading_spinner('ref_props_loader_{{forloop.counter0}}');
+            var domain = "{{url.domain}}";
             var did =   "{{url.did}}";
             var wv =     "{{url.wv}}";
             var wvid =   "{{url.wvid}}";
@@ -59,14 +61,15 @@
                 url: url,
                 type: "GET",
                 data:{
+                    'domain': domain,
                     'did' : did,
                     'wv' : wv,
                     'wvid' : wvid,
                     'eid' : eid,
                 },
                 success: function (response) {
-                console.log(response);
                 build_results(response, "{{forloop.counter0}}");
+                $('#ref_props_loader_{{forloop.counter0}}').html(" ");
                 },
                 error: function (error) {
                 console.log("Error:", error);
@@ -81,7 +84,13 @@
 
 
 
+
 <div id="user_props">
+    <div class="spinner-container">
+        <div id="user_props_loader">
+            <!--This is where the spinner will load-->
+        </div>
+    </div>
     <p class = "resulttile">Reference properties</p>
     <div class = "property_box">
         <div class = "docinfo">
@@ -119,7 +128,7 @@
         <p>Tolerance: <span id = "slider_value"></span> %</p>
         <input type = "range" min = "0" max = "100" value = "2" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
     </div>
-    <div class = "propselector" onchange= "reform_result('{{all_ref_props|length}}')" >
+    <div class = "propselector" onchange= "reform_result('{{ref_urls|length}}')" >
         <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1" name = "mass" value = "mass" checked = "True" /> Mass</label>
         <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_2" name = "vol" value = "volume" checked = "True"/>Volume</label>
         <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_3" name = "surf" value = "Surface_Area" checked = "True"/>Surface Area</label>
@@ -128,7 +137,12 @@
 </div>
 
 {% for url in ref_urls %} 
-    <div class = "property_box">
+    <div id = "property_box_{{forloop.counter0}}" class = "property_box">
+        <div class="spinner-container">
+            <div id="ref_props_loader_{{forloop.counter0}}">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
         <div class = "display_thumbnail">
             <a id = "name_{{forloop.counter0}}" href = "{{ref_props.0.5|safe}}" target = "_blank">{{ref_props.0.2}}</a> 
             <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
@@ -157,15 +171,12 @@
                     </table>
                 </div>
             </div>
-        </div>         
-        
+        </div>            
     </div>    
 
 {% endfor %} 
 
-{% if failed_urls %}
-
-<div class = "failed_url_box">
+<div id = "failed_url_box" class = "failed_url_box">
     The following URLs failed to return a result.    
     <div class = "failed_url_reasons" id = "failed_url_reasons" >
         <br>
@@ -181,12 +192,10 @@
     </label>
     <script>hide_popup('failed_url_reasons')</script>
     <ul class = "failed_url_list" id = "failed_url_list">
-        {% for url in failed_urls %}
-            <li><a href = "{{ url|safe }}" target = "_blank">{{ url|safe }}</a></li>
-        {% endfor %}
     </ul>
 </div>
-{% endif %}
+<script> document.getElementById("failed_url_box").style.display = "none" </script>
+
 
 
 </body>
