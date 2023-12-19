@@ -1,3 +1,128 @@
+
+/*AJAX Function to build User properties table*/
+function build_user(response){
+    var user_props = response.user_props;
+    var reference_table = document.getElementById("reference"); //open the reference table 
+    var user_data_loaded = document.getElementById("user_data_loaded");
+    if(user_data_loaded.value == "false"){
+      user_data_loaded.value = "true"; //to make sure to update the table only once
+
+      document.getElementById("usr_docname").innerHTML = user_props[0][0];
+      document.getElementById("usr_username").innerHTML = user_props[0][1];
+      document.getElementById("usr_url").innerHTML = user_props[0][3];
+
+      if (response.etype == 'partstudios'){ //if the etype is part studios then add a column called part name for parts
+        col0 =  document.createElement("col");
+        col0.classList.add("col_0");
+        reference_table.insertBefore(col0, reference_table.firstChild)
+
+        var header_row = document.getElementById("user_table_header");
+        var col0_header = header_row.insertCell(0);
+        col0_header.outerHTML = "<th>Part Name</th>";
+      }
+
+
+      for (let index = 1; index < user_props.length; index++){
+        var row = document.createElement("tr"); //create a new row
+        // Create cells
+        let c0 = document.createElement("td");
+        let c1 = document.createElement("td");
+        let c2 = document.createElement("td");
+        let c3 = document.createElement("td");
+        let c4 = document.createElement("td");
+        
+        if (response.etype == 'partstudios'){
+          c0.setAttribute('id','usr_0_'+ index);
+          c0.setAttribute('title',user_props[index][4][1]);
+          c0.innerText = user_props[index][4][0];
+          row.appendChild(c0);
+        }
+
+        c1.setAttribute('id','usr_1_'+ index);
+        c1.innerText = user_props[index][0];
+        row.appendChild(c1);
+
+        c2.setAttribute('id','usr_2_'+ index);
+        c2.innerText = user_props[index][1];
+        row.appendChild(c2);
+
+        c3.setAttribute('id','usr_3_'+ index);
+        c3.innerText = user_props[index][2];
+        row.appendChild(c3);
+
+        c4.setAttribute('id','usr_4_'+ index);
+        c4.innerText = user_props[index][3];
+        row.appendChild(c4);
+
+        // Append row to table body
+        reference_table.appendChild(row);
+      }
+    }
+    round_off_reference_table(user_props.length);
+  }
+
+/*AJAX Function to build results properties tables*/
+function build_results(response, url_num){
+  var ref_props = response.ref_props;
+  var results_table = document.getElementById("table_" + url_num); //open the results table 
+  document.getElementById("name_" + url_num).innerHTML = ref_props[0][2];
+  document.getElementById("name_" + url_num).href = ref_props[0][5];
+  document.getElementById("url_" + url_num).innerHTML = ref_props[0][5];
+  document.getElementById("elname_" + url_num).innerHTML = ref_props[0][2];
+  document.getElementById("thumbnail_" + url_num).src = ref_props[0][4];
+
+  if (response.etype == 'partstudios'){ //if the etype is part studios then add a column called part name for parts
+    col0 =  document.createElement("col");
+    col0.classList.add("col_0");
+    results_table.insertBefore(col0, results_table.firstChild)
+
+    var header_row = document.getElementById("ref_table_header_" + url_num);
+    var col0_header = header_row.insertCell(0);
+    col0_header.outerHTML = "<th>Part Name</th>";
+  }
+
+
+    for (let index = 1; index < ref_props.length; index++){
+      var row = document.createElement("tr"); //create a new row
+      // Create cells
+      let c0 = document.createElement("td");
+      let c1 = document.createElement("td");
+      let c2 = document.createElement("td");
+      let c3 = document.createElement("td");
+      let c4 = document.createElement("td");
+      
+
+      if (response.etype == 'partstudios'){
+        c0.setAttribute('id','ref_0_'+ url_num + '_' + index);
+        c0.setAttribute('title',ref_props[index][4][1]);
+        c0.innerText = ref_props[index][4][0];
+        row.appendChild(c0);
+      }
+
+      c1.setAttribute('id','ref_1_'+ url_num + '_' + index);
+      c1.innerText = ref_props[index][0];
+      row.appendChild(c1);
+
+      c2.setAttribute('id','ref_2_'+ url_num + '_' + index);
+      c2.innerText = ref_props[index][1];
+      row.appendChild(c2);
+
+      c3.setAttribute('id','ref_3_'+ url_num + '_' + index);
+      c3.innerText = ref_props[index][2];
+      row.appendChild(c3);
+
+      c4.setAttribute('id','ref_4_'+ url_num + '_' + index);
+      c4.innerText = ref_props[index][3];
+      row.appendChild(c4);
+
+      // Append row to table body
+      results_table.appendChild(row);
+    }
+  
+    round_off_results_table(url_num);
+}
+
+
 /*
 This function rounds off the data fromt the table to 6 decimal places
 !! FUTURE WORK : round the floating points based on the user's desired rounding scheme !! 
@@ -29,7 +154,7 @@ function reform_result(num_of_urls){
 }
 
 
-function round_off_table_contents(num_of_parts, num_of_urls){
+function round_off_reference_table(num_of_parts){
   var precison = 3 ; //set the precison 
   for (let part = 1; part < num_of_parts; part++){
     //round off data for each part in the user document 
@@ -41,28 +166,29 @@ function round_off_table_contents(num_of_parts, num_of_urls){
       else{
         document.getElementById("usr_" + p + "_" + part).innerHTML = Number(data).toFixed(precison);
       }
-      
     }
   }
-  //round off data for each part in the results table 
-  for (let url = 0; url < num_of_urls ; url++ ){ 
-      //find url data from table using table id . table id are autogenerated with format "table_[count]" 
-      var ref_table = document.getElementById("table_" + url); 
-      var ref_number_of_parts = ref_table.getElementsByTagName("tr").length;
-      //for each part 
-      for (let part = 1; part < ref_number_of_parts; part++){
-        //for each column
-        for (let p = 1; p < 5; p++){
-          var data = document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML;
-          if(0.0 < data && data< 0.01){
-            document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML = Number(data).toExponential(precison);
-          }
-          else{
-            document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML = Number(data).toFixed(precison);
-          }
-        }
+}
+
+function round_off_results_table(url_num){
+  var precison = 3 ; //set the precison 
+  //find url data from table using table id . table id are autogenerated with format "table_[count]" 
+  var ref_table = document.getElementById("table_" + url_num); 
+  var ref_number_of_parts = ref_table.getElementsByTagName("tr").length;
+  //for each part 
+  for (let part = 1; part < ref_number_of_parts; part++){
+    //for each column
+    for (let p = 1; p < 5; p++){
+      var data = document.getElementById("ref_" + p + "_" + url_num + "_" + part).innerHTML;
+      if(0.0 < data && data< 0.01){
+        document.getElementById("ref_" + p + "_" + url_num + "_" + part).innerHTML = Number(data).toExponential(precison);
+      }
+      else{
+        document.getElementById("ref_" + p + "_" + url_num + "_" + part).innerHTML = Number(data).toFixed(precison);
       }
     }
+  }
+
 }
 
 

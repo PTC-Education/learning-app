@@ -512,10 +512,10 @@ def grade_model(request: HttpRequest, os_user_id: str):
     cs_ref_urls = request.GET.getlist('ref_url')
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
-    ref_url = []
+    ref_url_ids = []
     for url in ref_urls:
         ref = get_ref_url_ids(url)
-        ref_url.append(ref)
+        ref_url_ids.append(ref)
 
     user_url = dict()
     user_url['did'] =  curr_user.did 
@@ -524,12 +524,9 @@ def grade_model(request: HttpRequest, os_user_id: str):
     user_url['eid'] = curr_user.eid
     #user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
 
-
-    print("iser urls", user_url)
-    print("ref urls", ref_url)
     context={
         "user": curr_user, 
-        "ref_urls": ref_urls
+        "ref_urls": ref_url_ids
     }
     return render(
         request, "grader/basic_results.html", 
@@ -616,16 +613,18 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
         error_msg = "Something went wrong."
     
 
-    context={
-        "user": curr_user, 
-        "error_msg": error_msg,
-        "user_props": props, 
+    context = {
+        'etype': curr_user.etype,
+        'error_msg': error_msg,
+        'user_props': props, 
     }
 
-    return render(
-        request, "grader/basic_results.html", 
-        context=context
+ 
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
     )
+
 
 
 def update_result_page(request: HttpRequest, os_user_id: str): 
@@ -653,8 +652,6 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     wv = request.GET.get('wv')
     wvid = request.GET.get('wvid')
     eid = request.GET.get('eid')
-    print("caaleed")
-    print(did, wv,wvid, eid)
 
     props = [] 
     failed_url = None
@@ -716,15 +713,16 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         failed_url = url
     
 
-    context={
-        "user": curr_user, 
+    context={ 
+         "etype": curr_user.etype,
         "failed_url": failed_url,
-        "props": props, 
+        "ref_props": props, 
     }
 
-    return render(
-        request, "grader/basic_results.html", 
-        context=context
+    print("context",context)
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
     )
 
 def microversions_checker(request: HttpRequest, os_user_id: str):

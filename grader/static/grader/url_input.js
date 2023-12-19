@@ -106,7 +106,7 @@ function addURLasbutton(toadd) {
 
   //only create new button for urls that are not already in the button div (list)
   if (!addedurls.includes(toadd)) {
-    var newField = document.createElement("li"); //create an item is the list
+    var newField = document.createElement("li"); //create an item as the list
     newField.setAttribute("id", toadd); //set the url as the id
     newField.setAttribute("name", "ref_url[]"); //set the url as the id
     listofurlbuttons.appendChild(newField); //create the list
