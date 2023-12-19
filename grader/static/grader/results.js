@@ -241,7 +241,7 @@ function calculate_error_for_url(url){
 
   var ref_table = document.getElementById("table_" + url); 
     var ref_number_of_parts = ref_table.getElementsByTagName("tr").length; //number of parts
-    
+
     var score = 0;
     for (let part = 1; part < Math.min(usr_number_of_parts, ref_number_of_parts) ; part++){
       //get material data for user doc

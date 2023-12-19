@@ -38,6 +38,7 @@
             success: function (response) {
                 build_user(response);
                 $('#user_props_loader').html(" ");
+                get_results();
 
             },
             error: function (error) {
@@ -45,11 +46,9 @@
         }
         });
     });
-</script>
-
-{% for url in ref_urls %} 
-    <script>
-        $(document).ready(function () {
+    function get_results(){
+        '{% for url in ref_urls %}' 
+            $(document).ready(function () {
             loading_spinner('ref_props_loader_{{forloop.counter0}}');
             var domain = "{{url.domain}}";
             var did =   "{{url.did}}";
@@ -73,11 +72,13 @@
                 },
                 error: function (error) {
                 console.log("Error:", error);
-                    }
+                }
             });
         });
-    </script>
-{% endfor %}
+        '{% endfor %}'
+    }
+</script>
+
 
 
 
@@ -91,6 +92,7 @@
             <!--This is where the spinner will load-->
         </div>
     </div>
+
     <p class = "resulttile">Reference properties</p>
     <div class = "property_box">
         <div class = "docinfo">
