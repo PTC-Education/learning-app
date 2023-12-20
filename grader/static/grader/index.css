@@ -825,7 +825,7 @@ button.select{
   background-color: #D0DBE5;
   color: #333333;
   text-align: center;
-  border-radius: 2px;
+  border-radius: 0px;
   position: absolute;
   white-space: nowrap;
   z-index: 1;
