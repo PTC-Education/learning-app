@@ -1,5 +1,5 @@
 {% load static %}
-
+<link rel = "stylesheet" href = "{% static 'grader/index.css' %}">
 <link rel = "stylesheet" href = "{% static 'grader/results.css' %}">
 <!-- Load js for handling export of csv -->
 <script src = "{% static 'grader/download_csv.js' %}" type = "text/javascript" defer = ""></script>
@@ -22,8 +22,6 @@
     <p id = "err_msg"><strong>{{ error_message }}</strong></p>
     {% endif %}
 </div>
-
-
 
 
 <script>
@@ -71,7 +69,6 @@
         '{% endfor %}'
     }
 </script>
-
 
 <div id="user_props">
     <p class = "resulttile">Reference properties</p>

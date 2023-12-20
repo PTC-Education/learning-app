@@ -38,8 +38,8 @@ function tableToCSV(num_of_urls) {
 		var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
 		for (let i = 0; i < part.length ; i++){
 			if(column_info[i].className == "col_0") { 
-				csvrow.push(part[i].innerHTML);  // add part name to the list if part name column exist
-				csvrow.push(part[i].title);  // add material name to the list if part name column exist
+				csvrow.push(part[i].querySelectorAll('div')[0].getAttribute('value')); // add part name to the list if part name column exist
+				csvrow.push(part[i].querySelectorAll('span')[0].innerHTML); // add material name to the list if part name column exist
 			}
 			else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
 				csvrow.push(""); 
@@ -74,8 +74,8 @@ function tableToCSV(num_of_urls) {
 				var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
 				for (let i = 0; i < part.length ; i++){
 					if(column_info[i].className == "col_0") {
-						csvrow.push(part[i].innerHTML);  // add part name to the list if part name column exist
-						csvrow.push(part[i].title);  // add material name to the list if part name column exist
+						csvrow.push(part[i].querySelectorAll('div')[0].getAttribute('value')); // add part name to the list if part name column exist
+						csvrow.push(part[i].querySelectorAll('span')[0].innerHTML); // add material name to the list if part name column exist
 					}
 					else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
 						csvrow.push(""); 

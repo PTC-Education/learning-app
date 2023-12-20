@@ -64,10 +64,15 @@
             {% if user_type == "educator" %}
                 <div class="URLinput-DIV">
                     <div class="twoButtonsonEdge">
-                        <p id="tab-header" class="tab-header">URL</p>                    
-                        <label for="csvfile"  class="file-UPLOAD" title="Click to select csv file with Onshape URLs to grade ">
-                            <img src="{% static 'grader/images/Upload.png' %}"/>
-                        </label>
+                        <p id="tab-header" class="tab-header">URL</p>  
+                        
+                        <div class="tooltip">
+                            <label for="csvfile"  class="file-UPLOAD">
+                                <img src="{% static 'grader/images/Upload.png' %}"/>
+                            </label>
+                            <span class="tooltiptext tooltiptext_left">Upload CSV file</span>
+                        </div>                  
+                        
                         <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
                     </div>   
                     <div>
@@ -90,12 +95,16 @@
                     </div>     
                     <div class="selectedURL-DIV">
 
+
                         <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
                             <input id="ref_url_edu" hidden name="ref_url" type="text">
-
-                            <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
-
+                            <div class="tooltip">
+                                <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
+                                <span class="tooltiptext tooltiptext_right">Grade the URLs listed below</span>
+                            </div>  
                         </form>
+
+                        
 
                             <ul class="closeable_button" id="urlButtonContainer">
                             </ul>    

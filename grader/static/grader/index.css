@@ -123,8 +123,10 @@ table.item_summary {
 #logo{
   position: relative;
   margin-top: 15px;
-  margin-left: 2.5%;
+  margin-left: auto;
+  margin-right: auto;
   align-items: center;
+  width: 300px;
 }
 
 /* Style the search menu */
@@ -300,7 +302,7 @@ input.submiturl-button[type=submit]:hover {
 
 .options:hover{
   background-color: #ebebeb;
-    cursor: pointer;
+  cursor: pointer;
 }
   
 /* Loader */
@@ -651,7 +653,7 @@ cursor:pointer;
   padding: 10px;
   border-radius: 4px;
   margin-top: 5px;
-  margin-bottom: 25px;
+  margin-bottom: 5px;
   border-radius: 4px;
   background-color: #ccc;
   justify-content: center;
@@ -801,6 +803,72 @@ button.select{
     text-align: center;
   }
 
+
+
   .external_link{
     font-size: x-small;
   }
+
+
+
+/*Tool Tips */
+
+.tooltip {
+  position: relative;
+  display: flex;
+}
+.centered{
+  justify-content: center;
+}
+.tooltip .tooltiptext {
+  display: inline-flex;
+  visibility: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #D0DBE5;
+  color: #333333;
+  text-align: center;
+  border-radius: 0px;
+  position: absolute;
+  white-space: nowrap;
+  z-index: 1;
+  box-shadow: 0px 0px 4px 0px rgba(0,	0,	0, .25);
+}
+
+.tooltiptext_top{
+  padding: 5px 5px 5px 5px;
+  right: 50%;
+  bottom: 100%;
+  transform: translate(50%, 0%);
+  margin-bottom: 2px;
+}
+
+.tooltiptext_bottom {
+  padding: 5px 5px 5px 5px;
+  right: 50%;
+  top: 100%;
+  transform: translate(50%, 0%);
+  margin-top: 2px;
+}
+
+.tooltiptext_left {
+  padding:5px 5px 5px 5px;
+  bottom: 50%;
+  right: 100%;
+  transform: translate(0%, 50%);
+  margin-top: 2px;
+}
+
+.tooltiptext_right {
+  padding: 5px 5px 5px 5px;
+  bottom: 50%;
+  transform: translate(100%, 50%);
+  margin-top: 2px;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  cursor: default;
+
+}
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
