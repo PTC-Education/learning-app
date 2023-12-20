@@ -801,6 +801,55 @@ button.select{
     text-align: center;
   }
 
+
+
   .external_link{
     font-size: x-small;
   }
+
+
+
+/*Tool Tips */
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  
+}
+
+.tooltip .tooltiptext {
+  display: inline-flex;
+  visibility: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #D0DBE5;
+  color: #333333;
+  text-align: center;
+  border-radius: 1px;
+
+  position: absolute;
+  white-space: nowrap;
+ 
+
+  z-index: 1;
+
+
+
+}
+
+.tooltiptext {
+  padding: 5px 10px;
+  right: 50%;
+  bottom: 100%;
+  transform: translate(50%, 0%);
+  z-index: 1;
+
+
+  margin-bottom: 2px;
+  box-shadow: 0px 0px 4px 4px rgba(208,	219,	229, 0.20);
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
