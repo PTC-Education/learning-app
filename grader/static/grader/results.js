@@ -37,10 +37,12 @@ function build_user(response){
                 //create a div for tooltip
                 let tooltip = document.createElement("div");
                 tooltip.setAttribute('class','tooltip centered');
+                tooltip.setAttribute('value',user_props[index][4][0]);
                 tooltip.innerText = user_props[index][4][0];
 
                 //create a span for tooltip text
                 let tooltiptext = document.createElement("span");
+                tooltiptext.setAttribute('id','usr_0_span'+ index);
                 tooltiptext.setAttribute('class','tooltiptext tooltiptext_top');
                 tooltiptext.innerHTML = user_props[index][4][1];
 
@@ -114,11 +116,13 @@ function build_results(response, url_num){
 
                   //create a div for tooltip
                   let tooltip = document.createElement("div");
+                  tooltip.setAttribute('value',ref_props[index][4][0]);
                   tooltip.setAttribute('class','tooltip centered');
                   tooltip.innerText = ref_props[index][4][0];
         
                   //create a span for tooltip text
                   let tooltiptext = document.createElement("span");
+                  tooltiptext.setAttribute('id', 'ref_0_span'+ url_num + '_' + index);
                   tooltiptext.setAttribute('class','tooltiptext tooltiptext_top');
                   tooltiptext.innerHTML = ref_props[index][4][1];
         
@@ -283,8 +287,8 @@ function calculate_error_for_url(url){
     for (let part = 1; part < Math.min(usr_number_of_parts, ref_number_of_parts) ; part++){
       //get material data for user doc
       if (document.getElementById("usr_0_" + part)){
-        user_material = document.getElementById("usr_0_" + part).title;
-        ref_material = document.getElementById("ref_0_" + url + "_" + part).title;
+        user_material = document.getElementById("usr_0_span" + part).title;
+        ref_material = document.getElementById("ref_0_span" + url + "_" + part).title;
 
         if(user_material == ref_material){
           document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #00FF00";
