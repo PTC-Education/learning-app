@@ -6,8 +6,6 @@ function build_user(response){
     var user_data_loaded = document.getElementById("user_data_loaded");
     if(user_data_loaded.value == "false"){
       user_data_loaded.value = "true"; //to make sure to update the table only once
-
-      console.log("user props",user_props);
       document.getElementById("usr_docname").innerHTML = user_props[0][0];
       document.getElementById("usr_username").innerHTML = user_props[0][1];
       document.getElementById("usr_url").innerHTML = user_props[0][5];
@@ -21,7 +19,6 @@ function build_user(response){
         var col0_header = header_row.insertCell(0);
         col0_header.outerHTML = "<th>Part Name</th>";
       }
-
 
       for (let index = 1; index < user_props.length; index++){
         var row = document.createElement("tr"); //create a new row
