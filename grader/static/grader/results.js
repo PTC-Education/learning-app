@@ -30,11 +30,29 @@ function build_user(response){
         let c4 = document.createElement("td");
         
         if (response.etype == 'partstudios'){
-          c0.setAttribute('id','usr_0_'+ index);
-          c0.setAttribute('title',user_props[index][4][1]);
-          c0.innerText = user_props[index][4][0];
-          row.appendChild(c0);
-        }
+
+                //create a cell for part name (td)
+                c0.setAttribute('id','usr_0_'+ index);
+
+                //create a div for tooltip
+                let tooltip = document.createElement("div");
+                tooltip.setAttribute('class','tooltip centered');
+                tooltip.innerText = user_props[index][4][0];
+
+                //create a span for tooltip text
+                let tooltiptext = document.createElement("span");
+                tooltiptext.setAttribute('class','tooltiptext tooltiptext_top');
+                tooltiptext.innerHTML = user_props[index][4][1];
+
+                //append the tooltiptext to tooltip div
+                tooltip.appendChild(tooltiptext);
+
+                //append the tooltip div to td
+                c0.appendChild(tooltip);
+
+                //append the td to row
+                row.appendChild(c0);
+              }
 
         c1.setAttribute('id','usr_1_'+ index);
         c1.innerText = user_props[index][0];
@@ -89,10 +107,29 @@ function build_results(response, url_num){
       let c3 = document.createElement("td");
       let c4 = document.createElement("td");
       if (response.etype == 'partstudios'){
-        c0.setAttribute('id','ref_0_'+ url_num + '_' + index);
-        c0.setAttribute('title',ref_props[index][4][1]);
-        c0.innerText = ref_props[index][4][0];
-        row.appendChild(c0);
+
+
+                  //create a cell for part name (td)
+                  c0.setAttribute('id', 'ref_0_'+ url_num + '_' + index);
+
+                  //create a div for tooltip
+                  let tooltip = document.createElement("div");
+                  tooltip.setAttribute('class','tooltip centered');
+                  tooltip.innerText = ref_props[index][4][0];
+        
+                  //create a span for tooltip text
+                  let tooltiptext = document.createElement("span");
+                  tooltiptext.setAttribute('class','tooltiptext tooltiptext_top');
+                  tooltiptext.innerHTML = ref_props[index][4][1];
+        
+                  //append the tooltiptext to tooltip div
+                  tooltip.appendChild(tooltiptext);
+        
+                  //append the tooltip div to td
+                  c0.appendChild(tooltip);
+        
+                  //append the td to row
+                  row.appendChild(c0);
       }
 
       c1.setAttribute('id','ref_1_'+ url_num + '_' + index);

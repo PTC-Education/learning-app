@@ -123,8 +123,10 @@ table.item_summary {
 #logo{
   position: relative;
   margin-top: 15px;
-  margin-left: 2.5%;
+  margin-left: auto;
+  margin-right: auto;
   align-items: center;
+  width: 300px;
 }
 
 /* Style the search menu */
@@ -814,9 +816,10 @@ button.select{
 .tooltip {
   position: relative;
   display: flex;
-  
 }
-
+.centered{
+  justify-content: center;
+}
 .tooltip .tooltiptext {
   display: inline-flex;
   visibility: hidden;

@@ -12,7 +12,7 @@
 
 
     <!-- Load app logo at the top of the page -->
-    <div id="logo">
+    <div id="logo" class="logo">
         <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="95%"/>
     </div>
 
@@ -62,9 +62,13 @@
                 </form>
               
                 <!--Load url page for best practices check-->
+
                 <form action="{% url 'grader:check_model' user.os_user_id %}">
+
                     <input class="options" type="submit" value="Check best practices">
                 </form>
+
+
             </div>
         </div>
 
