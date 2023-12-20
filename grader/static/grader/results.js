@@ -218,7 +218,7 @@ function compute_error(num_of_urls){
 
 function calculate_error_for_url(url){
   /*
-  This function calculates erros and hence the score or grade for each url inputted by the user as comapred with the property of model the app is currently opened on
+  This function calculates errors and hence the score or grade for each url inputted by the user as comapred with the property of model the app is currently opened on
   Error percentages are calculated with formula (user-reference)/reference * 100 
 
   Arguments :  url 
@@ -231,9 +231,11 @@ function calculate_error_for_url(url){
     checkboxstatus[i] = document.getElementById("check_"+ i).checked;
   }
 
+
   //grab reference data from reference table
   var usr_table = document.getElementById("reference");
   var usr_number_of_parts = usr_table.getElementsByTagName("tr").length; //number of parts 
+
 
   //grab  user selected acceptable error rate
   var slider = document.getElementById("tolerance_slider");
