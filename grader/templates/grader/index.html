@@ -78,22 +78,32 @@
                 <button class="select">
                 Compare models from a list  
                 </button>
-                <span class="tooltiptext tooltiptext_bottom">Educator option</span>
+                <span class="tooltiptext tooltiptext_top">Educator option</span>
             </div>
             <div class="dropdown-content">
                 <!--Load url page for multi file comparison-->
                 <form action="{% url 'grader:url_input_page' user.os_user_id 'educator'%}">
-                <input class="options" type="submit" value="Grade list of URLs">
+                    <div class="tooltip">
+                        <input class="options" type="submit" value="Grade list of URLs">
+                        <span class="tooltiptext tooltiptext_left">Grade a list of URLs</span>
+                    </div>
+                
             </form>
 
             <!--Load url page for group comparison through classes and assignments -->
                 <form action="{% url 'grader:list_classes' user.os_user_id%}" onsubmit="loading_spinner('features')">
-                    <input class="options" type="submit" value="Grade from C&A submission list">
+                    <div class="tooltip">
+                        <input class="options" type="submit" value="Grade from C&A submission list">
+                        <span class="tooltiptext tooltiptext_left">Grade from Classes and Assignments</span>
+                    </div>
                 </form>
 
                 <!--Load url page for SCIENCE OLYMPIAD USERS-->
                 <form action="{% url 'grader:url_input_page' user.os_user_id 'scioly'%}">
-                    <input class="options" type="submit" value="Grade for Science Olympiad Competitions">
+                    <div class="tooltip">
+                        <input class="options" type="submit" value="Grade for Science Olympiad Competitions">
+                        <span class="tooltiptext tooltiptext_left">Grade for Science Olympiad Competitions</span>
+                    </div>
                 </form>
             </div>
         </div>

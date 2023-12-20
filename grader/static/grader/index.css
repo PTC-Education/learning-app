@@ -300,7 +300,7 @@ input.submiturl-button[type=submit]:hover {
 
 .options:hover{
   background-color: #ebebeb;
-    cursor: pointer;
+  cursor: pointer;
 }
   
 /* Loader */
@@ -825,7 +825,7 @@ button.select{
   background-color: #D0DBE5;
   color: #333333;
   text-align: center;
-  border-radius: 1px;
+  border-radius: 2px;
   position: absolute;
   white-space: nowrap;
   z-index: 1;
@@ -847,7 +847,19 @@ button.select{
   transform: translate(50%, 0%);
   margin-top: 2px;
 }
+
+.tooltiptext_left {
+  padding: 5px 10px;
+  bottom: 50%;
+  right: 100%;
+  transform: translate(0%, 50%);
+  margin-top: 2px;
+}
+
+
 .tooltip:hover .tooltiptext {
   visibility: visible;
+  cursor: default;
+
 }
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
