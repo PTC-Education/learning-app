@@ -490,21 +490,16 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
 
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
-    to the selected elements or input urls (called all_ref_props)
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
+    When a user submits, urls to compare with the model are collected and returned to the basic results page. 
+    The page renders for the number of urls returned. 
     
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
     
     **Template:**
     
-    :template:`grader/results.html`
+    :template:`grader/basic_results.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
@@ -529,12 +524,8 @@ def grade_model(request: HttpRequest, os_user_id: str):
 
 def user_data_on_result_page(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
-    to the selected elements or input urls (called all_ref_props)
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
+    This function returns the user mass properties and document details. It is called from a AJAX function and it returns a JSON 
+    string containing error message, if any, and user properties.    
     
     **Arguments:**
     
@@ -542,7 +533,7 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
     
     **Template:**
     
-    :template:`grader/results.html`
+    :template:`grader/basic_results.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     props = [] 
@@ -622,21 +613,23 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
 
 def update_result_page(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
-    to the selected elements or input urls (called all_ref_props)
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
+    This function returns mass properties and results for one document at a time. It is called from an AJAX function
+    There are three checks to make sure it returns correct information.
+    1. Check for document access
+        - on failure > returns with error message conveying inaccessible document
+    2. Check for element type
+        - on failure > returns with error message conveying mismatched type
+    3. Check for successful property retrieval 
+        - on failure > returns with error message converying something was wrong
+
     
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
     
     **Template:**
     
-    :template:`grader/results.html`
+    :template:`grader/basic_results.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     domain = request.GET.get('domain')

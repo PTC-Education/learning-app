@@ -7,9 +7,10 @@ function build_user(response){
     if(user_data_loaded.value == "false"){
       user_data_loaded.value = "true"; //to make sure to update the table only once
 
+      console.log("user props",user_props);
       document.getElementById("usr_docname").innerHTML = user_props[0][0];
       document.getElementById("usr_username").innerHTML = user_props[0][1];
-      document.getElementById("usr_url").innerHTML = user_props[0][3];
+      document.getElementById("usr_url").innerHTML = user_props[0][5];
 
       if (response.etype == 'partstudios'){ //if the etype is part studios then add a column called part name for parts
         col0 =  document.createElement("col");
