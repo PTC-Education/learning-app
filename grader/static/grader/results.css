@@ -47,6 +47,15 @@ cursor:pointer;
 background-color: #769fcc;
 }
 
+button.blue_button:disabled{
+  background-color: #769fcc;
+  }
+
+button.blue_button:disabled:hover{
+    background-color: #769fcc;
+    cursor:default;
+    }
+
 .table_error_message{
   font-size: smaller;
   font-style:italic;

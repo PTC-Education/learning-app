@@ -12,7 +12,7 @@
 <!-- Return to the home page -->
 <br>
 
-<button type = "button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
+<button type = "button" disabled id = "download_report_button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
 <form action = "{% url 'grader:index' user.os_user_id %}">
     <input type = "submit" value= "Return to Home Page">
 </form>
@@ -49,7 +49,7 @@
             $(document).ready(function () {
             $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table  
             loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
-            $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //show status of results
+            $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //show result loading status
 
             var domain = "{{url.domain}}";
             var did =   "{{url.did}}";
@@ -72,7 +72,7 @@
                 build_results(response, "{{forloop.counter0}}");
                 $('#features_{{forloop.counter0}}').html(" ");
                 successful_returns +=1;
-                $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //update status of results
+                $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //update result loading status
                 enable_slider(successful_returns);
                 },
                 error: function (error) {
@@ -87,6 +87,8 @@
         if(successful_returns == '{{ref_urls|length}}'){
             $('#adjust_container').css('display', 'block');  //turn on display for slider and checkboxes
             $('#result_status_container').css('display', 'none'); //turn off result status container
+            $('#download_report_button').prop('disabled', false); //turn off result status container
+
                            
         }
     }
