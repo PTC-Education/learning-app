@@ -289,7 +289,7 @@ function calculate_error_for_url(url){
       if (document.getElementById("usr_0_" + part)){
         user_material = document.getElementById("usr_0_span" + part).innerHTML;
         ref_material = document.getElementById("ref_0_span" + url + "_" + part).innerHTML;
-        console.log(url, user_material, ref_material);
+
         if(user_material == ref_material){
 
           document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #00FF00";
