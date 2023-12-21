@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{% static 'grader/index.css' %}">
     <!-- Load loading_index function to enable loading screen -->
     <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' object-src: https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf; style-src 'self' 'unsafe-inline'; object src: https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf *;">
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval' object-src: https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf; style-src 'self' 'unsafe-inline'; object src: https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf *;"> -->
 
 </head>
 
@@ -24,12 +24,12 @@
     </div>
 
     <!-- General instructions -->
-    
-    <object data= 
-"https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf" 
-                width="800"
-                height="500"> 
-        </object> 
+    <object data="https://cad.onshape.com/api/v6/blobelements/d/97e4bd599a959bcaec8de68d/w/a87a59de1a53139540673eb4/e/bd7904a523a40451de613b0a" type="application/pdf" width="750px" height="750px">
+        <embed src="https://cad.onshape.com/api/v6/blobelements/d/97e4bd599a959bcaec8de68d/w/a87a59de1a53139540673eb4/e/bd7904a523a40451de613b0a" type="application/pdf">
+            <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://cad.onshape.com/api/v6/blobelements/d/97e4bd599a959bcaec8de68d/w/a87a59de1a53139540673eb4/e/bd7904a523a40451de613b0a">Download PDF</a>.</p>
+        </embed>
+    </object>
+    <!-- <embed src="https://cad.onshape.com/api/v6/blobelements/d/97e4bd599a959bcaec8de68d/w/a87a59de1a53139540673eb4/e/bd7904a523a40451de613b0a" width="500" height="375" type="pdf"> -->
 </body>
 
 </html>

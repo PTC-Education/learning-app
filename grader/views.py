@@ -137,7 +137,9 @@ def index(request: HttpRequest, os_user_id: str):
     for element in elements_info:
         if element['elementType'] == "APPLICATION":
             if element['applicationTarget']['clientId'] == os.environ['OAUTH_CLIENT_ID']:
-                return render(request, "grader/tutorial_extension.html", context=context)
+                print(element)
+                # app_json = get_app_element_json(urr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid)
+                return HttpResponseRedirect(reverse("grader:tutorial_extension", args=[curr_user.os_user_id]))
     # print(elements)
     
     return render(request, "grader/index.html", context=context)
@@ -157,6 +159,8 @@ def tutorial_extension(request: HttpRequest, os_user_id: str):
     :template:`grader/tutorial_extension.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # pdf_tutorial = get_blob_data()
 
     context = {"user": curr_user}
     return render(request, "grader/tutorial_extension.html", context=context)
