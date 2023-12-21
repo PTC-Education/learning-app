@@ -137,14 +137,53 @@ def index(request: HttpRequest, os_user_id: str):
     for element in elements_info:
         if element['elementType'] == "APPLICATION":
             if element['applicationTarget']['clientId'] == os.environ['OAUTH_CLIENT_ID']:
-                print(element)
-                # app_json = get_app_element_json(urr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid)
-                return HttpResponseRedirect(reverse("grader:tutorial_extension", args=[curr_user.os_user_id]))
-    # print(elements)
+                return HttpResponseRedirect(reverse("grader:tutorial_extension", args=[curr_user.os_user_id, element['id']]))
     
     return render(request, "grader/index.html", context=context)
 
-def tutorial_extension(request: HttpRequest, os_user_id: str): 
+def app_element(request: HttpRequest, os_user_id: str):
+    """ 
+    This function is for showing elements in a document for best practices checking. 
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/app_element.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    
+    app_element_json = get_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
+
+    if "tutorial_url" in app_element_json['tree']:
+        tutorial_url = app_element_json['tree']['tutorial_url']
+        if tutorial_url != request.GET.get("tutorial"):
+            update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", request.GET.get("tutorial"), curr_user.access_token)
+            tutorial_url = request.GET.get("tutorial")
+    else:
+        tutorial_url = ""
+        insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", tutorial_url, curr_user.access_token)
+
+    if "ref_url" in app_element_json['tree']:
+        ref_url = app_element_json['tree']['ref_url']
+        if ref_url != request.GET.get("reference"):
+            update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", request.GET.get("reference"), curr_user.access_token)
+            ref_url = request.GET.get("reference")
+    else:
+        ref_url = ""
+        insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", ref_url, curr_user.access_token)
+
+    context={
+        "user": curr_user,
+        "tutorial_url": tutorial_url,
+        "ref_url": ref_url
+    }
+
+    return render(request, "grader/app_element.html", context=context)
+
+def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: str): 
     """ 
     The index view of the app. 
     
@@ -160,9 +199,17 @@ def tutorial_extension(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
-    # pdf_tutorial = get_blob_data()
+    app_json = get_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, app_element_id, auth_token=curr_user.access_token)
+    ref_url = get_ref_url_ids(app_json['tree']['ref_url'])
+    tutorial_url = get_ref_url_ids(app_json['tree']['tutorial_url'])
 
-    context = {"user": curr_user}
+    pdf_tutorial = get_blob_data(curr_user.os_domain, tutorial_url['did'], tutorial_url['wv'], tutorial_url['wvid'], tutorial_url['eid'], auth_token=curr_user.access_token)
+    pdf_string = base64.b64encode(pdf_tutorial)
+    # print(pdf_string)
+    context = {
+        "user": curr_user,
+        "pdf_tutorial": pdf_tutorial
+    }
     return render(request, "grader/tutorial_extension.html", context=context)
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
@@ -190,47 +237,6 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         "user_type": user_type,
         }
     return render(request, "grader/url_input.html", context=context)
-
-def app_element(request: HttpRequest, os_user_id: str):
-    """ 
-    This function is for showing elements in a document for best practices checking. 
-
-    **Arguments:**
-        
-    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-
-    **Template:**
-
-    :template:`grader/app_element.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    
-    app_element_json = get_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
-
-    if "tutorial_url" in app_element_json['tree']:
-        tutorial_url = app_element_json['tree']['tutorial_url']
-        if tutorial_url != request.GET.get("tutorial"):
-            update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", request.GET.get("tutorial"), curr_user.access_token)
-    else:
-        tutorial_url = ""
-        insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", tutorial_url, curr_user.access_token)
-
-    if "ref_url" in app_element_json['tree']:
-        ref_url = app_element_json['tree']['tutorial_url']
-        if ref_url != request.GET.get("reference"):
-            update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", request.GET.get("reference"), curr_user.access_token)
-    else:
-        ref_url = ""
-        insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", ref_url, curr_user.access_token)
-
-
-    context={
-        "user": curr_user,
-        "tutorial_url": tutorial_url,
-        "ref_url": ref_url
-    }
-
-    return render(request, "grader/app_element.html", context=context)
 
 def doc_info_checker(request: HttpRequest, os_user_id: str):
     """ 

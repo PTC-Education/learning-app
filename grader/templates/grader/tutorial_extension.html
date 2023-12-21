@@ -13,7 +13,7 @@
 <body>
     <!-- Load app logo at the top of the page -->
     <div id="logo">
-        <img id="app_logo" src="{% static 'grader/images/teacherstudents.svg' %}" alt="app_logo" />
+        <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" />
     </div>
 
     <!-- Print out error message if any -->
@@ -22,14 +22,11 @@
         <p id="err_msg"><strong>{{ error_message }}</strong></p>
         {% endif %}
     </div>
+    <p><a href="https://cad.onshape.com/api/blobelements/d/d1dd7eef05c73d67498c8c70/w/8b6e19724ad31ffcb7b83e6c/e/9ce7c9420dd5f6025d96bccf">click here</a></p>
 
     <!-- General instructions -->
-    <object data="https://cad.onshape.com/api/v6/blobelements/d/97e4bd599a959bcaec8de68d/w/a87a59de1a53139540673eb4/e/bd7904a523a40451de613b0a" type="application/pdf" width="750px" height="750px">
-        <embed src="https://cad.onshape.com/api/v6/blobelements/d/97e4bd599a959bcaec8de68d/w/a87a59de1a53139540673eb4/e/bd7904a523a40451de613b0a" type="application/pdf">
-            <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://cad.onshape.com/api/v6/blobelements/d/97e4bd599a959bcaec8de68d/w/a87a59de1a53139540673eb4/e/bd7904a523a40451de613b0a">Download PDF</a>.</p>
-        </embed>
+    <object data="https://cad.onshape.com/api/blobelements/d/d1dd7eef05c73d67498c8c70/w/8b6e19724ad31ffcb7b83e6c/e/9ce7c9420dd5f6025d96bccf" type="application/pdf" width="750px" height="750px">
     </object>
-    <!-- <embed src="https://cad.onshape.com/api/v6/blobelements/d/97e4bd599a959bcaec8de68d/w/a87a59de1a53139540673eb4/e/bd7904a523a40451de613b0a" width="500" height="375" type="pdf"> -->
 </body>
 
 </html>

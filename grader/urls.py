@@ -18,5 +18,5 @@ urlpatterns = [
     path('list_members/<str:os_user_id>/<str:class_id>/<str:class_name>/<str:assignment_id>/<str:assignment_name>', views.list_members, name="list_members"),
     path('doc_info_checker/<str:os_user_id>/', views.doc_info_checker, name="doc_info_checker"),
     path('app_element/<str:os_user_id>/', views.app_element, name="app_element"),
-    path('tutorial_extension/<str:os_user_id>/', views.tutorial_extension, name="tutorial_extension")
+    path('tutorial_extension/<str:os_user_id>/<str:app_element_id>/', views.tutorial_extension, name="tutorial_extension")
 ]
