@@ -12,7 +12,7 @@
 <!-- Return to the home page -->
 <br>
 
-<button type = "button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
+<button type = "button" disabled id = "download_report_button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
 <form action = "{% url 'grader:index' user.os_user_id %}">
     <input type = "submit" value= "Return to Home Page">
 </form>
@@ -27,6 +27,7 @@
 <script>
     $(document).ready(function () {
         var url = "{% url 'grader:user_data_on_result_page' user.os_user_id %}";
+        loading_spinner('features_user'); 
         $.ajax({
             url: url,
             type: "GET",
@@ -34,6 +35,7 @@
             success: function (response) {
                 build_user(response);
                 get_results();
+                $('#features_user').html(" ");
 
             },
             error: function (error) {
@@ -41,14 +43,21 @@
         });
     });
     function get_results(){
+        var successful_returns = 0;
         '{% for url in ref_urls %}' 
+
             $(document).ready(function () {
+            $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table  
+            loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
+            $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //show result loading status
+
             var domain = "{{url.domain}}";
             var did =   "{{url.did}}";
             var wv =     "{{url.wv}}";
             var wvid =   "{{url.wvid}}";
             var eid =    "{{url.eid}}";
             var url = "{% url 'grader:update_result_page' user.os_user_id %}";
+
             $.ajax({
                 url: url,
                 type: "GET",
@@ -61,23 +70,46 @@
                 },
                 success: function (response) {
                 build_results(response, "{{forloop.counter0}}");
+                $('#features_{{forloop.counter0}}').html(" ");
+                successful_returns +=1;
+                $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //update result loading status
+                enable_slider(successful_returns);
                 },
                 error: function (error) {
                 }
             });
         });
         '{% endfor %}'
+       
+    }
+
+    function enable_slider(successful_returns){
+        if(successful_returns == '{{ref_urls|length}}'){
+            $('#adjust_container').css('display', 'block');  //turn on display for slider and checkboxes
+            $('#result_status_container').css('display', 'none'); //turn off result status container
+            $('#download_report_button').prop('disabled', false); //turn off result status container
+
+                           
+        }
     }
 </script>
 
 <div id="user_props">
     <p class = "resulttile">Reference properties</p>
     <div class = "property_box">
+
+        <div class="spinner-container">
+            <div id="features_user">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
+
         <div class = "docinfo">
             <p class = "docname" id = "usr_docname"></p>
             <p class = "username" id = "usr_username"></p>
             <p  hidden id = "usr_url"></p>
         </div>
+
         <div>
             <div class = "display_table">
                 <table id = "reference" class = "results">
@@ -102,8 +134,18 @@
 
 
 
-<p class = "resulttile">Results</p>
-<div class = "adjust-container">
+
+
+
+<div id = "result_status_container" class = "adjust-container">
+    <div id="result_status" class = "slidecontainer">    
+    </div>
+</div>
+
+
+<div hidden id = "adjust_container" class = "adjust-container">
+
+    <p class = "resulttile">Results</p>
     <div class = "slidecontainer">
         <p>Tolerance: <span id = "slider_value"></span> %</p>
         <input type = "range" min = "0" max = "100" value = "0" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
@@ -117,7 +159,13 @@
 </div>
 
 {% for url in ref_urls %} 
-    <div id = "property_box_{{forloop.counter0}}" class = "property_box">
+    <div hidden id = "property_box_{{forloop.counter0}}" class = "property_box">
+        <div class="spinner-container">
+            <div id="features_{{forloop.counter0}}">
+                <!--This is where the spinner will load-->
+            </div>
+        </div>
+
         <div class = "display_thumbnail">
             <a id = "name_{{forloop.counter0}}" href = "{{ref_props.0.5|safe}}" target = "_blank">{{ref_props.0.2}}</a> 
             <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>

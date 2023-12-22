@@ -306,7 +306,7 @@ input.submiturl-button[type=submit]:hover {
 }
   
 /* Loader */
-.loader {
+.loader .smaller_loader {
     position: relative;
 }
 .loader:after {
@@ -321,6 +321,14 @@ input.submiturl-button[type=submit]:hover {
     height: 80px;
     -webkit-animation: spin 2s linear infinite; /* Safari */
     animation: spin 2s linear infinite;
+  }
+
+  .smaller_loader:after {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3498db;
+    width: 30px;
+    height: 30px;
+
   }
 
 .button-container {
