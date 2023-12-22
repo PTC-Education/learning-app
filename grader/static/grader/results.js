@@ -124,6 +124,8 @@ function build_results(response, url_num){
                   let tooltiptext = document.createElement("span");
                   tooltiptext.setAttribute('id', 'ref_0_span'+ url_num + '_' + index);
                   tooltiptext.setAttribute('class','tooltiptext tooltiptext_top');
+
+                  //add tooltip text
                   tooltiptext.innerHTML = ref_props[index][4][1];
         
                   //append the tooltiptext to tooltip div
