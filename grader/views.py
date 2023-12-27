@@ -151,6 +151,25 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         }
     return render(request, "grader/url_input.html", context=context)
 
+def check_model(request: HttpRequest, os_user_id: str):
+    """ 
+    This function is renders the best practice checker page
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/doc_info_checker.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    context={
+        "user": curr_user,       
+    }
+
+    return render(request, "grader/checker.html", context=context)
+
 def doc_info_checker(request: HttpRequest, os_user_id: str):
     """ 
     This function is for showing elements in a document for best practices checking. 
@@ -190,9 +209,12 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
 
     return render(request, "grader/doc_info_checker.html", context=context)
 
-
-
 def doc_info_checker_image_update(request: HttpRequest, os_user_id: str):
+    '''
+    This functions dynamically updates the thumbnails in the list of elements on doc_info_checker page
+     **Arguments:**
+      - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    '''
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token()
@@ -212,6 +234,11 @@ def doc_info_checker_image_update(request: HttpRequest, os_user_id: str):
     )
 
 def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
+    '''
+    This functions dynamically updates the results for selected element on doc_info_checker page
+     **Arguments:**
+      - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    '''
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token()
@@ -230,12 +257,8 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
     mates_summary = {}
     count_summary = {}
     features_details = {}
-    mate_relations = {}
     mate_details = {}
-    features = {}
-    renamed = []
-    ps_error_count = 0
-    as_error_count = 0
+
     
     if check_type[0]=='true' and element:
         # Get feature list of model the user currently has opened
@@ -243,7 +266,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
                 curr_user.os_domain, etype, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
             )
         if not feature_list: # API error 
-            error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app."
+            error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT0 ERROR)."
 
         if etype == "partstudios":
             features_details = ps_feature_list_helper(feature_list)
@@ -260,7 +283,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
                     curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
                 )
             if not part_list: # API error 
-                error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app."
+                error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 P ERROR)."
 
             count_summary = part_list_helper(part_list)
 
@@ -269,7 +292,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
                     curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
                 )
             if not assembly_def: # API error 
-                error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app."
+                error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 A ERROR) ."
 
             count_summary = instance_list_helper(assembly_def)
 
@@ -313,7 +336,20 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
     #   - error_count is total number of errors in the mates
     #
     ## mate_details contains information about mate featurs and instances
-    # {"mate_details": mate_details, "detail_msg": detail_msg}
+    #   {
+    #     "mate_details": mate_details, 
+    #     "detail_msg": detail_msg
+    #   }
+            
+    # - detail_msg is a dict  contained  {'renamed': 0, 'offsets': 0, 'limits': 0 }
+    # - mate_details is an array of details about mates
+    #        mate names
+    #        mate type
+    #        mate limit
+    #        offsets
+    #        renamed (boolean)
+
+          
     context={
         "etype" : etype,
         "check_type" : check_type,
@@ -324,7 +360,6 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
         "mate_details": mate_details,
     }
   
-
     return HttpResponse(
         json.dumps(context),
         content_type="application/json"
@@ -979,91 +1014,6 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
         context=context
     )
 
-def check_model(request: HttpRequest, os_user_id: str): 
-    """ 
-    When a user submits, model best practices are checkd for 
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/checker.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-
-    # Refresh token if needed 
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    check_type = request.GET.getlist('check_type')
-    check_message = ""
-    summary_msg = {}
-    detail_msg = {}
-    mates = {}
-    mate_relations = {}
-    mate_details = {}
-
-
-
-    if "Features" in check_type:
-        # Get feature list of model the user currently has opened
-        feature_list = get_feature_list(
-                curr_user.os_domain, curr_user.etype, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-            )
-        if not feature_list: # API error 
-            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-        if curr_user.etype == "partstudios":
-            features_details = ps_feature_list_helper(feature_list)
-
-        if curr_user.etype == "assemblies":
-            mates, mate_relations, summary_msg, as_error_count = as_get_mate_summary(feature_list)
-            mate_details, detail_msg = as_get_mate_details(feature_list)
-    
-    if "Parts" in check_type:
-        # Get parts list of model the user currently has opened
-        if curr_user.etype == "partstudios":
-            part_list = get_part_list(
-                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-                )
-            if not part_list: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-            check_message = part_list_helper(part_list)
-
-        if curr_user.etype == "assemblies":
-            assembly_def = get_assembly_definition(
-                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-                )
-            if not assembly_def: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-            check_message = instance_list_helper(assembly_def)
-
-    context={
-        "user": curr_user,
-        "check_type": check_type,
-        "check_message": check_message,
-        "features_details": features_details,
-
-        "mates": mates,
-
-
-        "mate_relations": mate_relations, 
-        "summary_msg": summary_msg,
-        "mate_details": mate_details,
-        "detail_msg": detail_msg
-    }
-    return render(
-        request, "grader/checker.html", 
-        context=context
-    )
 
 #################### Other helper functions ####################
 

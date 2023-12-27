@@ -19,7 +19,20 @@ function selectRadio(selectedDiv) {
     if (selectedRadio) {
         const selectedValue = selectedRadio.getAttribute('data-value');
         document.getElementById("elements").value = selectedValue;
+        change_check_box_text(selectedValue.split(" ")[0]);
     }
+}
+
+function change_check_box_text(etype){
+  if(etype == 'partstudios'){
+    document.getElementById("Fcheck").innerHTML = "Features";
+    document.getElementById("Pcheck").innerHTML = "Parts";
+  }
+  else if (etype == 'assemblies'){
+    document.getElementById("Fcheck").innerHTML = "Mates";
+    document.getElementById("Pcheck").innerHTML = "Instances";
+
+  }
 }
 function formSubmit() {
     const selectedRadio = document.querySelector('.single-radio.selected');
@@ -33,23 +46,23 @@ function formSubmit() {
     return true;
 }
 
-
+function is_proper_selection_made(check_type, elements){
+  return ((check_type[0] || check_type[1]) && elements.indexOf(' ') >= 0)
+}
 
 function hide_all_divs(){
-  console.log("I was called ");
   document.getElementById("part_studio_div").style.display = "none";
   document.getElementById("feature_div").style.display = "none";
   document.getElementById("parts_div").style.display = "none";
   document.getElementById("assembly_div").style.display = "none";
   document.getElementById("mates_div").style.display = "none";
   document.getElementById("instances_div").style.display = "none";
-  console.log("I removed them");
-
 }
+
 function build_page(response){
   //hide all the existing divs
   hide_all_divs();
-  
+
   //Check if it is a part studio it is a part studio or an assembly
   if (response.etype == "partstudios"){
     //make part studio div visible
@@ -91,7 +104,9 @@ function build_page(response){
       //make feature div invisible
       document.getElementById("feature_div").style.display = "none";                                    
     }
-    if(response.check_type[1]=="true"){ 
+
+
+    if(response.check_type[1] == "true"){ 
       //if Parts
       //make parts  div visible                                                               
       document.getElementById("parts_div").style.display = "block";  
@@ -111,156 +126,167 @@ function build_page(response){
 
   else if(response.etype == "assemblies"){
       //make assembly div visible
-      document.getElementById("assembly_div").style.display = "block";                                    
+      document.getElementById("assembly_div").style.display = "block";    
+
       if(response.check_type[0]=="true"){    
         //if  Mates 
         //make mates studio div visible                                                            
-        document.getElementById("mates_div").style.display = "block";                                     
-        document.getElementById("mate_count").innerHTML = response.mates_summary["summary_msg"]["mates"];                   // number of mates
-        document.getElementById("mate_relations_count").innerHTML = response.mates_summary["summary_msg"]["mate_relations"]; // number of mate relations
+        document.getElementById("mates_div").style.display = "block";   
         
+        //mate and mate_relation details
+        var number_of_mates = response.mates_summary["summary_msg"]["mates"];  
+        var number_of_mate_relations = response.mates_summary["summary_msg"]["mate_relations"];
+        document.getElementById("mate_count").innerHTML = number_of_mates;                                                  // number of mates
+        document.getElementById("mate_relations_count").innerHTML = number_of_mate_relations;                                // number of mate relations
+        document.getElementById("error_count").innerHTML = response.mates_summary["error_count"];                             // number of errors in mates
+        
+        document.getElementById("renamed").innerHTML = response.mate_details["detail_msg"]["renamed"];                         // number of instances
+        document.getElementById("offsets").innerHTML = response.mate_details["detail_msg"]["offsets"];           // number of instances that are parts
+        document.getElementById("limits").innerHTML = response.mate_details["detail_msg"]["limits"];       // number of instances that are assemblies
+     
+        var  mates_table_div =  document.getElementById("mates_table_div");
+
+        if(number_of_mates > 0){
+          mates_table_div.style.display = "block";
+
+          //GENERATING MATES TABLE
+          var  mates_table =  document.getElementById("mates_table");
+          
+          //to avoid appending to the same table
+          //delete existing tbody
+          var old_tbody = mates_table.getElementsByTagName("tbody")[0];
+          mates_table.removeChild(old_tbody);
+    
+          //create new tbody
+          var tbody = document.createElement("tbody");
+          for (var key in response.mates_summary["mates"]) {
+            var row = document.createElement("tr"); //create a new row
+            let c0 = document.createElement("td");
+            let c1 = document.createElement("td");
+            c0.innerText = key;
+            c1.innerText = response.mates_summary["mates"][key];
+            row.appendChild(c0);
+            row.appendChild(c1);
+            tbody.appendChild(row);
+          }   
+          mates_table.appendChild(tbody);  
+        }
+        else{
+          mates_table_div.style.display = "none";
+        }
+
+        var  mate_relations_table_div =  document.getElementById("mate_relations_table_div");
+        if(number_of_mate_relations > 0){
+          mate_relations_table_div.style.display = "block";
+
+          //GENERATING MATE RELATIONS TABLE
+          var  mate_relations_table =  document.getElementById("mate_relations_table");
+          //to avoid appending to the same table
+          //delete existing tbody
+          var old_tbody = mate_relations_table.getElementsByTagName("tbody")[0];
+          mate_relations_table.removeChild(old_tbody);
+    
+          //create new tbody
+          var tbody = document.createElement("tbody");
+          for (var key in response.mates_summary["mate_relations"]) {
+            var row = document.createElement("tr"); //create a new row
+            let c0 = document.createElement("td");
+            let c1 = document.createElement("td");
+            c0.innerText = key;
+            c1.innerText = response.mates_summary["mate_relations"][key];
+            row.appendChild(c0);
+            row.appendChild(c1);
+            tbody.appendChild(row);
+          }   
+          mate_relations_table.appendChild(tbody); 
+        }
+        else{
+          mate_relations_table_div.style.display = "none";
+        }
+
+        
+        var  mates_details_div =  document.getElementById("mates_details_div"); //div containing the table
+        if(number_of_mates > 0 || number_of_mate_relations > 0){
+
+          mates_details_div.style.display = "block";
+
+          //GENERATING MATE DETAILS TABLE
+          var  mate_details_table =  document.getElementById("mate_details_table");
+          
+          //to avoid appending to the same table
+          //delete existing tbody
+          var old_tbody = mate_details_table.getElementsByTagName("tbody")[0];
+          mate_details_table.removeChild(old_tbody);
+    
+          //create new tbody
+          var tbody = document.createElement("tbody");
+
+          for (let i = 0; i< response.mate_details["mate_details"].length ; i++){
+            var row = document.createElement("tr"); //create a new row
+            let c0 = document.createElement("td"); //name
+            let c1 = document.createElement("td"); //Type
+            let c2 = document.createElement("td"); //Limits
+            let c3 = document.createElement("td"); //Offsets
+            let c4 = document.createElement("td"); //renamed (boolean)
+
+            c0.innerText = response.mate_details["mate_details"][i]["name"];
+            c1.innerText = response.mate_details["mate_details"][i]["type"];
+            
+            if(response.mate_details["mate_details"][i].hasOwnProperty('limits')){
+              var limits = response.mate_details["mate_details"][i]["limits"];
+                var limit_html = "";
+                for(let j =0; j < limits.length ; j++){
+                  limit_html += limits[j][0] + " : " + limits[j][1] + "\n";
+                }
+                c2.innerText = limit_html;
+            }
+
+            if(response.mate_details["mate_details"][i].hasOwnProperty('offsets')){
+              var offsets = response.mate_details["mate_details"][i]["offsets"];
+                var offsets_html = "";
+                for(let j =0; j < offsets.length ; j++){
+                  offsets_html += offsets[j][0] + " : " + offsets[j][1] + "\n";
+                }
+                c3.innerText = offsets_html;
+            }
+            
+            if (response.mate_details["mate_details"][i]["renamed"] == "true"){
+              c4.innerText = "✓";
+            }
+            else{
+              c4.innerText = "✗";
+            }
+
+          row.appendChild(c0);
+          row.appendChild(c1);
+          row.appendChild(c2);
+          row.appendChild(c3);
+          row.appendChild(c4);
+          tbody.appendChild(row);
+          }   
+          mate_details_table.appendChild(tbody); 
+        }
+        else{
+          //make mates details table div invisible
+          mates_details_div.style.display = "none";
+        }
       }
       else{
         //make mates studio div invisible
-        document.getElementById("mates_div").style.display = "none"; 
+        document.getElementById("mates_div").style.display = "none";  
       }
       if(response.check_type[1]=="true"){  
         //if Instances
         //make instances studio div visible
         document.getElementById("instances_div").style.display = "block";
-        document.getElementById("instance_title").innerHTML = response.count_summary["title"];                             // title of list
-        document.getElementById("instance_count").innerHTML = response.count_summary["instance_count"];                         // number of instances
+        document.getElementById("instance_title").innerHTML = response.count_summary["title"];                              // title of list
+        document.getElementById("instance_count").innerHTML = response.count_summary["instance_count"];                     // number of instances
         document.getElementById("part_instance_count").innerHTML = response.count_summary["part_instance_count"];           // number of instances that are parts
-        document.getElementById("assemby_instance_count").innerHTML = response.count_summary["assemby_instance_count"];       // number of instances that are assemblies
-
-
+        document.getElementById("assemby_instance_count").innerHTML = response.count_summary["assemby_instance_count"];     // number of instances that are assemblies
       }
       else{
         //make instances studio div invisible
         document.getElementById("instances_div").style.display = "none"; 
-
       }
-
-
-
-  }
-    for (var key in response.count_summary) {
-      console.log("key", key);
-      console.log("value",response.count_summary[key]);
-  }
-    //console.log("what wil be  going on",Object.keys(response.count_summary))
-    if(Object.keys(response.count_summary).length >0){
-      console.log("part count is", response.count_summary["part_count"]);
-      console.log("part material count is ", response.count_summary["part_material_count"]);
-      console.log("part_renamecount is", response.count_summary["part_rename_count"]);
-      console.log("surface", response.count_summary["part_surface_count"]);
     }
-
-    if(response.features_details != {}){
-      //console.log("called")
-      for (var key in response.features_details["features"]) {
-        //console.log("key", key);
-        //console.log("value",response.features_details["features"][key]);
-    }
-      //console.log("error count is", response.features_details["error_count"]);
-      //console.log("renamed feature count is ", response.features_details["renamed"]);
-
-    }
-
-    //console.log(response.mates_summary);
-    //console.log(response.mate_details);
   }
-
-  /*
-
-  {
-      #    "title": "Part Checking",  
-      #    "part_count": part_count, 
-      #    "part_rename_count": part_rename_count, 
-      #    "part_material_count":part_material_count, 
-      #    "part_surface_count": surface_count
-      #   }
-      #   For assemblies the summary contains  information about instances
-      #  {
-      #   "title":"Instance Checking", 
-      #   "instance_count": instance_count, 
-      #   "part_instance_count": part_instance_count, 
-      #   "assemby_instance_count":assemby_instance_count
-      #   }
-
-      # features_details contains information about features in a part studio -
-      #   {
-      #   "features": features, 
-      #   "renamed": renamed , 
-      #   "error_count": error_count
-      #   }
-      #   features is a dict of {"feature name X ", number of times  feature X is used}
-      #   renamed is an array of  [number_of_features, renamed_count]
-      #   error_count is total number of errors in the features
-      #
-  {% if renamed %}
-  <h3>Feature Checking</h3>
-  <p>
-  {% endif %}
-
-  {% if summary_msg %}
-  <h3>Mates Summary</h3> 
-  <p class="list_title">This assembly contains:<ul class="summary">
-  <li>Mates: {{ summary_msg.mates}}</li>
-  <li>Mate relations: {{ summary_msg.mate_relations}}</li>
-  </ul>
-  </p>
-
-  {% endif %}
-
-  part_message = f'''
-  <h3>Part Checking</h3>
-  <p>There is/are {part_count} part(s) in this part studio. <br>
-  {part_rename_count}/{part_count} parts are renamed. <br>
-  {part_material_count}/{part_count} parts have a material assigned.</p>
-  '''
-
-  if surface_count > 0:
-      part_message += f'''
-      <p>There are {surface_count} surfaces in this part studio.</p>
-      '''
-
-
-      part_message = f'''
-      <h3>Instance Checking</h3>
-      <p>There are {instance_count} instances in this assembly, with {part_instance_count} parts and {assemby_instance_count} sub-assemblies inserted.</p>
-      '''
-      
-      feature_message = f'''
-      <h3>Feature Checking</h3>
-      <p>This assembly has {mate_count} mates and {mate_relation_count} mate relations.</p>
-      '''
-  {% if check_message %}
-  {{ check_message|safe }}
-  {% endif %}
-
-  {% if renamed %}
-  <h3>Feature Checking</h3>
-  <p>This part studio has {{ renamed.0 }} features (not including Origin and default planes).<br>
-      Of those features, {{ renamed.1 }} have been renamed.</p>
-  {% endif %}
-
-  {% if ps_error_count %}
-  <p>Total number of errors: {{ps_error_count}}</p>
-  {% endif %}
-
-  {% if features %}
-  <p class="table_title">Feature Count</p>
-  <table class="item_summary">
-      <thead><tr><th>Type</th><th>Count</th></tr></thead>
-      <tbody>
-      {% for key, value in features.items %}
-          <tr>
-              <td>{{ key }}</td>
-              <td>{{ value }}</td>
-              </tr>
-      {% endfor %}
-      </tbody>
-  </table>
-  {% endif %}
-  */
