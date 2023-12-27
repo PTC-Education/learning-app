@@ -5,50 +5,92 @@
         <link rel="stylesheet" href="{% static 'grader/index.css' %}">
         <!-- Load loading_modelling function to enable loading screen -->
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
+        <script src="{% static 'grader/doc_info_checker.js' %}" type="text/javascript"></script>
+        <script src="{% static 'grader/jquery-3.7.1.js' %}" type="text/javascript"></script>
+
+
+
         <script>
-            function showHideDetails(d,div)
-            {
-               if(d.checked == true )
-                  document.getElementById(div).style.display = "block";
-               else
-                  document.getElementById(div).style.display = "none";
-            }
-            function hide()
-            {
-                document.getElementById('mates_details').style.display = "none";
-            }
-            function selectRadio(selectedDiv) {
-                // Deselect all divs
-                const radios = document.querySelectorAll('.single-radio');
-                radios.forEach(div => div.classList.remove('selected'));
-                // Select the clicked div
-                selectedDiv.classList.add('selected');
-                const selectedRadio = document.querySelector('.single-radio.selected');
-                if (selectedRadio) {
-                    const selectedValue = selectedRadio.getAttribute('data-value');
-                    document.getElementById("elements").value = selectedValue;
+
+            //dynamically update the thumbnail images
+            $(document).ready(function () {
+                '{% for element in element_list %}' 
+                var url = "{% url 'grader:doc_info_checker_image_update' user.os_user_id %}";
+                loading_spinner('features');           //turn on smaller loading spinner for each element
+                var etype = "{{element.etype}}";
+                var eid =   "{{element.id}}";
+                var doc_wid =  "{{doc_wid}}";
+                var count = 0;
+        
+                $.ajax({      
+                    url: url,
+                    type: "GET",
+                    data:{
+                        'etype': etype,
+                        'eid' : eid,
+                        'doc_wid' : doc_wid,
+
+                    },
+                    success: function (response) {
+                        $('#image_{{forloop.counter0}}').attr('src',response.image);
+                        count +=1;
+                        if(count == '{{element_list|length}}' ){
+                            $('#features').html(" ");
+                        }
+                    },
+                    error: function (error) {
                 }
-            }
-            function formSubmit() {
-                const selectedRadio = document.querySelector('.single-radio.selected');
-                if (selectedRadio) {
-                    document.getElementById("msg").innerHTML = "";
-                    loading_spinner('features')
-                } else {
-                    document.getElementById("msg").innerHTML = "Please select an element.";
-                    return false;
-                }
-                return true;
-            }
-            window.onload = hide;
+                });
+                '{% endfor %}'
+            });
+          
+
+            //get results for elememt 
+            $(document).ready(function () {
+                $("#check_model").click(function (event) {
+                    var url = "{% url 'grader:doc_info_checker_results_update' user.os_user_id %}";
+                    check_type =[];
+                    check_type[0] = $("#Features_check").is(":checked")
+                    check_type[1] = $("#Parts_check").is(":checked")
+                    $.ajax({
+                        url: url,
+                        type: "GET",
+                        data:{
+                            doc_wid : "{{doc_wid}}",
+                            check_type : check_type,
+                            elements : $("#elements").val(),
+                        },
+                       
+                        success: function (response) {
+                            build_page(response);
+
+ 
+                            $('#features_1').html(" ");
+                        },
+                        error: function (error) {
+                        }
+                    });
+                });
+
+               
+            });
+
         </script>
+
     </head>
     <body>
         <p>Select the element you would like to check:</p>
         <!-- Check model -->
-        <form action="{% url 'grader:doc_info_checker' user.os_user_id %}" onsubmit="return formSubmit()">
+
+        <form id="perform_check_form">
             <!-- Select element -->
             {% if element_list %}
+            <div class = "document_list">
+                <div class="spinner-container">
+                    <div id="features">
+                        <!--This is where the spinner will load-->
+                    </div>
+                    </div>
                 {% for element in element_list %}
                     <div class="single-radio" onclick="selectRadio(this)" data-value="{{ element.etype }} {{ element.id }}">
                         {% if element.etype == 'assemblies' %}
@@ -56,24 +98,102 @@
                         {% else %}
                             <div class="radio-svg"><img src="{% static 'grader/images/ps.svg' %}"></div>
                         {% endif %}
-                        <div class="radio-img"><img src="{{ element.image }}"></div>
+                        <div class="radio-img"><img id = "image_{{forloop.counter0}}" src="">
+
+                        </div>
+
                         <div class="radio-label">{{ element.name }}</div>
                     </div>
                 {% endfor %}
+
+            </div>
             {% endif %}
             <p>Select the type of check(s) you would like to perform:</p>
-            <input type="checkbox" name="check_type" value="Features" {% if "Features" in check_type %} checked {% endif %}>Features/Mates<br>      
-            <input type="checkbox" name="check_type" value="Parts" {% if "Parts" in check_type %} checked {% endif %}>Parts/Instances<br>    
+            <input id = "Features_check" type="checkbox" name="check_type" value="Features">Features/Mates<br>      
+            <input id = "Parts_check" type="checkbox" name="check_type" value="Parts">Parts/Instances<br>    
             <input type="hidden" name="elements" id="elements" value="">  
-            <input type="submit" value="Check model"/>
+            <input type="button" id = "check_model" value="Check model"/>
             <p class="msg" id="msg">&nbsp;</p>
         </form>
+
         <div class="spinner-container">
             <div id="features">
                 <!--This is where the spinner will load-->
             </div>
         </div>
 
+
+        <div id="count_summary">
+
+        </div>     
+        <div id="part_studio_div">
+            <h3>Part Studio details</h3>
+            <div id="feature_div">
+                <h4>Features</h4>
+                <p class="list_title">This part studio contains:</p>
+                <ul class="summary">
+                    <li>Features:  <span id = "renamed0"></span> <i>(not including Origin and default planes)</i></li>
+                    <li>Renamed features:  <span id = "renamed1"></span></li>
+                    <li>Total errors in features:  <span id = "ps_errors"></span></li>
+                </ul>
+
+                <p class="table_title">Feature Count</p>
+                <div id = "feature_table_div">
+                    <table  id="features_details_table" class="item_summary">
+                        <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                        <tbody>
+                    
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <div id = "parts_div">
+                <h4 id = "parts_title"></h4></h4>
+                <ul class="summary">
+                    <li>Total number of parts:  <span id = "part_count"></span></li>
+                    <li>Total number of renamed parts:  <span id = "part_rename_count"></span></li>
+                    <li>Total number of parts with assigned materials :  <span id = "part_material_count"></span></li>
+                    <li>Total number of surfaces:  <span id = "part_surface_count"></span></li>
+                </ul>
+            </div>
+        </div>
+        <div id="assembly_div">
+            <h3>Assembly details</h3>
+            <div id="mates_div">
+                <h4>Mates</h4>
+                <p class="list_title">This assembly contains:</p>
+                <ul class="summary">
+                <li>Mate Features:  <span id = "mate_count"></span></li>
+                <li>Mate relations:  <span id = "mate_relations_count"></span></li>
+                </ul>
+            </div>
+            <div id = "instances_div">
+                <h4 id = "instance_title"></h4></h4>
+                <ul class="summary">
+                    <li>Total number of instances:  <span id = "instance_count"></span></li>
+                    <li>Number of parts:  <span id = "part_instance_count"></span></li>
+                    <li>Number of assemblies :  <span id = "assemby_instance_count"></span></li>
+                </ul>    
+            </div>
+        </div>
+        
+        <script>hide_all_divs()</script>
+
+        
+
+
+
+
+        <div id="mates_summary">
+
+        </div>
+        <div id="mate_details">
+
+        </div>        
+ 
+
+        
         {% if check_message %}
             {{ check_message|safe }}
         {% endif %}
@@ -83,6 +203,16 @@
             <p>This part studio has {{ renamed.0 }} features (not including Origin and default planes).<br>
                 Of those features, {{ renamed.1 }} have been renamed.</p>
         {% endif %}
+
+        {% if summary_msg %}
+        <h3>Mates Summary</h3> 
+        <p class="list_title">This assembly contains:<ul class="summary">
+            <li>Mates: {{ summary_msg.mates}}</li>
+            <li>Mate relations: {{ summary_msg.mate_relations}}</li>
+            </ul>
+        </p>
+        
+    {% endif %}
         
         {% if ps_error_count %}
             <p>Total number of errors: {{ps_error_count}}</p>
