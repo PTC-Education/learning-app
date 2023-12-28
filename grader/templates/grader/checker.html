@@ -52,6 +52,10 @@
 
     </head>
     <body>
+        <!-- Return to the home page -->
+        <form action="{% url 'grader:index' user.os_user_id %}">
+            <input class = "go_home" type="submit" value="Return to Home Page">
+        </form>
         <!-- Check model -->
 
         <form id="perform_check_form">
