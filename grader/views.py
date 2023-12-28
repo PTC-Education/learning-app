@@ -151,6 +151,25 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         }
     return render(request, "grader/url_input.html", context=context)
 
+def check_model(request: HttpRequest, os_user_id: str):
+    """ 
+    This function is renders the best practice checker page
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/doc_info_checker.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    context={
+        "user": curr_user,       
+    }
+
+    return render(request, "grader/checker.html", context=context)
+
 def doc_info_checker(request: HttpRequest, os_user_id: str):
     """ 
     This function is for showing elements in a document for best practices checking. 
@@ -165,94 +184,186 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     # Get info and workspace for current document selected
-
     doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     doc_wid = doc_info['defaultWorkspace']['id']
 
     # Create HTML for list of elements
     element_list = []
+    image = None
     elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
     for element in elements_info:
         if element['elementType'] == "PARTSTUDIO":
-            image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
+            #image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
             element_dict = {'etype': 'partstudios', 'id': element['id'], 'name': element['name'], 'image': image}
             element_list.append(element_dict)
         elif element['elementType'] == "ASSEMBLY":
-            image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
+            #image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
             element_dict = {'etype': 'assemblies', 'id': element['id'], 'name': element['name'], 'image': image}
             element_list.append(element_dict)
-    # Get element and check type that the user has selected
+    context={
+        "user": curr_user, 
+        "doc_wid": doc_wid,
+        "element_list":element_list,
+       
+    }
+
+    return render(request, "grader/doc_info_checker.html", context=context)
+
+def doc_info_checker_image_update(request: HttpRequest, os_user_id: str):
+    '''
+    This functions dynamically updates the thumbnails in the list of elements on doc_info_checker page
+     **Arguments:**
+      - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    '''
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token()
+    doc_wid = request.GET.get("doc_wid")
+    eid = request.GET.get("eid")
+    etype = request.GET.get("etype")
+    image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, eid, etype, auth_token=curr_user.access_token)
+   
+    context={ 
+        "image": image,
+    }
+
+
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
+    )
+
+def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
+    '''
+    This functions dynamically updates the results for selected element on doc_info_checker page
+     **Arguments:**
+      - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    '''
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token()
+
+    doc_wid = request.GET.get("doc_wid")
     element = request.GET.get('elements')
-    check_type = request.GET.getlist('check_type')
+    check_type = request.GET.getlist('check_type[]')
+
     try:
         etype = element.split(" ")[0]
         eid = element.split(" ")[1]
     except:
         pass
-    check_message = ""
-    summary_msg = {}
-    detail_msg = {}
-    mates = {}
-    mate_relations = {}
+
+    error_message = ""
+    mates_summary = {}
+    count_summary = {}
+    features_details = {}
     mate_details = {}
-    features = {}
-    renamed = []
-    ps_error_count = 0
-    as_error_count = 0
+
     
-    if "Features" in check_type and element:
+    if check_type[0]=='true' and element:
         # Get feature list of model the user currently has opened
         feature_list = get_feature_list(
                 curr_user.os_domain, etype, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
             )
         if not feature_list: # API error 
-            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+            error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT0 ERROR)."
 
         if etype == "partstudios":
-            features, renamed, ps_error_count = ps_feature_list_helper(feature_list)
-        if etype == "assemblies":
+            features_details = ps_feature_list_helper(feature_list)
+
+        elif etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg , as_error_count = as_get_mate_summary(feature_list)
-            mate_details, detail_msg = as_get_mate_details(feature_list)
+            mates_summary = as_get_mate_summary(feature_list)
+            mate_details = as_get_mate_details(feature_list)
     
-    if "Parts" in check_type and element:
+    if check_type[1]=='true' and element:
         # Get parts list of model the user currently has opened
         if etype == "partstudios":
             part_list = get_part_list(
                     curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
                 )
             if not part_list: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+                error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 P ERROR)."
 
-            check_message += part_list_helper(part_list)
+            count_summary = part_list_helper(part_list)
 
-        if etype == "assemblies":
+        elif etype == "assemblies":
             assembly_def = get_assembly_definition(
                     curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
                 )
             if not assembly_def: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+                error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 A ERROR) ."
 
-            check_message += instance_list_helper(assembly_def)
+            count_summary = instance_list_helper(assembly_def)
 
+    ## count_summary contents depends on etype - 
+    #   For part studios the summary contains information about parts
+    #   {
+    #    "title": "Part Checking",  
+    #    "part_count": part_count, 
+    #    "part_rename_count": part_rename_count, 
+    #    "part_material_count":part_material_count, 
+    #    "part_surface_count": surface_count
+    #   }
+    #   For assemblies the summary contains  information about instances
+    #  {
+    #   "title":"Instance Checking", 
+    #   "instance_count": instance_count, 
+    #   "part_instance_count": part_instance_count, 
+    #   "assemby_instance_count":assemby_instance_count
+    #   }
+
+    ## features_details contains information about features in a part studio -
+    #   {
+    #   "features": features, 
+    #   "renamed": renamed , 
+    #   "error_count": error_count
+    #   }
+    #   - features is an array of dict {"feature name X ", number of times  feature X is used}
+    #   - renamed is an array of  [number_of_features, renamed_count]
+    #   - error_count is total number of errors in the features
+    #
+    ## mates_summary -
+    #   {
+    #   "mates": mates,
+    #   "mate_relations" : mate_relations,
+    #   "summary_msg" : summary_msg,
+    #   "error_count" :error_count
+    #   }
+    #   - mates is an array of dict  {"mate name M ", number of mates M}
+    #   - mate_relations is a array of dict {"mate relations R", number of mate relations R}
+    #   - "summary_msg" = {"mates" : number of mates  "mate_relations" : number of mate relations}
+    #   - error_count is total number of errors in the mates
+    #
+    ## mate_details contains information about mate featurs and instances
+    #   {
+    #     "mate_details": mate_details, 
+    #     "detail_msg": detail_msg
+    #   }
+            
+    # - detail_msg is a dict  contained  {'renamed': 0, 'offsets': 0, 'limits': 0 }
+    # - mate_details is an array of details about mates
+    #        mate names
+    #        mate type
+    #        mate limit
+    #        offsets
+    #        renamed (boolean)
+
+          
     context={
-        "user": curr_user, 
-        "element_list": element_list,
-        "check_type": check_type,
-        "check_message": check_message,
-        "features": features,
-        "renamed": renamed,
-        "mates": mates,
-        "ps_error_count": ps_error_count,
-        "as_error_count": as_error_count,
-        "mate_relations": mate_relations, 
-        "summary_msg": summary_msg,
+        "etype" : etype,
+        "check_type" : check_type,
+        "error_message": error_message,
+        "count_summary": count_summary, 
+        "features_details": features_details,
+        "mates_summary": mates_summary,
         "mate_details": mate_details,
-        "detail_msg": detail_msg
     }
-
-    return render(request, "grader/doc_info_checker.html", context=context)
-
+  
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
+    )
 
 def list_classes(request: HttpRequest, os_user_id: str):
     """ 
@@ -903,95 +1014,6 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
         context=context
     )
 
-def check_model(request: HttpRequest, os_user_id: str): 
-    """ 
-    When a user submits, model best practices are checkd for 
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/checker.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-
-    # Refresh token if needed 
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    check_type = request.GET.getlist('check_type')
-    check_message = ""
-    summary_msg = {}
-    detail_msg = {}
-    mates = {}
-    mate_relations = {}
-    mate_details = {}
-    features = {}
-    renamed = []
-    ps_error_count = 0
-    as_error_count = 0
-
-
-    if "Features" in check_type:
-        # Get feature list of model the user currently has opened
-        feature_list = get_feature_list(
-                curr_user.os_domain, curr_user.etype, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-            )
-        if not feature_list: # API error 
-            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-        if curr_user.etype == "partstudios":
-            features, renamed, ps_error_count = ps_feature_list_helper(feature_list)
-
-        if curr_user.etype == "assemblies":
-            # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg, as_error_count = as_get_mate_summary(feature_list)
-            mate_details, detail_msg = as_get_mate_details(feature_list)
-    
-    if "Parts" in check_type:
-        # Get parts list of model the user currently has opened
-        if curr_user.etype == "partstudios":
-            part_list = get_part_list(
-                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-                )
-            if not part_list: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-            check_message += part_list_helper(part_list)
-
-        if curr_user.etype == "assemblies":
-            assembly_def = get_assembly_definition(
-                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-                )
-            if not assembly_def: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-            check_message += instance_list_helper(assembly_def)
-
-    context={
-        "user": curr_user,
-        "check_type": check_type,
-        "check_message": check_message,
-        "features": features,
-        "renamed": renamed,
-        "mates": mates,
-        "ps_error_count": ps_error_count,
-        "as_error_count": as_error_count,
-        "mate_relations": mate_relations, 
-        "summary_msg": summary_msg,
-        "mate_details": mate_details,
-        "detail_msg": detail_msg
-    }
-    return render(
-        request, "grader/checker.html", 
-        context=context
-    )
 
 #################### Other helper functions ####################
 
@@ -1121,7 +1143,8 @@ def ps_feature_list_helper(feature_list):
 
     features = dict(sorted(features.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
     renamed = [number_of_features, renamed_count]
-    return features, renamed ,error_count
+
+    return {"features": features, "renamed": renamed , "error_count": error_count}
 
 # Extract useful information from featurelist for assemblies
 def as_feature_list_helper(feature_list):
@@ -1135,12 +1158,8 @@ def as_feature_list_helper(feature_list):
         elif feature['featureType'] == "mateRelation":
             mate_relation_count += 1
 
-    feature_message = f'''
-    <h3>Feature Checking</h3>
-    <p>This assembly has {mate_count} mates and {mate_relation_count} mate relations.</p>
-    '''
+    return {"mate_count":mate_count, "mate_relation_count": mate_relation_count}
 
-    return feature_message
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_summary(feature_list):
@@ -1177,7 +1196,7 @@ def as_get_mate_summary(feature_list):
         if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
             error_count +=1
     
-    return mates, mate_relations, summary_msg , error_count
+    return {"mates": mates, "mate_relations": mate_relations, "summary_msg": summary_msg , "error_count" : error_count}
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_details(feature_list):
@@ -1231,7 +1250,8 @@ def as_get_mate_details(feature_list):
             mate.update({'renamed': renamed})
             mate_details.append(mate)
 
-    return mate_details, detail_msg
+
+    return {"mate_details": mate_details, "detail_msg": detail_msg}
 
 # Extract useful information from part lists for partstudios
 def part_list_helper(part_list):
@@ -1251,19 +1271,8 @@ def part_list_helper(part_list):
         elif part['bodyType'] == "sheet":
             surface_count += 1
 
-    part_message = f'''
-    <h3>Part Checking</h3>
-    <p>There is/are {part_count} part(s) in this part studio. <br>
-    {part_rename_count}/{part_count} parts are renamed. <br>
-    {part_material_count}/{part_count} parts have a material assigned.</p>
-    '''
+    return {"title": "Part Checking", "part_count": part_count, "part_rename_count": part_rename_count, "part_material_count":part_material_count, "part_surface_count": surface_count}
 
-    if surface_count > 0:
-        part_message += f'''
-        <p>There are {surface_count} surfaces in this part studio.</p>
-        '''
-
-    return part_message
 
 # Extract useful information about instances for assemblies
 def instance_list_helper(assembly_def):
@@ -1278,9 +1287,6 @@ def instance_list_helper(assembly_def):
         elif instance['type'] == "Assembly":
             assemby_instance_count += 1
 
-    part_message = f'''
-    <h3>Instance Checking</h3>
-    <p>There are {instance_count} instances in this assembly, with {part_instance_count} parts and {assemby_instance_count} sub-assemblies inserted.</p>
-    '''
 
-    return part_message
+    return {"title":"Instance Checking", "instance_count": instance_count, "part_instance_count": part_instance_count, "assemby_instance_count":assemby_instance_count}
+
