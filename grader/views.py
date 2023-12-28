@@ -254,7 +254,7 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     return render(request, "grader/doc_info_checker.html", context=context)
 
 
-def list_classes(request: HttpRequest, os_user_id: str):
+def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -302,6 +302,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
     context={
             "page": "classes",
             "user": curr_user, 
+            "user_type": user_type,
             "classes":classes,
              "error_message" : error_message
         }
@@ -310,7 +311,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
         context=context
     )
 
-def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class_name:str):
+def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class_id:str , class_name:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -347,6 +348,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
 
     context={
             "user": curr_user, 
+            "user_type": user_type,
             "page": "assignments",
             "assignments": assignments,
             "class_name": class_name,
@@ -358,7 +360,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
     )
 
 
-def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
+def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -473,6 +475,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
          error_message = "We encountered an issue. Please check your internet connection. "
     context={
             "user": curr_user, 
+            "user_type": user_type,
             "page": "submissions",
             "submitted_student_works":submitted_student_works,
             "action_required_student_works": action_required_student_works,
