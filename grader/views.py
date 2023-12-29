@@ -60,7 +60,6 @@ def login(request: HttpRequest):
         )
     )
 
-
 def authorize(request: HttpRequest): 
     """ 
     When the user authorizes the OAuth integration, Onshape's OAuth authorization page will redirect the user to this page, as registered as the redirect URL. 
@@ -720,8 +719,6 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
         content_type="application/json"
     )
 
-
-
 def update_result_page(request: HttpRequest, os_user_id: str): 
     """ 
     This function returns mass properties and results for one document at a time. It is called from an AJAX function
@@ -838,17 +835,19 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     )
 
 
-def grade_scioly(request: HttpRequest, os_user_id: str):
+def grade_scioly(request: HttpRequest, os_user_id: str): 
+    """ 
+    When a user submits, urls to compare with the model are collected and returned to the basic results page. 
+    The page renders for the number of urls returned. 
     
-    '''the purpose of this is to grade the science olympiad cases.
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
     
     **Template:**
     
-    :template:`grader/results.html`'''
+    :template:`grader/basic_results.html`
+    """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
     #grab reference urls , possibly in a csv format, from the generic_grader.html
@@ -856,10 +855,9 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
 
-    # Refresh token if needed 
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-        
+    print("ref", ref_urls)
+
+
     # Get all the relevant elements of the model that the user currently has open (PS and Assemblies)
     user_elems = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
     type_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
@@ -907,111 +905,133 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     
     # Append user related information along with mass properties
     user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url, totalpoints])
+
+    context={
+        "user": curr_user, 
+        "user_props": user_props,
+        "ref_urls": ref_urls
+    }
+    return render(
+        request, "grader/scioly_results.html", 
+        context=context
+    )
+
+def grade_scioly_results(request: HttpRequest, os_user_id: str):
+    '''the purpose of this is to grade the science olympiad cases.
+    **Arguments:**
     
-            
-    # Here, I go through all the URLs and get their necessary info and GRADE THEM
-     ## Initialize arrays for ref docs
-    all_ref_props = [] # 3D array - each 2D array corresponds to one URL
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    - ``ref_urls``: the reference element for the model to be compared to
+    
+    **Template:**
+    
+    :template:`grader/results.html`'''
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+        
+    url = request.GET.get('ref_url') 
+    #user_props = request.GET.get('user_props')
+    ref_url = get_ref_url_ids(url)
+         
+
+    ## Initialize arrays for ref docs
+    ref_props = [] # 3D array - each 2D array corresponds to one URL
     # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
     # Rest is model props [[mass, vol, periphery, principalInertia, partName],[...]] (without partName for assemblies)
-    failed_urls = [] # Array of all URLs that we failed to get info from
-    # Get info and mass props for all url's in ref doc list
-    for i, url in enumerate(ref_urls): 
-        ref_url = get_ref_url_ids(url)
+    failed_url = "None" # Array of all URLs that we failed to get info from
 
-        try:         
-            ref_elems = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token) # get all the elems from one URL
-            
-            ref_props=[] # initialize empty array of ref props
-            elemcount = 1
-            totalpoints = 0
-            
-            for elem in ref_elems:
-                if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
+    type_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
+
+    # Get info and mass props for ref urls
+    try:         
+        ref_elems = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token) # get all the elems from the URL
+        
+        ref_props=[] # initialize empty array of ref props
+        elemcount = 1
+        totalpoints = 0
+        
+        for elem in ref_elems:
+            if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":               
+                mass_props = get_mass_props(
+                        curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
+                        massAsGroup=True, auth_token=curr_user.access_token
+                    )
+                
+                elem_mass_prop = 0 #initialize
+                #points = 0
+                if elem["elementType"] == "PARTSTUDIO":
                     
-                    mass_props = get_mass_props(
-                            curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
-                            massAsGroup=True, auth_token=curr_user.access_token
-                        )
+                    if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
+                        elem_mass_prop = 0
+                    else:
+                        elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
+                        
+                    #points = 20 - 100*abs((elem_mass_prop - user_props[elemcount][2])/user_props[elemcount][2])
+                    #if points < 0:
+                    #    points = 0
+                    #points = round(points, 2)
+                    #elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
                     
-                    elem_mass_prop = 0 #initialize
-                    points = 0
-                    if elem["elementType"] == "PARTSTUDIO":
-                        
-                        if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
-                            elem_mass_prop = 0
-                        else:
-                            elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
-                            
-                        points = 20 - 100*abs((elem_mass_prop - user_props[elemcount][2])/user_props[elemcount][2])
-                        if points < 0:
-                            points = 0
-                        points = round(points, 2)
-                        elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
-                        
-                    else: #elem["elementType"] == "ASSEMBLY"
-                        if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
-                            elem_mass_prop = [0,0,0]
-                        else:
-                            elem_mass_prop = mass_props["centroid"][0:3]
-                        points = 20 - 100*(((1/3)*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2][0])) + ((1/3)*abs((elem_mass_prop[1] - user_props[elemcount][2][1])/user_props[elemcount][2][1])) + ((1/3)*abs((elem_mass_prop[2] - user_props[elemcount][2][2])/user_props[elemcount][2][2])))
-                        if points < 0:
-                            points = 0
-                        points = round(points, 2)
-                        for i in range(3):
-                            elem_mass_prop[i] = '{:.2e}'.format(elem_mass_prop[i])
-                        elem_mass_prop = '( ' + elem_mass_prop[0] + ', ' + elem_mass_prop[1] + ', ' + elem_mass_prop[2] + ' )'
-                        
-                    ref_elem_props = [elem["elementType"], elem["name"], elem_mass_prop, points]
-                    ref_props.append(ref_elem_props)
-                    totalpoints = totalpoints + points
-                    elemcount = elemcount + 1
+                else: #elem["elementType"] == "ASSEMBLY"
+                    if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
+                        elem_mass_prop = [0,0,0]
+                    else:
+                        elem_mass_prop = mass_props["centroid"][0:3]
+                    #points = 20 - 100*(((1/3)*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2][0])) + ((1/3)*abs((elem_mass_prop[1] - user_props[elemcount][2][1])/user_props[elemcount][2][1])) + ((1/3)*abs((elem_mass_prop[2] - user_props[elemcount][2][2])/user_props[elemcount][2][2])))
+                    #if points < 0:
+                    #    points = 0
+                    #points = round(points, 2)
+                    #for i in range(3):
+                    #    elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
+                    #elem_mass_prop = '( ' + elem_mass_prop[0] + ', ' + elem_mass_prop[1] + ', ' + elem_mass_prop[2] + ' )'
+                    
+                ref_elem_props = [elem["elementType"], elem["name"], elem_mass_prop]
+                ref_props.append(ref_elem_props)
+                #totalpoints = totalpoints + points
+                elemcount = elemcount + 1
 
-            # Get all additional info from the reference document
-            image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
-            element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
-            element_name = element_info[0]["name"]
-            ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-            user_name = ref_doc_info["createdBy"]["name"]
-            doc_name = ref_doc_info['name']
-            doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
+        # Get all additional info from the reference document
+        image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
+        element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
+        element_name = element_info[0]["name"]
+        ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+        user_name = ref_doc_info["createdBy"]["name"]
+        doc_name = ref_doc_info['name']
+        doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
 
-            # Insert first element of array 
-            ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url, totalpoints])
-
-            all_ref_props.append((ref_props))
-        except:
-            # If anything above failed, add url to the fairled URL list
-            failed_urls.append(url)
+        # Insert first element of array 
+        ref_props.insert(0,[doc_name,user_name, element_name, doc_time, image, url, totalpoints])
+    except:
+        # If anything above failed, add url to the fairled URL list
+        failed_url = ref_url
             
     #Here, I am converting the user_props mass and centroid to scientific notation (type:str)
     #Remember, the user_props is a 2D array of all the PS and Assemblies in the document (does NOT include drawings, pdfs, etc.)
     #Each value in the array is an array with these values in it: [elem["elementType"], elem["name"], elem_mass_prop]
     #elem_mass_prop is a number (mass in kg) for PS and an array (center of mass for the three axis in [x,y,z])
     
-    for elem in user_props:
-        if elem == user_props[0]:
-            continue
-        if elem[0] == "PARTSTUDIO":
-            elem[2] = '{:.2e}'.format(elem[2])
-        else: #elem["elementType"] == "ASSEMBLY"
-            for i in range(3):
-                elem[2][i] = '{:.2e}'.format(elem[2][i])
-            elem[2] = '( ' + elem[2][0] + ', ' + elem[2][1] + ', ' + elem[2][2] + ' )'
+    #for elem in user_props:
+    ##    if elem == user_props[0]:
+    #       continue
+    #    if elem[0] == "PARTSTUDIO":
+    #        elem[2] = '{:.2e}'.format(elem[2])
+    #    else: #elem["elementType"] == "ASSEMBLY"
+    #        for i in range(3):
+    #            elem[2][i] = '{:.2e}'.format(elem[2][i])
+    #        elem[2] = '( ' + elem[2][0] + ', ' + elem[2][1] + ', ' + elem[2][2] + ' )'
     
-    if len(failed_urls) == 0:
-        failed_urls = None
-    
+
     context={
-        "user": curr_user, 
-        "etype": curr_user.etype,
-        "failed_urls": failed_urls,
-        "user_props": user_props,
-        "all_ref_props": all_ref_props
+        "failed_url": failed_url,
+        "ref_props": ref_props
     }
-    return render(
-        request, "grader/scioly_results.html", 
-        context=context
+ 
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
     )
 
 
