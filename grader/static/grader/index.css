@@ -560,6 +560,12 @@ ul.closeable_button li {
   position: relative;
 }
 
+.checklist ul {
+  margin-top: 0px;
+}
+.checklist li {
+  font-size: 0.9em;
+}
 .close {
   cursor: pointer;
   top: 0%;

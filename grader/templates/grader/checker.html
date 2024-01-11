@@ -57,11 +57,13 @@
             <input class = "go_home" type="submit" value="Return to Home Page">
         </form>
         <!-- Check model -->
-
+        <h3>Best Practices Checker</h3>
         <form id="perform_check_form">
             <p>Select the type of check(s) you would like to perform:</p>
-            <input id = "Features_check" type="checkbox" name="check_type" value="Features"><span id = "Fcheck">Features/Mates</span> <br>      
-            <input id = "Parts_check" type="checkbox" name="check_type" value="Parts"><span id = "Pcheck">Parts/Instances</span><br>      
+            <input id = "Features_check" type="checkbox" name="check_type" value="Features"><span id = "Fcheck">Features/Mates</span>
+            <div id="fchecklist" class="checklist">&nbsp;</div>      
+            <input id = "Parts_check" type="checkbox" name="check_type" value="Parts"><span id = "Pcheck">Parts/Instances</span>
+            <div id="pchecklist" class="checklist">&nbsp;</div>
             <input type="button" id = "check_model" value="Check model"/>
             <p class="msg" id="msg">&nbsp;</p>
         </form>
