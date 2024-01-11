@@ -116,6 +116,23 @@ def authorize(request: HttpRequest):
     else:
         return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
+def home(request: HttpRequest): 
+    """ 
+    The home view of the app. 
+    
+    **Context:**
+    
+    **Arguments:**
+    
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    
+    **Template:**
+    
+    :template:`grader/index.html`
+    """
+
+    return render(request, "grader/home.html")
+
 def index(request: HttpRequest, os_user_id: str): 
     """ 
     The index view of the app. 
@@ -159,7 +176,8 @@ def app_element(request: HttpRequest, os_user_id: str):
 
     if "tutorial_url" in app_element_json['tree']:
         tutorial_url = app_element_json['tree']['tutorial_url']
-        if tutorial_url != request.GET.get("tutorial"):
+        print(request.GET.get("tutorial"))
+        if tutorial_url != request.GET.get("tutorial") and request.GET.get("tutorial") != None:
             update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", request.GET.get("tutorial"), curr_user.access_token)
             tutorial_url = request.GET.get("tutorial")
     else:
@@ -168,7 +186,7 @@ def app_element(request: HttpRequest, os_user_id: str):
 
     if "ref_url" in app_element_json['tree']:
         ref_url = app_element_json['tree']['ref_url']
-        if ref_url != request.GET.get("reference"):
+        if ref_url != request.GET.get("reference") and request.GET.get("reference") != None:
             update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", request.GET.get("reference"), curr_user.access_token)
             ref_url = request.GET.get("reference")
     else:
@@ -203,12 +221,18 @@ def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: st
     ref_url = get_ref_url_ids(app_json['tree']['ref_url'])
     tutorial_url = get_ref_url_ids(app_json['tree']['tutorial_url'])
 
-    pdf_tutorial = get_blob_data(curr_user.os_domain, tutorial_url['did'], tutorial_url['wv'], tutorial_url['wvid'], tutorial_url['eid'], auth_token=curr_user.access_token)
-    pdf_string = base64.b64encode(pdf_tutorial)
-    # print(pdf_string)
+    try:
+        pdf_tutorial = get_blob_data(curr_user.os_domain, tutorial_url['did'], tutorial_url['wv'], tutorial_url['wvid'], tutorial_url['eid'], auth_token=curr_user.access_token)
+        pdf_string = base64.b64encode(pdf_tutorial)
+        pdf_string = "data:application/pdf;base64," + pdf_string.decode('utf-8')
+        tutorial = {"binary": pdf_tutorial,
+                    "string": pdf_string}
+    except:
+        tutorial = {}
+
     context = {
         "user": curr_user,
-        "pdf_tutorial": pdf_tutorial
+        "pdf_tutorial": tutorial
     }
     return render(request, "grader/tutorial_extension.html", context=context)
 
