@@ -90,7 +90,7 @@
 
             <!--Load url page for group comparison through classes and assignments -->
                 <div class="tooltip">
-                    <form action="{% url 'grader:list_classes' user.os_user_id%}" onsubmit="loading_spinner('features')">
+                    <form action="{% url 'grader:list_classes' user.os_user_id 'educator'%}" onsubmit="loading_spinner('features')">
                         <input class="options" type="submit" value="Grade from C&A submission list">
                         <span class="tooltiptext tooltiptext_left">Grade from Classes and Assignments</span>
                     </form>
