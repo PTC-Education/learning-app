@@ -23,8 +23,6 @@ urlpatterns = [
     path('user_data_on_result_page/<str:os_user_id>', views.user_data_on_result_page, name='user_data_on_result_page'),
     path('doc_info_checker_image_update/<str:os_user_id>', views.doc_info_checker_image_update, name='doc_info_checker_image_update'),
     path('doc_info_checker_results_update/<str:os_user_id>', views.doc_info_checker_results_update, name='doc_info_checker_results_update'),
-
-    
-
-
+    path('app_element/<str:os_user_id>/', views.app_element, name="app_element"),
+    path('tutorial_extension/<str:os_user_id>/<str:app_element_id>/', views.tutorial_extension, name="tutorial_extension")
 ]

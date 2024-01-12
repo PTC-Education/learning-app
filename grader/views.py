@@ -43,11 +43,18 @@ def login(request: HttpRequest):
         user = AuthUser(os_user_id=user_id)
     
     user.os_domain = request.GET.get('server')
-    user.did = request.GET.get('did')
-    user.wv = request.GET.get('wvm')
-    user.wvid = request.GET.get('wvmid')
-    user.eid = request.GET.get('eid')
     user.etype = request.GET.get('etype')
+    if request.GET.get('etype') == "appelement":
+        user.did = request.GET.get('documentId')
+        user.wv = 'w'
+        user.wvid = request.GET.get('workspaceId')
+        user.eid = request.GET.get('elementId')
+    else:
+        user.did = request.GET.get('did')
+        user.wv = request.GET.get('wvm')
+        user.wvid = request.GET.get('wvmid')
+        user.eid = request.GET.get('eid')
+    
     user.save() 
     
 
@@ -104,8 +111,27 @@ def authorize(request: HttpRequest):
 
     if user.etype == "infopanel":
         return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
+    elif user.etype == "appelement":
+        return HttpResponseRedirect(reverse("grader:app_element", args=[user.os_user_id]))
     else:
         return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
+
+def home(request: HttpRequest): 
+    """ 
+    The home view of the app. 
+    
+    **Context:**
+    
+    **Arguments:**
+    
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    
+    **Template:**
+    
+    :template:`grader/index.html`
+    """
+
+    return render(request, "grader/home.html")
 
 def index(request: HttpRequest, os_user_id: str): 
     """ 
@@ -123,7 +149,92 @@ def index(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     context = {"user": curr_user}
+
+    elements_info = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
+    for element in elements_info:
+        if element['elementType'] == "APPLICATION":
+            if element['applicationTarget']['clientId'] == os.environ['OAUTH_CLIENT_ID']:
+                return HttpResponseRedirect(reverse("grader:tutorial_extension", args=[curr_user.os_user_id, element['id']]))
+    
     return render(request, "grader/index.html", context=context)
+
+def app_element(request: HttpRequest, os_user_id: str):
+    """ 
+    This function is for showing elements in a document for best practices checking. 
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/app_element.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    
+    app_element_json = get_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
+
+    if "tutorial_url" in app_element_json['tree']:
+        tutorial_url = app_element_json['tree']['tutorial_url']
+        print(request.GET.get("tutorial"))
+        if tutorial_url != request.GET.get("tutorial") and request.GET.get("tutorial") != None:
+            update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", request.GET.get("tutorial"), curr_user.access_token)
+            tutorial_url = request.GET.get("tutorial")
+    else:
+        tutorial_url = ""
+        insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", tutorial_url, curr_user.access_token)
+
+    if "ref_url" in app_element_json['tree']:
+        ref_url = app_element_json['tree']['ref_url']
+        if ref_url != request.GET.get("reference") and request.GET.get("reference") != None:
+            update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", request.GET.get("reference"), curr_user.access_token)
+            ref_url = request.GET.get("reference")
+    else:
+        ref_url = ""
+        insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", ref_url, curr_user.access_token)
+
+    context={
+        "user": curr_user,
+        "tutorial_url": tutorial_url,
+        "ref_url": ref_url
+    }
+
+    return render(request, "grader/app_element.html", context=context)
+
+def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: str): 
+    """ 
+    The index view of the app. 
+    
+    **Context:**
+    
+    **Arguments:**
+    
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    
+    **Template:**
+    
+    :template:`grader/tutorial_extension.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    app_json = get_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, app_element_id, auth_token=curr_user.access_token)
+    ref_url = get_ref_url_ids(app_json['tree']['ref_url'])
+    tutorial_url = get_ref_url_ids(app_json['tree']['tutorial_url'])
+
+    try:
+        pdf_tutorial = get_blob_data(curr_user.os_domain, tutorial_url['did'], tutorial_url['wv'], tutorial_url['wvid'], tutorial_url['eid'], auth_token=curr_user.access_token)
+        pdf_string = base64.b64encode(pdf_tutorial)
+        pdf_string = "data:application/pdf;base64," + pdf_string.decode('utf-8')
+        tutorial = {"binary": pdf_tutorial,
+                    "string": pdf_string}
+    except:
+        tutorial = {}
+
+    context = {
+        "user": curr_user,
+        "pdf_tutorial": tutorial
+    }
+    return render(request, "grader/tutorial_extension.html", context=context)
 
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
