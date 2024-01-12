@@ -104,10 +104,16 @@ table.item_summary {
   padding: 5px;
   transition: background-color 0.3s ease;
 }
-.single-radio.selected {
+
+.document_list{
+  max-height:500px;
+  overflow-y:auto;
+
+}
+.single-radio.selected, .single-radio.selected:hover {
   background-color: #b9daf2; /* Highlight color */
 }
-.single-radio:hover {
+.single-radio:hover:not(.selected) {
   background-color: #dfecf7; /* Hover color */
 }
 .radio-svg {
@@ -125,12 +131,13 @@ table.item_summary {
 /* == End radio button styling == */
 
 /* Style the app logo at the center top of the page */ 
-#logo {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 20px;
-    width: 35%;
+#logo{
+  position: relative;
+  margin-top: 15px;
+  margin-left: auto;
+  margin-right: auto;
+  align-items: center;
+  width: 300px;
 }
 
 /* Style the search menu */
@@ -306,12 +313,13 @@ input.submiturl-button[type=submit]:hover {
 
 .options:hover{
   background-color: #ebebeb;
-    cursor: pointer;
+  cursor: pointer;
 }
   
 /* Loader */
-.loader {
+.loader .smaller_loader {
     position: relative;
+
 }
 .loader:after {
     content: " ";
@@ -325,6 +333,14 @@ input.submiturl-button[type=submit]:hover {
     height: 80px;
     -webkit-animation: spin 2s linear infinite; /* Safari */
     animation: spin 2s linear infinite;
+  }
+
+  .smaller_loader:after {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3498db;
+    width: 30px;
+    height: 30px;
+
   }
 
 .button-container {
@@ -475,6 +491,7 @@ font-size: 14px;
   align-items: center;
   height:auto;
   margin: 0 auto;
+  margin-top: 5%;
   border-radius: 3px;
   background: #FFF;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
@@ -656,7 +673,7 @@ cursor:pointer;
   padding: 10px;
   border-radius: 4px;
   margin-top: 5px;
-  margin-bottom: 25px;
+  margin-bottom: 5px;
   border-radius: 4px;
   background-color: #ccc;
   justify-content: center;
@@ -689,9 +706,10 @@ input[type="file"] {
 .spinner-container{
   display: flex;
   gap: 50px;
-  padding: 10px;
   justify-content: center;
   align-items: center;
+  z-index:-100;
+ 
 
 }
 .selectedURL-DIV{
@@ -779,3 +797,99 @@ button.select{
   .dropdown:hover .select:after {
     content: "\2212";
   }
+
+  /* Science Olympiad style components */
+
+  .scioly_img {
+    position: absolute;
+    top: 3%;
+    right: 5%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 15%;
+  }
+
+  .content {
+    background-color: rgba(215, 232, 195, 0.7);
+    box-shadow: 0 0 5px 5px rgba(215, 232, 195, 0.7);
+    border-radius: 2%;
+    padding: 3%;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    margin-left: -2%;
+    margin-right: -2%;
+  }
+
+  .title {
+    text-align: center;
+  }
+
+
+
+  .external_link{
+    font-size: x-small;
+  }
+
+
+
+/*Tool Tips */
+
+.tooltip {
+  position: relative;
+  display: flex;
+}
+.centered{
+  justify-content: center;
+}
+.tooltip .tooltiptext {
+  display: inline-flex;
+  visibility: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #D0DBE5;
+  color: #333333;
+  text-align: center;
+  border-radius: 0px;
+  position: absolute;
+  white-space: nowrap;
+  z-index: 1;
+  box-shadow: 0px 0px 4px 0px rgba(0,	0,	0, .25);
+}
+
+.tooltiptext_top{
+  padding: 5px 5px 5px 5px;
+  right: 50%;
+  bottom: 100%;
+  transform: translate(50%, 0%);
+  margin-bottom: 2px;
+}
+
+.tooltiptext_bottom {
+  padding: 5px 5px 5px 5px;
+  right: 50%;
+  top: 100%;
+  transform: translate(50%, 0%);
+  margin-top: 2px;
+}
+
+.tooltiptext_left {
+  padding:5px 5px 5px 5px;
+  bottom: 50%;
+  right: 100%;
+  transform: translate(0%, 50%);
+  margin-top: 2px;
+}
+
+.tooltiptext_right {
+  padding: 5px 5px 5px 5px;
+  bottom: 50%;
+  transform: translate(100%, 50%);
+  margin-top: 2px;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  cursor: default;
+
+}
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^*/

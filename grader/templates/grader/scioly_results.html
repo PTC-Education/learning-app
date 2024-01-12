@@ -1,0 +1,158 @@
+{% load static %}
+
+<link rel = "stylesheet" href = "{% static 'grader/results.css' %}">
+<!-- Load js for handling export of csv -->
+<script src = "{% static 'grader/scioly_download_csv.js' %}" type = "text/javascript" defer = ""></script>
+<!-- Load loading_modelling function to enable loading screen -->
+<script src = "{% static 'grader/loading.js' %}" type = "text/javascript"></script>
+<script src = "{% static 'grader/results.js' %}" type = "text/javascript"></script>
+
+<body id = "whole">
+<!-- Return to the home page -->
+<br>
+
+<button type = "button" class = "blue_button" onclick = "tableToCSV('{{all_ref_props|length}}')">Download report</button>
+<form action = "{% url 'grader:index' user.os_user_id %}">
+    <input type = "submit" value= "Return to Home Page">
+</form>
+<div class = "spinner-container">
+    <div id = "lists">
+        <!--This is where the spinner will load-->
+    </div>
+</div>
+<div>
+    {% if error_message %}
+    <p id = "err_msg"><strong>{{ error_message }}</strong></p>
+    {% endif %}
+</div>
+
+{% if user_props %}
+    <p class = "resulttile">Answer Key Properties</p>
+    <div class = "property_box">
+        <div class = "docinfo">
+            <p class = "docname" id = "usr_docname">{{user_props.0.0}}</p>
+            <p class = "username" id = "usr_username">{{user_props.0.1}}</p>
+            <p class = "doctime" id = "usr_doctime">Time from creation to last edit: {{user_props.0.2}}</p>
+            <p class = "score" id = "usr_score">{{user_props.0.4}}</p>
+            <p  hidden id = "usr_url">{{user_props.0.3}}</p>
+        </div>
+        <div>
+            <div class = "display_table">
+                <table id = "reference" class = "results">
+                    <!--- {% if etype == 'partstudios' %} -->
+                    <col class = "col_0">
+                    <!-- {% endif %} -->
+                    <col class = "col_1">
+                    <col class = "col_2">
+                    <tr>
+                        <!-- {% if etype == 'partstudios' %} -->
+                        <th>Tab Name</th>
+                        <!-- {% endif %} -->
+                        <th>Mass <span class = unit>(kg)</span></th>
+                        <th>Points </th>
+                    </tr>
+                    {% for prop_array in user_props %}
+                        {% if prop_array == user_props.0 %}
+                        <!-- ignore doc info element -->
+                        {% else %}
+                        <tr>
+                            <td id = "usr_0_{{forloop.counter0}}">{{prop_array.1}}</td>
+                            <td id = "usr_1_{{forloop.counter0}}">{{prop_array.2}}</td>
+                            <td id = "usr_1_{{forloop.counter0}}">{{prop_array.3}}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+
+        </div>
+    </div>
+{% endif %}
+<br />
+<br />
+<p class = "resulttile">Results</p>
+      {% if all_ref_props %}
+            {% for ref_props in all_ref_props %}
+                <div class = "property_box">
+                    <div class = "display_thumbnail">
+                        <a href = "{{ref_props.0.5|safe}}" target = "_blank">{{ref_props.0.2}}</a> 
+                        <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
+                        <p hidden id = "elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
+                        <img src = "{{ref_props.0.4}}" alt = "" />
+                        <div class = "score" id = "ref_score_{{forloop.counter0}}">{{ref_props.0.6}}</div>
+                    </div>
+                    <div class = "docinfo">
+                        <p class = "docname" id = "ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
+                        <p class = "username" id = "ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
+
+                        <p class = "doctime" id = "ref_doctime_{{forloop.counter0}}">Time from creation to last edit: {{ref_props.0.3}}</p>
+                    </div>
+                    <div class = "table_error_message" id = "error_message_{{forloop.counter0}}"></div>
+
+
+                    <div>
+                        <div class = "display_table">
+                            <table id = "table_{{forloop.counter0}}" class = "results">
+                                <!-- {% if etype == 'partstudios' %} -->
+                                <col class = "col_0">
+                                <!-- {% endif %} -->
+                                <col class = "col_1">
+                                <col class = "col_2">
+                                <thead>
+                                <tr>
+                                    <!-- {% if etype == 'partstudios' %} -->
+                                    <th>Tab Name</th>
+                                    <!-- {% endif %} -->
+                                    <th>Mass <span class = unit>(kg)</span></th>
+                                    <th>Points </th>
+                                    <th hidden></th>
+                                    <th hidden> </th>
+                                </tr>
+                                {% for prop_array in ref_props %}
+                                    {% if prop_array == ref_props.0 %}
+                                    <!-- ignore doc info element -->
+                                    {% else %}
+                                        <tr>
+                                            <!-- {% if etype == 'partstudios' %} -->
+                                            <td id = "ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
+                                            <!-- {% endif %} -->
+                                            <td id = "ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
+                                            <td id = "ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+            
+        {% endif %}
+
+
+{% if failed_urls %}
+
+<div class = "failed_url_box">
+    The following URLs failed to return a result.    
+    <div class = "failed_url_reasons" id = "failed_url_reasons" >
+        <br>
+        Here are some reasons the CAD Checker may have failed to grade the document.
+        <ul>
+            <li>You may not have permission to access the document - make sure the document owner has shared it with you.</li>
+            <li>The url may be a different element type than you currently have open - make sure you are comparing a Part Studio with a Part Studio or an Assembly with an Assembly.</li>
+            
+        </ul>
+    </div>                 
+    <label for = "failed_url_help" class = "helper" onmouseover = "show_popup('failed_url_reasons')" onmouseleave = "hide_popup('failed_url_reasons')">
+        <img id = "helper_image" src= "{% static 'grader/images/help.png' %}"/>
+    </label>
+    <script>hide_popup('failed_url_reasons')</script>
+    <ul class = "failed_url_list" id = "failed_url_list">
+        {% for url in failed_urls %}
+            <li><a href = "{{ url|safe }}" target = "_blank">{{ url|safe }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+</body>

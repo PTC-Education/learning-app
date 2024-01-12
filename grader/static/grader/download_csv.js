@@ -14,6 +14,7 @@ function tableToCSV(num_of_urls) {
 
 	if(column_info[0].className == "col_0") { // if Part Name column exists
 		csvrow.push("Part Name");
+		csvrow.push("Material");
 	}
 	csvrow.push("Mass","Volume","Surface Area","Principal MOI"); //rest of headers
 	csv_data.push(csvrow.join(",")); //First row with headers
@@ -36,8 +37,9 @@ function tableToCSV(num_of_urls) {
 		csvrow = ["","","","","",""]; //first six blank cells 
 		var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
 		for (let i = 0; i < part.length ; i++){
-			if(column_info[0].clasName == "col_0") { 
-				csvrow.push(part[0].innerHTML);  // add part name to the list if part name column exist
+			if(column_info[i].className == "col_0") { 
+				csvrow.push(part[i].querySelectorAll('div')[0].getAttribute('value')); // add part name to the list if part name column exist
+				csvrow.push(part[i].querySelectorAll('span')[0].innerHTML); // add material name to the list if part name column exist
 			}
 			else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
 				csvrow.push(""); 
@@ -71,8 +73,9 @@ function tableToCSV(num_of_urls) {
 				csvrow = ["","","","","",""]; //blank row
 				var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
 				for (let i = 0; i < part.length ; i++){
-					if(column_info[0].clasName == "col_0") { 
-						csvrow.push(part[0].innerHTML);  // add part name to the list if part name column exist
+					if(column_info[i].className == "col_0") {
+						csvrow.push(part[i].querySelectorAll('div')[0].getAttribute('value')); // add part name to the list if part name column exist
+						csvrow.push(part[i].querySelectorAll('span')[0].innerHTML); // add material name to the list if part name column exist
 					}
 					else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
 						csvrow.push(""); 

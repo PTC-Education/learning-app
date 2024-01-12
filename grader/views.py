@@ -7,7 +7,7 @@ import re
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse 
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpResponseNotFound, JsonResponse
 from django.utils import timezone 
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
@@ -245,7 +245,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     **Arguments:**
         
     - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-    - ``user_type:str``: type of user , options are student and educator
+    - ``user_type:str``: type of user , options are student, educator, and scioly
 
     **Template:**
 
@@ -262,6 +262,25 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
         }
     return render(request, "grader/url_input.html", context=context)
 
+def check_model(request: HttpRequest, os_user_id: str):
+    """ 
+    This function is renders the best practice checker page
+
+    **Arguments:**
+        
+    - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
+
+    **Template:**
+
+    :template:`grader/doc_info_checker.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    context={
+        "user": curr_user,       
+    }
+
+    return render(request, "grader/checker.html", context=context)
+
 def doc_info_checker(request: HttpRequest, os_user_id: str):
     """ 
     This function is for showing elements in a document for best practices checking. 
@@ -276,88 +295,188 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     # Get info and workspace for current document selected
-
     doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     doc_wid = doc_info['defaultWorkspace']['id']
 
     # Create HTML for list of elements
     element_list = []
+    image = None
     elements_info = get_element_info(curr_user.os_domain, curr_user.did, "w", doc_wid, "", auth_token=curr_user.access_token)
     for element in elements_info:
         if element['elementType'] == "PARTSTUDIO":
-            image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
+            #image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "partstudios", auth_token=curr_user.access_token)
             element_dict = {'etype': 'partstudios', 'id': element['id'], 'name': element['name'], 'image': image}
             element_list.append(element_dict)
         elif element['elementType'] == "ASSEMBLY":
-            image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
+            #image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, element['id'], "assemblies", auth_token=curr_user.access_token)
             element_dict = {'etype': 'assemblies', 'id': element['id'], 'name': element['name'], 'image': image}
             element_list.append(element_dict)
-    # Get element and check type that the user has selected
+    context={
+        "user": curr_user, 
+        "doc_wid": doc_wid,
+        "element_list":element_list,
+       
+    }
+
+    return render(request, "grader/doc_info_checker.html", context=context)
+
+def doc_info_checker_image_update(request: HttpRequest, os_user_id: str):
+    '''
+    This functions dynamically updates the thumbnails in the list of elements on doc_info_checker page
+     **Arguments:**
+      - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    '''
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token()
+    doc_wid = request.GET.get("doc_wid")
+    eid = request.GET.get("eid")
+    etype = request.GET.get("etype")
+    image = get_shaded_views(curr_user.os_domain, curr_user.did, "w", doc_wid, eid, etype, auth_token=curr_user.access_token)
+   
+    context={ 
+        "image": image,
+    }
+
+
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
+    )
+
+def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
+    '''
+    This functions dynamically updates the results for selected element on doc_info_checker page
+     **Arguments:**
+      - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information and reviewer status. 
+    '''
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token()
+
+    doc_wid = request.GET.get("doc_wid")
     element = request.GET.get('elements')
-    check_type = request.GET.getlist('check_type')
+    check_type = request.GET.getlist('check_type[]')
+
     try:
         etype = element.split(" ")[0]
         eid = element.split(" ")[1]
     except:
         pass
-    check_message = ""
-    summary_msg = {}
-    detail_msg = {}
-    mates = {}
-    mate_relations = {}
+
+    error_message = ""
+    mates_summary = {}
+    count_summary = {}
+    features_details = {}
     mate_details = {}
+
     
-    if "Features" in check_type and element:
+    if check_type[0]=='true' and element:
         # Get feature list of model the user currently has opened
         feature_list = get_feature_list(
                 curr_user.os_domain, etype, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
             )
         if not feature_list: # API error 
-            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+            error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT0 ERROR)."
 
         if etype == "partstudios":
-            check_message += ps_feature_list_helper(feature_list)
-        if etype == "assemblies":
+            features_details = ps_feature_list_helper(feature_list)
+
+        elif etype == "assemblies":
             # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
-            mate_details, detail_msg = as_get_mate_details(feature_list)
+            mates_summary = as_get_mate_summary(feature_list)
+            mate_details = as_get_mate_details(feature_list)
     
-    if "Parts" in check_type and element:
+    if check_type[1]=='true' and element:
         # Get parts list of model the user currently has opened
         if etype == "partstudios":
             part_list = get_part_list(
                     curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
                 )
             if not part_list: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+                error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 P ERROR)."
 
-            check_message += part_list_helper(part_list)
+            count_summary = part_list_helper(part_list)
 
-        if etype == "assemblies":
+        elif etype == "assemblies":
             assembly_def = get_assembly_definition(
                     curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
                 )
             if not assembly_def: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+                error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 A ERROR) ."
 
-            check_message += instance_list_helper(assembly_def)
+            count_summary = instance_list_helper(assembly_def)
 
+    ## count_summary contents depends on etype - 
+    #   For part studios the summary contains information about parts
+    #   {
+    #    "title": "Part Checking",  
+    #    "part_count": part_count, 
+    #    "part_rename_count": part_rename_count, 
+    #    "part_material_count":part_material_count, 
+    #    "part_surface_count": surface_count
+    #   }
+    #   For assemblies the summary contains  information about instances
+    #  {
+    #   "title":"Instance Checking", 
+    #   "instance_count": instance_count, 
+    #   "part_instance_count": part_instance_count, 
+    #   "assemby_instance_count":assemby_instance_count
+    #   }
+
+    ## features_details contains information about features in a part studio -
+    #   {
+    #   "features": features, 
+    #   "renamed": renamed , 
+    #   "error_count": error_count
+    #   }
+    #   - features is an array of dict {"feature name X ", number of times  feature X is used}
+    #   - renamed is an array of  [number_of_features, renamed_count]
+    #   - error_count is total number of errors in the features
+    #
+    ## mates_summary -
+    #   {
+    #   "mates": mates,
+    #   "mate_relations" : mate_relations,
+    #   "summary_msg" : summary_msg,
+    #   "error_count" :error_count
+    #   }
+    #   - mates is an array of dict  {"mate name M ", number of mates M}
+    #   - mate_relations is a array of dict {"mate relations R", number of mate relations R}
+    #   - "summary_msg" = {"mates" : number of mates  "mate_relations" : number of mate relations}
+    #   - error_count is total number of errors in the mates
+    #
+    ## mate_details contains information about mate featurs and instances
+    #   {
+    #     "mate_details": mate_details, 
+    #     "detail_msg": detail_msg
+    #   }
+            
+    # - detail_msg is a dict  contained  {'renamed': 0, 'offsets': 0, 'limits': 0 }
+    # - mate_details is an array of details about mates
+    #        mate names
+    #        mate type
+    #        mate limit
+    #        offsets
+    #        renamed (boolean)
+
+          
     context={
-        "user": curr_user, 
-        "element_list": element_list,
-        "check_type": check_type,
-        "check_message": check_message,
-        "mates": mates,
-        "mate_relations": mate_relations, 
-        "summary_msg": summary_msg,
+        "etype" : etype,
+        "check_type" : check_type,
+        "error_message": error_message,
+        "count_summary": count_summary, 
+        "features_details": features_details,
+        "mates_summary": mates_summary,
         "mate_details": mate_details,
-        "detail_msg": detail_msg
     }
+  
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
+    )
 
-    return render(request, "grader/doc_info_checker.html", context=context)
-
-
-def list_classes(request: HttpRequest, os_user_id: str):
+def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -375,6 +494,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
 
     classes=[]          # to store the names of classes
     assignments=[]      #array to store assisgnments within the classes
+    error_message=False
 
     #get information about classrooms created by the user
     try:
@@ -388,7 +508,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
                 number_of_members = item["numberOfMembers"]
                 classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
     except:
-        print("Error in classes") #need better error message here
+       error_message = "We encountered an issue. Please check your internet connection."
     
     #If no classes were detected
     if ( len(classes) == 0): 
@@ -404,14 +524,16 @@ def list_classes(request: HttpRequest, os_user_id: str):
     context={
             "page": "classes",
             "user": curr_user, 
+            "user_type": user_type,
             "classes":classes,
+             "error_message" : error_message
         }
     return render(
         request, "grader/c_and_a.html", 
         context=context
     )
 
-def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class_name:str):
+def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class_id:str , class_name:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -448,6 +570,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
 
     context={
             "user": curr_user, 
+            "user_type": user_type,
             "page": "assignments",
             "assignments": assignments,
             "class_name": class_name,
@@ -459,7 +582,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
     )
 
 
-def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
+def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -478,6 +601,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
     submitted_student_works = []  #store submitted work
     action_required_student_works = [] # submitted work that requires user action
     inprogress_student_works = [] #store inprogress work
+    error_message=False
 
     #submitted_student_works
     #action_required_student_works
@@ -570,16 +694,18 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
 
     except:
-         print("Error in members") #need better error message here
+         error_message = "We encountered an issue. Please check your internet connection. "
     context={
             "user": curr_user, 
+            "user_type": user_type,
             "page": "submissions",
             "submitted_student_works":submitted_student_works,
             "action_required_student_works": action_required_student_works,
             "inprogress_student_works": inprogress_student_works,
             "class_name": class_name,
             "class_id": class_id,
-            "assignment_name": assignment_name 
+            "assignment_name": assignment_name,
+            "error_message" : error_message
 
         }
     return render(
@@ -589,13 +715,265 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
 
 def grade_model(request: HttpRequest, os_user_id: str): 
     """ 
-    When a user submits, model properties are compared from the currently opened element or answer key (called user_props) 
-    to the selected elements or input urls (called all_ref_props)
+    When a user submits, urls to compare with the model are collected and returned to the basic results page. 
+    The page renders for the number of urls returned. 
     
-    **Context:**
+    **Arguments:**
     
-    View to get time to completion and mass props compared to reference model
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
     
+    **Template:**
+    
+    :template:`grader/basic_results.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    #grab reference urls , possibly in a csv format, from the generic_grader.html
+    cs_ref_urls = request.GET.getlist('ref_url')
+    #parse the csv file into array of urls
+    ref_urls = convert_cs_to_array(cs_ref_urls) 
+    
+    ref_url_ids = []
+    for url in ref_urls:
+        ref = get_ref_url_ids(url)
+        ref_url_ids.append(ref)
+
+    context={
+        "user": curr_user, 
+        "ref_urls": ref_url_ids
+    }
+    return render(
+        request, "grader/basic_results.html", 
+        context=context
+    )
+
+def user_data_on_result_page(request: HttpRequest, os_user_id: str): 
+    """ 
+    This function returns the user mass properties and document details. It is called from a AJAX function and it returns a JSON 
+    string containing error message, if any, and user properties.    
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/basic_results.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    props = [] 
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    # Get mass props of model the user currently has opened
+    mass_props = get_mass_props(
+            curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, 
+            massAsGroup=False, auth_token=curr_user.access_token
+        )
+    
+    if not mass_props: # API error 
+        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+    error_msg = None
+    # Set list of props - different for each etype
+    try:
+        if curr_user.etype == "partstudios":
+            # Get parts list for part studio and create dictionary of IDs to names
+            part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
+            partId_to_name = {} 
+            
+            for item in part_list: 
+                if 'material' in item:
+                    material = item['material']['displayName']
+                else: 
+                    material = "No material"
+                partId_to_name[item['partId']] = [item['name'], material]
+            
+
+            mass_props = ignore_surfaces(mass_props)
+
+            # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+            props = make_props(mass_props, partId_to_name)
+
+        elif curr_user.etype == "assemblies":
+            # assemblies props = [mass, vol, periphery, principalInertia]
+            props = make_props(mass_props, None)
+
+
+        
+        # Get all additional info from the reference document
+        url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
+        image = get_shaded_views(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, auth_token=curr_user.access_token)
+        element_info = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token)
+        element_name = element_info[0]["name"]
+        doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+        user_name = doc_info["createdBy"]["name"]
+        doc_name = doc_info['name']
+        doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+        
+        # Insert first element of array 
+        props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
+
+
+    except:
+        # If anything above failed, add url to the fairled URL list
+        error_msg = "Something went wrong."
+    
+   
+    context = {
+        'etype': curr_user.etype,
+        'error_msg': error_msg,
+        'user_props': props, 
+    }
+
+ 
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
+    )
+
+
+
+def update_result_page(request: HttpRequest, os_user_id: str): 
+    """ 
+    This function returns mass properties and results for one document at a time. It is called from an AJAX function
+    There are three checks to make sure it returns correct information.
+    1. Check for document access
+        - on failure > returns with error message conveying inaccessible document
+    2. Check for element type
+        - on failure > returns with error message conveying mismatched type
+    3. Check for successful property retrieval 
+        - on failure > returns with error message converying something was wrong
+
+    
+    **Arguments:**
+    
+    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
+    
+    **Template:**
+    
+    :template:`grader/basic_results.html`
+    """
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    domain = request.GET.get('domain')
+    did = request.GET.get('did')
+    wv = request.GET.get('wv')
+    wvid = request.GET.get('wvid')
+    eid = request.GET.get('eid')
+    url = domain + "/documents/" + did + "/"+ wv + "/" + wvid + "/e/" + eid
+
+    props = [] 
+    failed_url = "None"
+    error_msg = None
+
+    element_info = get_element_info(domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
+    # Get all additional info from the reference document
+    try:
+        elementType = element_info[0]['elementType']
+        element_name = element_info[0]["name"]
+        doc_info = get_doc_info(domain, did, auth_token=curr_user.access_token)
+        user_name = doc_info["createdBy"]["name"]
+        doc_name = doc_info['name']
+        doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+        image = get_shaded_views(domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token)
+        
+    except:
+        error_msg = "Couldn't access the document. Make sure it is shared with you."
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': error_msg}),
+            content_type="application/json"
+            )
+ 
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    # Throw a proper error when the element type doesn't match    
+    type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
+    if( not elementType == type_dict[curr_user.etype]):
+        error_msg = 'The element types mismatched.'
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': error_msg}),
+            content_type="application/json"
+            )
+
+    # Get mass props of model the user currently has opened
+    mass_props = get_mass_props(
+            curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, 
+            massAsGroup=False, auth_token=curr_user.access_token
+        )
+    
+    if not mass_props: # API error 
+        error_msg = "Couldn't access the mass properties."
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': error_msg }),
+            content_type="application/json"
+        )
+
+    # Set list of props - different for each etype
+    try:
+        if curr_user.etype == "partstudios":
+            # Get parts list for part studio and create dictionary of IDs to names
+            part_list = get_part_list(curr_user.os_domain, did, wv, wvid, eid, curr_user.access_token)
+            partId_to_name = {}     
+
+            for item in part_list: 
+                if 'material' in item:
+                    material = item['material']['displayName']
+                else: 
+                    material = "No material"
+                partId_to_name[item['partId']] = [item['name'], material]
+  
+            mass_props = ignore_surfaces(mass_props)
+
+            # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+            props = make_props(mass_props, partId_to_name)
+
+            #if the props returns -1, it means there were no parts in the part studio
+            if(props == -1):
+                error_msg = "No parts were detected in the Part Studio."
+                return HttpResponse(
+                    json.dumps({'failed_url': url, 'error_msg': error_msg }),
+                    content_type="application/json"
+                )
+            
+        elif curr_user.etype == "assemblies":
+            # assemblies props = [mass, vol, periphery, principalInertia]
+            props = make_props(mass_props, None)
+            if(props == -1):
+                error_msg = "No instances were detected in the Assembly."
+                return HttpResponse(
+                    json.dumps({'failed_url': url, 'error_msg': error_msg }),
+                    content_type="application/json"
+                )
+        
+
+            
+
+    except:
+        # If anything above failed, add url to the fairled URL list
+        failed_url = url
+        error_msg = 'Unknown error has occured. Click the link to investigate the document.'
+    
+    props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
+    context={ 
+        "etype": curr_user.etype,
+        "failed_url": failed_url,
+        'error_msg': error_msg,
+        "ref_props": props, 
+    }
+
+    return HttpResponse(
+        json.dumps(context),
+        content_type="application/json"
+    )
+
+
+def grade_scioly(request: HttpRequest, os_user_id: str):
+    
+    '''the purpose of this is to grade the science olympiad cases.
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
@@ -603,8 +981,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     
     **Template:**
     
-    :template:`grader/results.html`
-    """
+    :template:`grader/results.html`'''
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
     #grab reference urls , possibly in a csv format, from the generic_grader.html
@@ -615,49 +992,58 @@ def grade_model(request: HttpRequest, os_user_id: str):
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
+        
+    # Get all the relevant elements of the model that the user currently has open (PS and Assemblies)
+    user_elems = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
+    type_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
     
-    # Get mass props of model the user currently has opened
-    mass_props = get_mass_props(
-            curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, 
-            massAsGroup=False, auth_token=curr_user.access_token
-        )
-    
-    if not mass_props: # API error 
+    if not user_elems: # API error 
         return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+    
+    user_props = [] # a 3D array that lists all the PS and Assemblies in a document along with their corresponding mass properties
+    # first indexing is an array of the element labels and the corresponding mass property [eType, name, [mass/center of mass]]
+    # second indexing of the mass property is [mass] for part studios or [COM_xaxis, COM_yaxis, COM_zaxis] for assemblies
+    
+    for elem in user_elems:
+        if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
+            mass_props = get_mass_props(
+                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, elem["id"], type_dict[elem["elementType"]], 
+                    massAsGroup=True, auth_token=curr_user.access_token
+                )
 
-    # Set list of user_props - different for each etype
-    try:
-        if curr_user.etype == "partstudios":
-            # Get parts list for part studio and create dictionary of IDs to names
-            part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
-            partId_to_name = {} 
-            for item in part_list: 
-                partId_to_name[item['partId']] = item['name']
+            elem_mass_prop = [] #initialize
+            if elem["elementType"] == "PARTSTUDIO":
+                if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
+                    return HttpResponse("The Answer Key's Part Studio(s) are empty or do not have a material assigned. Please check the current document and regrade.")
+                    
+                else:
+                    elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
+            else: #elem["elementType"] == "ASSEMBLY"
+                if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
+                    return HttpResponse("The Answer Key's Assembly is empty or does not have a materials assigned. Please check the current document and regrade.")
+                else:
+                    elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
+                    if elem_mass_prop[0] == 0 or elem_mass_prop[1] == 0 or elem_mass_prop[2] == 0: #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
+                        return HttpResponse("The Answer Key's Assembly Center of Mass has a zero in it. Please check the current document and regrade.")
+            elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
+            user_props.append(elem_props)
             
-            mass_props = ignore_surfaces(mass_props)
-            # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-            user_props = make_props(mass_props, partId_to_name)
-
-        elif curr_user.etype == "assemblies":
-            # assemblies user_props = [mass, vol, periphery, principalInertia]
-            user_props = make_props(mass_props, None)
-
-    except:
-        user_props = None
-
     # Get info about the document the user currently has opened
     user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     user_doc_name = user_doc_info['name']
     user_user_name = user_doc_info["createdBy"]["name"]
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
+    totalpoints = 20.00 * float((len(user_props))) # This will be the max score, since its the total points of the answer key
 
     user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
 
     
     # Append user related information along with mass properties
-    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url])
-
-    ## Initialize arrays for ref docs
+    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url, totalpoints])
+    
+            
+    # Here, I go through all the URLs and get their necessary info and GRADE THEM
+     ## Initialize arrays for ref docs
     all_ref_props = [] # 3D array - each 2D array corresponds to one URL
     # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
     # Rest is model props [[mass, vol, periphery, principalInertia, partName],[...]] (without partName for assemblies)
@@ -667,27 +1053,52 @@ def grade_model(request: HttpRequest, os_user_id: str):
         ref_url = get_ref_url_ids(url)
 
         try:         
+            ref_elems = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token) # get all the elems from one URL
+            
             ref_props=[] # initialize empty array of ref props
-
-            mass_props = get_mass_props(
-                curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, 
-                massAsGroup=False, auth_token=curr_user.access_token
-            )
-
-            if curr_user.etype == "partstudios":
-                # Get parts list for part studio and create dictionary of IDs to names
-                part_list = get_part_list(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.access_token)
-                partId_to_name = {} 
-                for item in part_list: 
-                    partId_to_name[item['partId']] = item['name']
-
-                mass_props = ignore_surfaces(mass_props)
-                # partstudios ref_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-                ref_props = make_props(mass_props, partId_to_name)
-
-            elif curr_user.etype == "assemblies":
-                # assemblies ref_props = [mass, vol, periphery, principalInertia]
-                ref_props = make_props(mass_props, None)
+            elemcount = 1
+            totalpoints = 0
+            
+            for elem in ref_elems:
+                if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
+                    
+                    mass_props = get_mass_props(
+                            curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
+                            massAsGroup=True, auth_token=curr_user.access_token
+                        )
+                    
+                    elem_mass_prop = 0 #initialize
+                    points = 0
+                    if elem["elementType"] == "PARTSTUDIO":
+                        
+                        if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
+                            elem_mass_prop = 0
+                        else:
+                            elem_mass_prop = mass_props["bodies"]["-all-"]["mass"][0]
+                            
+                        points = 20 - 100*abs((elem_mass_prop - user_props[elemcount][2])/user_props[elemcount][2])
+                        if points < 0:
+                            points = 0
+                        points = round(points, 2)
+                        elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
+                        
+                    else: #elem["elementType"] == "ASSEMBLY"
+                        if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
+                            elem_mass_prop = [0,0,0]
+                        else:
+                            elem_mass_prop = mass_props["centroid"][0:3]
+                        points = 20 - 100*(((1/3)*abs((elem_mass_prop[0] - user_props[elemcount][2][0])/user_props[elemcount][2][0])) + ((1/3)*abs((elem_mass_prop[1] - user_props[elemcount][2][1])/user_props[elemcount][2][1])) + ((1/3)*abs((elem_mass_prop[2] - user_props[elemcount][2][2])/user_props[elemcount][2][2])))
+                        if points < 0:
+                            points = 0
+                        points = round(points, 2)
+                        for i in range(3):
+                            elem_mass_prop[i] = '{:.2e}'.format(elem_mass_prop[i])
+                        elem_mass_prop = '( ' + elem_mass_prop[0] + ', ' + elem_mass_prop[1] + ', ' + elem_mass_prop[2] + ' )'
+                        
+                    ref_elem_props = [elem["elementType"], elem["name"], elem_mass_prop, points]
+                    ref_props.append(ref_elem_props)
+                    totalpoints = totalpoints + points
+                    elemcount = elemcount + 1
 
             # Get all additional info from the reference document
             image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
@@ -699,16 +1110,31 @@ def grade_model(request: HttpRequest, os_user_id: str):
             doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
 
             # Insert first element of array 
-            ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
+            ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url, totalpoints])
 
             all_ref_props.append((ref_props))
         except:
             # If anything above failed, add url to the fairled URL list
             failed_urls.append(url)
+            
+    #Here, I am converting the user_props mass and centroid to scientific notation (type:str)
+    #Remember, the user_props is a 2D array of all the PS and Assemblies in the document (does NOT include drawings, pdfs, etc.)
+    #Each value in the array is an array with these values in it: [elem["elementType"], elem["name"], elem_mass_prop]
+    #elem_mass_prop is a number (mass in kg) for PS and an array (center of mass for the three axis in [x,y,z])
+    
+    for elem in user_props:
+        if elem == user_props[0]:
+            continue
+        if elem[0] == "PARTSTUDIO":
+            elem[2] = '{:.2e}'.format(elem[2])
+        else: #elem["elementType"] == "ASSEMBLY"
+            for i in range(3):
+                elem[2][i] = '{:.2e}'.format(elem[2][i])
+            elem[2] = '( ' + elem[2][0] + ', ' + elem[2][1] + ', ' + elem[2][2] + ' )'
     
     if len(failed_urls) == 0:
         failed_urls = None
-
+    
     context={
         "user": curr_user, 
         "etype": curr_user.etype,
@@ -717,89 +1143,10 @@ def grade_model(request: HttpRequest, os_user_id: str):
         "all_ref_props": all_ref_props
     }
     return render(
-        request, "grader/basic_results.html", 
+        request, "grader/scioly_results.html", 
         context=context
     )
 
-def check_model(request: HttpRequest, os_user_id: str): 
-    """ 
-    When a user submits, model best practices are checkd for 
-    
-    **Context:**
-    
-    View to get time to completion and mass props compared to reference model
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/checker.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-
-    # Refresh token if needed 
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-
-    check_type = request.GET.getlist('check_type')
-    check_message = ""
-    summary_msg = {}
-    detail_msg = {}
-    mates = {}
-    mate_relations = {}
-    mate_details = {}
-
-    if "Features" in check_type:
-        # Get feature list of model the user currently has opened
-        feature_list = get_feature_list(
-                curr_user.os_domain, curr_user.etype, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-            )
-        if not feature_list: # API error 
-            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-        if curr_user.etype == "partstudios":
-            check_message += ps_feature_list_helper(feature_list)
-        if curr_user.etype == "assemblies":
-            # check_message += as_feature_list_helper(feature_list)
-            mates, mate_relations, summary_msg = as_get_mate_summary(feature_list)
-            mate_details, detail_msg = as_get_mate_details(feature_list)
-    
-    if "Parts" in check_type:
-        # Get parts list of model the user currently has opened
-        if curr_user.etype == "partstudios":
-            part_list = get_part_list(
-                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-                )
-            if not part_list: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-            check_message += part_list_helper(part_list)
-
-        if curr_user.etype == "assemblies":
-            assembly_def = get_assembly_definition(
-                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token
-                )
-            if not assembly_def: # API error 
-                return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-
-            check_message += instance_list_helper(assembly_def)
-
-    context={
-        "user": curr_user,
-        "check_type": check_type,
-        "check_message": check_message,
-        "mates": mates,
-        "mate_relations": mate_relations, 
-        "summary_msg": summary_msg,
-        "mate_details": mate_details,
-        "detail_msg": detail_msg
-    }
-    return render(
-        request, "grader/checker.html", 
-        context=context
-    )
 
 #################### Other helper functions ####################
 
@@ -816,11 +1163,14 @@ def elapsed_time(start_time: str, stop_time: str):
 def get_ref_url_ids(ref_url: str):
     try:
         ref = dict()
+        ref['domain'] = ref_url.split("/documents/")[0]
         ref['did'] = ref_url.split("documents/")[1].split("/")[0]
         ref['wv'] = ref_url.split("documents/")[1].split("/")[1].split("/")[0]
         ref['wvid'] = ref_url.split("/e/")[0].split("/")[-1]
         ref['eid'] = ref_url.split("/e/")[1].split("?")[0]
         return ref
+
+        
     except:
         return None
     
@@ -854,69 +1204,80 @@ def ignore_surfaces(mass_props):
 
 def make_props(mass_props, partId_to_name):
     if partId_to_name:
-        # partstudios user_props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-        try:
-            user_props = [
-                [prt['mass'][0] for prt in mass_props['bodies'].values()], 
-                [prt['volume'][0] for prt in mass_props['bodies'].values()], 
-                [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
-                [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
-                [partId_to_name[prt] for prt in mass_props['bodies'].keys()]
-            ]
-            user_props = sorted([
-                [
-                    user_props[0][i], user_props[1][i], 
-                    user_props[2][i], user_props[3][i], 
-                    user_props[4][i]
-                ] 
-                for i in range(len(user_props[0]))
-            ], key=lambda x : x[1])
-            return user_props
-        except:
-            return None
+        if(mass_props['bodies']):
+            # partstudios user_props = [[mass, vol, periphery, principalInertia, partName, centroid],[...]] sorted by vol decending
+            try:
+                user_props = [
+                    [prt['mass'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['volume'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['periphery'][0] for prt in mass_props['bodies'].values()], 
+                    [prt['principalInertia'][0] for prt in mass_props['bodies'].values()], 
+                    [partId_to_name[prt] for prt in mass_props['bodies'].keys()],
+                    [prt['centroid'][0:3] for prt in mass_props['bodies'].values()],
+                ]
+                user_props = sorted([
+                    [
+                        user_props[0][i], user_props[1][i], 
+                        user_props[2][i], user_props[3][i], 
+                        user_props[4][i], user_props[5][i]
+                    ] 
+                    for i in range(len(user_props[0]))
+                ], key=lambda x : x[1])
+                return user_props
+            except:
+                return None
+        else:
+            return -1 #indicates no parts in the part studio
     else:
-        # assemblies ref_props = [mass, vol, periphery, principalInertia]
-        try: 
-            ref_props = [[
-                mass_props['mass'][0], 
-                mass_props['volume'][0], 
-                mass_props['periphery'][0],
-                mass_props['principalInertia'][0]
-            ]]
-            return ref_props
-        except:
-            return None
+        if('mass' in mass_props):
+            # assemblies ref_props = [mass, vol, periphery, principalInertia,centroid]
+            try: 
+                ref_props = [[
+                    mass_props['mass'][0], 
+                    mass_props['volume'][0], 
+                    mass_props['periphery'][0],
+                    mass_props['principalInertia'][0],
+                    mass_props['centroid'][0:3]
+                ]]
+                return ref_props
+            except:
+                return None
+        else:
+            return -1 #indicates no instances in the assembly
+
 
 # Extract useful information from featurelist for partstudios
 def ps_feature_list_helper(feature_list):
-    feature_count = {} # initialize dictionary for number of features used
+    default_features = ['sketch', 'extrude', 'revolve', 'sweep', 'loft', 'thicken', 'fill', 'enclose', 'fillet', 'faceblend', 'chamfer', 'draft', 'shell', 'rib', 'externalthread', 'curvepattern', 'linearpattern', 'circularpattern', 'plane', 'mirror', 'boolean', 'split', 'wrap', 'transform', 'deletepart', 'moveface', 'replaceface', 'offsetsurface', 'boundarysurface', 'moveboundary', 'ruledsurface', 'transform', 'mutualtrim', 'helix', '3dfitspline', 'projectedcurve', 'bridgingcurve', 'compositecurve', 'intersectioncurve', 'trimcurve', 'isocline', 'mateconnector', 'derived', 'transform', 'compositepart', 'sheetmetalmodel', 'flange', 'hem', 'tab', 'flange', 'makejoint', 'corner', 'bendrelief', 'finishsheetmetalmodel', 'frame', 'frametrim', 'gusset', 'endcap', 'cutlist', 'dfitspline']
+    # types_to_check is every feature type except holes and variables.  it also filters out custom features
+    types_to_check = ['booleanBodies', 'boundarySurface', 'bridgingCurve', 'chamfer', 'circularPattern', 'compositeCurve', 'compositePart', 'cPlane', 'curvePattern', 'cutlist', 'deleteBodies', 'draft', 'enclose', 'endcap', 'extendSurface', 'externalThread', 'extrude', 'faceBlend', 'fill', 'fillet', 'fitSpline', 'frame', 'frameTrim', 'gusset', 'helix', 'importDerived', 'intersectionCurve', 'isocline', 'linearPattern', 'loft', 'mateConnector', 'mirror', 'moveFace', 'mutualTrim', 'newSketch', 'offsetSurface', 'projectCurves', 'replaceFace', 'revolve', 'rib', 'ruledSurface', 'sheetMetalBendRelief', 'sheetMetalCorner', 'sheetMetalEnd', 'sheetMetalFlange', 'sheetMetalHem', 'sheetMetalMakeJoint', 'sheetMetalStart', 'sheetMetalTab', 'shell', 'splitPart', 'sweep', 'thicken', 'transform', 'trimCurve', 'wrap']
+    features = {}
     renamed_count = 0
     number_of_features = len(feature_list['features'])
+    featureIds =[] #store all feature ids
     for feature in feature_list['features']:
-        if feature['featureType'] == "newSketch":
-            feature['featureType'] = "sketch"
         try:
-            feature_count[feature['featureType']] += 1
+            features[feature['featureType']] += 1
         except:
-            feature_count[feature['featureType']] = 1
+            features[feature['featureType']] = 1
+        featureIds.append(feature['featureId'])
 
-        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","")
+        feature_name = re.sub('[0-9]','',feature['name']).replace(" ","").lower()
         
-        if feature_name.lower() != feature['featureType'].lower():
-            renamed_count += 1
-    
-    feature_count = dict(sorted(feature_count.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
+        # don't check hole, variable, and custom feature
+        if feature['featureType'] in types_to_check:
+            if feature_name not in default_features:
+                renamed_count += 1
+    error_count = 0
 
-    feature_message = f'''
-    <h3>Feature Checking</h3>
-    <p>{renamed_count} out of {number_of_features} features are currently renamed from their defaults.</p>
-    <p>List of how many times each feature is used:
-    <ul>
-    '''
-    for k, v in feature_count.items():
-        feature_message += f'<li>{k} - {v}</li>'
+    for featureId in featureIds:
+        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
+            error_count +=1
 
-    return feature_message + '</ul>'
+    features = dict(sorted(features.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
+    renamed = [number_of_features, renamed_count]
+
+    return {"features": features, "renamed": renamed , "error_count": error_count}
 
 # Extract useful information from featurelist for assemblies
 def as_feature_list_helper(feature_list):
@@ -924,17 +1285,14 @@ def as_feature_list_helper(feature_list):
     mate_relation_count = 0
 
     for feature in feature_list['features']:
+       
         if feature['featureType'] == "mate":
             mate_count += 1
         elif feature['featureType'] == "mateRelation":
             mate_relation_count += 1
 
-    feature_message = f'''
-    <h3>Feature Checking</h3>
-    <p>This assembly has {mate_count} mates and {mate_relation_count} mate relations.</p>
-    '''
+    return {"mate_count":mate_count, "mate_relation_count": mate_relation_count}
 
-    return feature_message
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_summary(feature_list):
@@ -944,8 +1302,10 @@ def as_get_mate_summary(feature_list):
         'mates': 0,
         'mate_relations': 0,
     }
+    featureIds =[] #store all feature ids
 
     for feature in feature_list['features']:
+        featureIds.append(feature['featureId'])
         if feature['featureType'] == 'mate' or feature['featureType'] == 'mateRelation':
             params = feature['parameters']
             for param in params:
@@ -964,8 +1324,12 @@ def as_get_mate_summary(feature_list):
                             mates.update({val : 1})
                         else:
                             mates[val] += 1
+    error_count = 0
+    for featureId in featureIds:
+        if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
+            error_count +=1
     
-    return mates, mate_relations, summary_msg
+    return {"mates": mates, "mate_relations": mate_relations, "summary_msg": summary_msg , "error_count" : error_count}
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_details(feature_list):
@@ -1019,7 +1383,8 @@ def as_get_mate_details(feature_list):
             mate.update({'renamed': renamed})
             mate_details.append(mate)
 
-    return mate_details, detail_msg
+
+    return {"mate_details": mate_details, "detail_msg": detail_msg}
 
 # Extract useful information from part lists for partstudios
 def part_list_helper(part_list):
@@ -1039,19 +1404,8 @@ def part_list_helper(part_list):
         elif part['bodyType'] == "sheet":
             surface_count += 1
 
-    part_message = f'''
-    <h3>Part Checking</h3>
-    <p>There is/are {part_count} part(s) in this part studio. <br>
-    {part_rename_count}/{part_count} parts are renamed. <br>
-    {part_material_count}/{part_count} parts have a material assigned.</p>
-    '''
+    return {"title": "Part Checking", "part_count": part_count, "part_rename_count": part_rename_count, "part_material_count":part_material_count, "part_surface_count": surface_count}
 
-    if surface_count > 0:
-        part_message += f'''
-        <p>There are {surface_count} surfaces in this part studio.</p>
-        '''
-
-    return part_message
 
 # Extract useful information about instances for assemblies
 def instance_list_helper(assembly_def):
@@ -1066,9 +1420,6 @@ def instance_list_helper(assembly_def):
         elif instance['type'] == "Assembly":
             assemby_instance_count += 1
 
-    part_message = f'''
-    <h3>Instance Checking</h3>
-    <p>There are {instance_count} instances in this assembly, with {part_instance_count} parts and {assemby_instance_count} sub-assemblies inserted.</p>
-    '''
 
-    return part_message
+    return {"title":"Instance Checking", "instance_count": instance_count, "part_instance_count": part_instance_count, "assemby_instance_count":assemby_instance_count}
+

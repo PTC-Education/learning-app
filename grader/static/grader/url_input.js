@@ -19,7 +19,7 @@ function validateForm() {
   document.getElementById("urlError").innerHTML = " "; //empty the error message when a new url is submitted
   var x = document.forms["studenturl"]["ref_url"].value;
   let regex =
-    /https:\/\/[A-Za-z]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
+    /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
   if (!regex.test(x)) {
     document.getElementById("urlError").innerHTML =
       "Faulty url detected. Please make sure the url is correct."; //show the error message
@@ -103,7 +103,7 @@ function parse_list_of_url(urllist) {
       //only if the url is not blank , might or might not need this
       //test urlvalidity
       let regex =
-        /https:\/\/[A-Za-z]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
+        /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
       if (regex.test(uniqueUrls[i])) {
         addURLasbutton(uniqueUrls[i]); //add the valid onshape url as a button if it is a valid onshape url
       } else {
@@ -121,7 +121,7 @@ function addURLasbutton(toadd) {
 
   //only create new button for urls that are not already in the button div (list)
   if (!addedurls.includes(toadd)) {
-    var newField = document.createElement("li"); //create an item is the list
+    var newField = document.createElement("li"); //create an item as the list
     newField.setAttribute("id", toadd); //set the url as the id
     newField.setAttribute("name", "ref_url[]"); //set the url as the id
     listofurlbuttons.appendChild(newField); //create the list
