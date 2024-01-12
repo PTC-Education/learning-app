@@ -909,7 +909,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                 if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
                     return HttpResponse("The Answer Key's Assembly is empty or does not have a materials assigned. Please check the current document and regrade.")
                 else:
-                    elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
+                    elem_mass_prop = ['%.4f' % val for val in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz
                     if elem_mass_prop[0] == 0 or elem_mass_prop[1] == 0 or elem_mass_prop[2] == 0: #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
                         return HttpResponse("The Answer Key's Assembly Center of Mass has a zero in it. Please check the current document and regrade.")
             elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
@@ -1063,6 +1063,7 @@ def elapsed_time(start_time: str, stop_time: str):
     createdAt = datetime.strptime(start_time.replace("T"," ").split("+")[0],'%Y-%m-%d %H:%M:%S.%f')
     modifiedAt = datetime.strptime(stop_time.replace("T"," ").split("+")[0],'%Y-%m-%d %H:%M:%S.%f')
     delta = modifiedAt - createdAt
+    # start_time looks like this: 2024-01-10T22:31:30.577+00:00
     time_formatted = str(delta).split(".")[0].split(":")
     if "days" in time_formatted[0]:
         return time_formatted[0].split(" days,")[0] + "D" + time_formatted[0].split(" days,")[1] + "H" + time_formatted[1] + "M" + time_formatted[2] + "S"
