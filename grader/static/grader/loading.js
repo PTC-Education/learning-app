@@ -8,10 +8,8 @@ function loading_index() {
 }
 
 function loading_list() {
-
     const main_content = document.getElementById("lists"); 
     main_content.innerHTML = "<div class=\"loader\"></div>"; 
-
 }
 
 function loading_spinner(divid) {
@@ -23,9 +21,8 @@ function loading_spinner_results(divid) {
     const main_content = document.getElementById(divid); 
     main_content.innerHTML = "<div class=\"loader smaller_loader\"></div>"; 
 }
-function loading_documentlist() {
 
+function loading_documentlist() {
     const main_content = document.getElementById("documentlists"); 
     main_content.innerHTML = "<div class=\"loader\"></div>"; 
-
 }

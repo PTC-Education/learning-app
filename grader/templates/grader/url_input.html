@@ -16,10 +16,7 @@
             <a href="https://www.soinc.org/" title="Click to go to the Science Olympiad Homepage ">
                 <img class="scioly_img" src="{% static 'grader/images/scioly_logo.png' %}">
             </a>
-            <br/>
             <h3 class="title">Hello, Science Olympiad Grader! </h3>
-            <br/>
-
         {% endif %}
 
         <div class="content">
@@ -144,13 +141,9 @@
 
                         <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
                             <input id="ref_url_edu" hidden name="ref_url" type="text">
-
                             <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
-
                         </form>
-
-                            <ul class="closeable_button" id="urlButtonContainer">
-                            </ul>    
+                            <ul class="closeable_button" id="urlButtonContainer"></ul>    
 
                     </div>
                 </div>
