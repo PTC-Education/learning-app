@@ -9,6 +9,10 @@ function hide()
 {
     document.getElementById('mates_details').style.display = "none";
 }
+function hideDiv(d)
+{
+    document.getElementById(d).style.display = "none";
+}
 function selectRadio(selectedDiv) {
     // Deselect all divs
     const radios = document.querySelectorAll('.single-radio');
@@ -20,6 +24,7 @@ function selectRadio(selectedDiv) {
         const selectedValue = selectedRadio.getAttribute('data-value');
         document.getElementById("elements").value = selectedValue;
         change_check_box_text(selectedValue.split(" ")[0]);
+        document.getElementById('check-options').style.display = 'block';
     }
 }
 
