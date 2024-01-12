@@ -42,9 +42,7 @@
             
             {% else %}
                 <div class="instructions">
-                    <h3 class="title">
-                        Instructions:
-                    </h3>
+                    <p id="tab-header" class="tab-header">Instructions</p>  
                             {% if user_type == "student" %}
                                 Enter the URL of the Onshape document you want to compare. Make sure the URL is properly formatted. 
                             
@@ -64,7 +62,7 @@
             {% if user_type == "educator" %}
                 <div class="URLinput-DIV">
                     <div class="twoButtonsonEdge">
-                        <p id="tab-header" class="tab-header">URL</p>  
+                        <p id="tab-header" class="tab-header">URL Input</p>  
                         
                         <div class="tooltip">
                             <label for="csvfile"  class="file-UPLOAD">

@@ -224,14 +224,15 @@ table.item_summary {
 
 .instructions{
     width: 90%;
+    padding:0px 15px;
     color: #000;
-    background-color: white;
+    /* background-color: white; */
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
     font-size: 14px;
-    font-style: normal;
+    /* font-style: normal; */
     font-weight: 350;
-    line-height: normal;
-    margin-bottom:50px;
+    /* line-height: normal; */
+    margin-bottom:30px;
 }
 
 /* Style the submit button of forms - generic*/ 
@@ -481,16 +482,16 @@ font-size: 14px;
 }
 
 .URLinput-DIV{
-  padding:10px;
-  justify-content: center;
-  align-items: center;
-  height:auto;
-  margin: 0 auto;
-  margin-top: 5%;
+  padding:20px 10px 10px 10px;
+  /* justify-content: center; */
+  /* align-items: center; */
+  /* height:auto; */
+  margin: 10px 0px;
+  /* margin-top: 5%; */
   border-radius: 3px;
-  background: #FFF;
+  background-color: #e2f0fa;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
-  box-shadow: 0px 0px 5px 6px rgba(0, 0, 0, 0.20);
+  /* box-shadow: 0px 0px 5px 6px rgba(0, 0, 0, 0.20); */
 }
 
 input.selectprop{
@@ -626,7 +627,8 @@ cursor:pointer;
   color: #333;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   font-size: 18px;
-  font-weight: 500;
+  font-weight:bold;
+  margin-top: 0px;
 }
 
 .urlError{
@@ -664,19 +666,17 @@ cursor:pointer;
 }
 
 .file-UPLOAD{
-  border: 1px solid #ccc;
   padding: 10px;
-  border-radius: 4px;
-  margin-top: 5px;
+  margin-top: 25px;
   margin-bottom: 5px;
   border-radius: 4px;
   background-color: #ccc;
   justify-content: center;
   border: 1px solid #9AA5AF;
   box-shadow: 0px 2px 1px 0px rgba(0, 0, 0, 0.08) inset;
-  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  /* font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   font-size: 14px;
-  font-weight: 300;
+  font-weight: 300; */
 }
 
 .file-UPLOAD:hover{
@@ -805,39 +805,36 @@ button.select{
   }
 
   .content {
-    background-color: rgba(215, 232, 195, 0.7);
-    box-shadow: 0 0 5px 5px rgba(215, 232, 195, 0.7);
-    border-radius: 2%;
-    padding: 3%;
-    margin-top: 5%;
+    background-color: rgba(255, 255, 255, 1);
+    /* box-shadow: 0 0 5px 5px rgba(215, 232, 195, 0.7); */
+    /* border-radius: 2%; */
+    /* padding: 3%; */
+    /* margin: 5% -2%; */
+    /* -top: 5%;
     margin-bottom: 5%;
     margin-left: -2%;
-    margin-right: -2%;
+    margin-right: -2%; */
   }
 
   .title {
     text-align: center;
   }
 
-
-
   .external_link{
     font-size: x-small;
   }
-
-
 
 /*Tool Tips */
 
 .tooltip {
   position: relative;
-  display: flex;
+  /* display: flex; */
 }
 .centered{
   justify-content: center;
 }
 .tooltip .tooltiptext {
-  display: inline-flex;
+  display: inline-block;
   visibility: hidden;
   font-size: 12px;
   font-weight: 600;
@@ -849,10 +846,15 @@ button.select{
   white-space: nowrap;
   z-index: 1;
   box-shadow: 0px 0px 4px 0px rgba(0,	0,	0, .25);
+  /* max-width: 250px; */
+  display: flex;
+}
+
+.tooltiptext_top, .tooltiptext_bottom, .tooltiptext_left, .tooltiptext_right {
+  padding: 5px;
 }
 
 .tooltiptext_top{
-  padding: 5px 5px 5px 5px;
   right: 50%;
   bottom: 100%;
   transform: translate(50%, 0%);
@@ -860,7 +862,6 @@ button.select{
 }
 
 .tooltiptext_bottom {
-  padding: 5px 5px 5px 5px;
   right: 50%;
   top: 100%;
   transform: translate(50%, 0%);
@@ -868,15 +869,13 @@ button.select{
 }
 
 .tooltiptext_left {
-  padding:5px 5px 5px 5px;
-  bottom: 50%;
+  bottom: 75%;
   right: 100%;
   transform: translate(0%, 50%);
   margin-top: 2px;
 }
 
 .tooltiptext_right {
-  padding: 5px 5px 5px 5px;
   bottom: 50%;
   transform: translate(100%, 50%);
   margin-top: 2px;
