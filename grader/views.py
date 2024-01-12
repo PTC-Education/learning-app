@@ -364,7 +364,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
         content_type="application/json"
     )
 
-def list_classes(request: HttpRequest, os_user_id: str):
+def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -412,6 +412,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
     context={
             "page": "classes",
             "user": curr_user, 
+            "user_type": user_type,
             "classes":classes,
              "error_message" : error_message
         }
@@ -420,7 +421,7 @@ def list_classes(request: HttpRequest, os_user_id: str):
         context=context
     )
 
-def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class_name:str):
+def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class_id:str , class_name:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -457,6 +458,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
 
     context={
             "user": curr_user, 
+            "user_type": user_type,
             "page": "assignments",
             "assignments": assignments,
             "class_name": class_name,
@@ -468,7 +470,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, class_id:str , class
     )
 
 
-def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
+def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
     """ 
    This function will get the list of classes created by the user.
 
@@ -583,6 +585,7 @@ def list_members(request: HttpRequest, os_user_id: str, class_id:str, class_name
          error_message = "We encountered an issue. Please check your internet connection. "
     context={
             "user": curr_user, 
+            "user_type": user_type,
             "page": "submissions",
             "submitted_student_works":submitted_student_works,
             "action_required_student_works": action_required_student_works,
@@ -749,6 +752,7 @@ def update_result_page(request: HttpRequest, os_user_id: str):
 
     props = [] 
     failed_url = "None"
+    error_msg = None
 
     element_info = get_element_info(domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
     # Get all additional info from the reference document
@@ -799,33 +803,51 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         if curr_user.etype == "partstudios":
             # Get parts list for part studio and create dictionary of IDs to names
             part_list = get_part_list(curr_user.os_domain, did, wv, wvid, eid, curr_user.access_token)
-            partId_to_name = {} 
-            
+            partId_to_name = {}     
+
             for item in part_list: 
                 if 'material' in item:
                     material = item['material']['displayName']
                 else: 
                     material = "No material"
                 partId_to_name[item['partId']] = [item['name'], material]
-            
-
+  
             mass_props = ignore_surfaces(mass_props)
 
             # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
             props = make_props(mass_props, partId_to_name)
 
+            #if the props returns -1, it means there were no parts in the part studio
+            if(props == -1):
+                error_msg = "No parts were detected in the Part Studio."
+                return HttpResponse(
+                    json.dumps({'failed_url': url, 'error_msg': error_msg }),
+                    content_type="application/json"
+                )
+            
         elif curr_user.etype == "assemblies":
             # assemblies props = [mass, vol, periphery, principalInertia]
             props = make_props(mass_props, None)
+            if(props == -1):
+                error_msg = "No instances were detected in the Assembly."
+                return HttpResponse(
+                    json.dumps({'failed_url': url, 'error_msg': error_msg }),
+                    content_type="application/json"
+                )
+        
+
+            
+
     except:
         # If anything above failed, add url to the fairled URL list
         failed_url = url
+        error_msg = 'Unknown error has occured. Click the link to investigate the document.'
     
     props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
     context={ 
         "etype": curr_user.etype,
         "failed_url": failed_url,
-        'error_msg': 'Unknown error has occured. Click the link to investigate the document.',
+        'error_msg': error_msg,
         "ref_props": props, 
     }
 
@@ -889,7 +911,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                 else:
                     elem_mass_prop = mass_props["centroid"][0:3] # this array has 3 values: first three are COM best fit for xyz
                     if elem_mass_prop[0] == 0 or elem_mass_prop[1] == 0 or elem_mass_prop[2] == 0: #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
-                        return HttpResponse("The Answer Key's Assembly Center of Mass has an zero in it. Please check the current document and regrade.")
+                        return HttpResponse("The Answer Key's Assembly Center of Mass has a zero in it. Please check the current document and regrade.")
             elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
             user_props.append(elem_props)
             
@@ -1114,7 +1136,7 @@ def make_props(mass_props, partId_to_name):
             except:
                 return None
         else:
-            return [[None,0,0,0,0]]
+            return -1 #indicates no parts in the part studio
     else:
         if('mass' in mass_props):
             # assemblies ref_props = [mass, vol, periphery, principalInertia,centroid]
@@ -1130,7 +1152,7 @@ def make_props(mass_props, partId_to_name):
             except:
                 return None
         else:
-            return [[0,0,0,0]]
+            return -1 #indicates no instances in the assembly
 
 
 # Extract useful information from featurelist for partstudios

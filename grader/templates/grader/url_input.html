@@ -9,7 +9,7 @@
         <body>
         
         <form action="{% url 'grader:index' user.os_user_id %}">
-            <input type="submit" value="Return to Home Page">
+            <input type="submit" value="&lt; Home">
         </form>
 
         {% if user_type == "scioly" %}
@@ -35,7 +35,7 @@
                     <li>Upload a CSV file containing Onshape URLs.</li>
                 </ul>
                 <p class="external_link">
-                    <a href="{% url 'grader:list_classes' user.os_user_id%}">
+                    <a href="{% url 'grader:list_classes' user.os_user_id user_type%}">
                         If you are using classes and assignments to administer this category, click here.
                     </a> 
 
