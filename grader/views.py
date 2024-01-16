@@ -37,7 +37,10 @@ def login(request: HttpRequest):
         user = AuthUser.objects.get(os_user_id=user_id)
         # Refresh token if needed 
         if user.expires_at < timezone.now() + timedelta(hours=1): 
-            user.refresh_oauth_token() 
+            try:
+                user.refresh_oauth_token() 
+            except:
+                pass
     except ObjectDoesNotExist: 
         # Create a new user 
         user = AuthUser(os_user_id=user_id)
