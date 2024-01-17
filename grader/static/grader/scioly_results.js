@@ -13,8 +13,6 @@ function build_results(response, url_num){
     document.getElementById("url_" + url_num).innerHTML = ref_props[0][5];
     document.getElementById("ref_doctime_" + url_num).innerHTML = "Time from creation to last edit:" +ref_props[0][3];
 
-
-
     if (response.etype == 'partstudios'){ //if the etype is part studios then add a column called part name for parts
       col0 =  document.createElement("col");
       col0.classList.add("col_0");
@@ -27,60 +25,27 @@ function build_results(response, url_num){
     for (let index = 1; index < ref_props.length; index++){
       var row = document.createElement("tr"); //create a new row
       // Create cells
-      let c0 = document.createElement("td");
       let c1 = document.createElement("td");
       let c2 = document.createElement("td");
       let c3 = document.createElement("td");
-      let c4 = document.createElement("td");
-      if (response.etype == 'partstudios'){
-
-
-                  //create a cell for part name (td)
-                  c0.setAttribute('id', 'ref_0_'+ url_num + '_' + index);
-
-                  //create a div for tooltip
-                  let tooltip = document.createElement("div");
-                  tooltip.setAttribute('value',ref_props[index][4][0]);
-                  tooltip.setAttribute('class','tooltip centered');
-                  tooltip.innerText = ref_props[index][4][0];
-        
-                  //create a span for tooltip text
-                  let tooltiptext = document.createElement("span");
-                  tooltiptext.setAttribute('id', 'ref_0_span'+ url_num + '_' + index);
-                  tooltiptext.setAttribute('class','tooltiptext tooltiptext_top');
-                  tooltiptext.innerHTML = ref_props[index][4][1];
-        
-                  //append the tooltiptext to tooltip div
-                  tooltip.appendChild(tooltiptext);
-        
-                  //append the tooltip div to td
-                  c0.appendChild(tooltip);
-        
-                  //append the td to row
-                  row.appendChild(c0);
-      }
 
       c1.setAttribute('id','ref_1_'+ url_num + '_' + index);
-      c1.innerText = ref_props[index][0];
+      c1.innerText = ref_props[index][1];
       row.appendChild(c1);
 
       c2.setAttribute('id','ref_2_'+ url_num + '_' + index);
-      c2.innerText = ref_props[index][1];
+      c2.innerText = ref_props[index][2];
       row.appendChild(c2);
 
       c3.setAttribute('id','ref_3_'+ url_num + '_' + index);
-      c3.innerText = ref_props[index][2];
+      c3.innerText = ref_props[index][3];
       row.appendChild(c3);
-
-      c4.setAttribute('id','ref_4_'+ url_num + '_' + index);
-      c4.innerText = ref_props[index][3];
-      row.appendChild(c4);
 
       // Append row to table body
       results_table.appendChild(row);
     }
     
-    round_off_results_table(url_num);
+    //round_off_results_table(url_num);
     //calculate_error_for_url(url_num);
   }
   else{

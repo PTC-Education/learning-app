@@ -133,20 +133,9 @@
                         <tr>
                             <th>Tab Name</th>
                             <th>Mass <span class = unit>(kg)</span></th>
-                            <th>Points </th>
-    
+                            <th>Points</th>
                         </tr>
-                        {% for prop_array in ref_props %}
-                            {% if prop_array == ref_props.0 %}
-                            <!-- ignore doc info element -->
-                            {% else %}
-                                <tr>
-                                    <td id = "ref_0_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.1}}</td>
-                                    <td id = "ref_1_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.2}}</td>
-                                    <td id = "ref_2_{{forloop.parentloop.counter0}}_{{forloop.counter0}}">{{prop_array.3}}</td>
-                                </tr>
-                            {% endif %}
-                        {% endfor %}
+                        
                     </table>
                 </div>
             </div>
