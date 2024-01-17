@@ -140,6 +140,10 @@ table.item_summary {
   width: 300px;
 }
 
+#tutorial{
+  height: 80vh;
+}
+
 /* Style the search menu */
 #searchInput {
     width: 98%;

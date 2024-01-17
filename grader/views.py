@@ -150,11 +150,12 @@ def index(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     context = {"user": curr_user}
 
-    elements_info = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
-    for element in elements_info:
-        if element['elementType'] == "APPLICATION":
-            if element['applicationTarget']['clientId'] == os.environ['OAUTH_CLIENT_ID']:
-                return HttpResponseRedirect(reverse("grader:tutorial_extension", args=[curr_user.os_user_id, element['id']]))
+    if request.GET.get("index") == None:
+        elements_info = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
+        for element in elements_info:
+            if element['elementType'] == "APPLICATION":
+                if element['applicationTarget']['clientId'] == os.environ['OAUTH_CLIENT_ID']:
+                    return HttpResponseRedirect(reverse("grader:tutorial_extension", args=[curr_user.os_user_id, element['id']]))
     
     return render(request, "grader/index.html", context=context)
 
@@ -176,7 +177,6 @@ def app_element(request: HttpRequest, os_user_id: str):
 
     if "tutorial_url" in app_element_json['tree']:
         tutorial_url = app_element_json['tree']['tutorial_url']
-        print(request.GET.get("tutorial"))
         if tutorial_url != request.GET.get("tutorial") and request.GET.get("tutorial") != None:
             update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "tutorial_url", request.GET.get("tutorial"), curr_user.access_token)
             tutorial_url = request.GET.get("tutorial")
@@ -221,18 +221,154 @@ def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: st
     ref_url = get_ref_url_ids(app_json['tree']['ref_url'])
     tutorial_url = get_ref_url_ids(app_json['tree']['tutorial_url'])
 
+    # Load PDF from tutorial element
     try:
         pdf_tutorial = get_blob_data(curr_user.os_domain, tutorial_url['did'], tutorial_url['wv'], tutorial_url['wvid'], tutorial_url['eid'], auth_token=curr_user.access_token)
         pdf_string = base64.b64encode(pdf_tutorial)
         pdf_string = "data:application/pdf;base64," + pdf_string.decode('utf-8')
-        tutorial = {"binary": pdf_tutorial,
-                    "string": pdf_string}
+        tutorial = {"string": pdf_string}
     except:
         tutorial = {}
 
+    ##
+    ## If page is loaded from "check" button on tutorial page
+    ##
+    if request.GET.get("check") != None:
+        # Refresh token if needed 
+        if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+            curr_user.refresh_oauth_token() 
+        
+        ##
+        ## Start by getting Ref Props
+        ##
+        ref_props = [] 
+        error_msg = None
+
+        element_info = get_element_info(ref_url.domain, ref_url.did, ref_url.wv, ref_url.wvid, ref_url.eid, auth_token=curr_user.access_token)
+        # Get all additional info from the reference document
+        try:
+            url = ref_url.domain + "/documents/" + ref_url.did + "/"+ ref_url.wv + "/" + ref_url.wvid + "/e/" + ref_url.eid
+            elementType = element_info[0]['elementType']
+            element_name = element_info[0]["name"]
+            doc_info = get_doc_info(ref_url.domain, ref_url.did, auth_token=curr_user.access_token)
+            user_name = doc_info["createdBy"]["name"]
+            doc_name = doc_info['name']
+            doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+            image = get_shaded_views(ref_url.domain, ref_url.did, ref_url.wv, ref_url.wvid, ref_url.eid, curr_user.etype, auth_token=curr_user.access_token)
+            
+        except:
+            error_msg = "Couldn't access the reference document. Make sure it is shared with you."
+
+        # Throw a proper error when the element type doesn't match    
+        type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
+        if( not elementType == type_dict[curr_user.etype]):
+            error_msg = 'The element types mismatched.'
+
+        # Get mass props of model the user currently has opened
+        mass_props = get_mass_props(
+                curr_user.os_domain, ref_url.did, ref_url.wv, ref_url.wvid, ref_url.eid, curr_user.etype, 
+                massAsGroup=False, auth_token=curr_user.access_token
+            )
+        
+        if not mass_props: # API error 
+            error_msg = "Couldn't access the mass properties."
+
+        # Set list of props - different for each etype
+        try:
+            if curr_user.etype == "partstudios":
+                # Get parts list for part studio and create dictionary of IDs to names
+                part_list = get_part_list(curr_user.os_domain, did, wv, wvid, eid, curr_user.access_token)
+                partId_to_name = {}     
+
+                for item in part_list: 
+                    if 'material' in item:
+                        material = item['material']['displayName']
+                    else: 
+                        material = "No material"
+                    partId_to_name[item['partId']] = [item['name'], material]
+    
+                mass_props = ignore_surfaces(mass_props)
+
+                # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+                ref_props = make_props(mass_props, partId_to_name)
+
+                #if the props returns -1, it means there were no parts in the part studio
+                if(ref_props == -1):
+                    error_msg = "No parts were detected in the Part Studio."
+                
+            elif curr_user.etype == "assemblies":
+                # assemblies props = [mass, vol, periphery, principalInertia]
+                ref_props = make_props(mass_props, None)
+                if(ref_props == -1):
+                    error_msg = "No instances were detected in the Assembly."
+            
+        except:
+            # If anything above failed, add url to the fairled URL list
+            error_msg = 'Unknown error has occured. Click the link to investigate the document.'
+        
+        ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
+
+        ##
+        ## Get currently opened doc props
+        ##
+        mass_props = get_mass_props(
+                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, 
+                    massAsGroup=False, auth_token=curr_user.access_token
+                )
+            
+        if not mass_props: # API error 
+            return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
+
+        error_msg = None
+        # Set list of props - different for each etype
+        try:
+            if curr_user.etype == "partstudios":
+                # Get parts list for part studio and create dictionary of IDs to names
+                part_list = get_part_list(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
+                partId_to_name = {} 
+                
+                for item in part_list: 
+                    if 'material' in item:
+                        material = item['material']['displayName']
+                    else: 
+                        material = "No material"
+                    partId_to_name[item['partId']] = [item['name'], material]
+                
+
+                mass_props = ignore_surfaces(mass_props)
+
+                # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+                user_props = make_props(mass_props, partId_to_name)
+
+            elif curr_user.etype == "assemblies":
+                # assemblies props = [mass, vol, periphery, principalInertia]
+                user_props = make_props(mass_props, None)
+            
+            # Get all additional info from the user document
+            url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
+            image = get_shaded_views(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, auth_token=curr_user.access_token)
+            element_info = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token)
+            element_name = element_info[0]["name"]
+            doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+            user_name = doc_info["createdBy"]["name"]
+            doc_name = doc_info['name']
+            doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
+            
+            # Insert first element of array 
+            user_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
+
+
+        except:
+            # If anything above failed, add url to the fairled URL list
+            error_msg = "Something went wrong."
+
     context = {
         "user": curr_user,
-        "pdf_tutorial": tutorial
+        "pdf_tutorial": tutorial,
+        "ref_url": ref_url,
+        "error_msg": error_msg,
+        "ref_props": ref_props, 
+        "user_props": user_props
     }
     return render(request, "grader/tutorial_extension.html", context=context)
 

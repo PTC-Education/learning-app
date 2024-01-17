@@ -21,13 +21,24 @@
         <p id="err_msg"><strong>{{ error_message }}</strong></p>
         {% endif %}
     </div>
-    <p><a href="https://cad.onshape.com/api/blobelements/d/d1dd7eef05c73d67498c8c70/w/8b6e19724ad31ffcb7b83e6c/e/9ce7c9420dd5f6025d96bccf">click here</a></p>
+    
+    <form action="{% url 'grader:index' user.os_user_id %}">
+        <input type="hidden" id="index" name="index" value="index">
+        <input class = "go_home" type="submit" value="Back to regular checker">
+    </form>
+
+    <form action="{% url 'grader:index' user.os_user_id %}">
+        <input type="hidden" id="check" name="check" value="check">
+        <input class = "go_home" type="submit" value="Check Model">
+    </form>
+    
 
     <!-- General instructions -->
-    <div height="100%">
+    <!-- <div id="tutorial"> -->
     <p>PDF Below</p>
-    <object data="{{ pdf_tutorial.string }}" type="application/pdf" width="100%" height="100vh"></object>
-    </div>
+    <!-- <object data="{{ pdf_tutorial.string }}" type="application/pdf" height="1000px"><p>Test error message</p></object> -->
+    <iframe src="{{ pdf_tutorial.string }}" height="75vh" id="tutorial"><link type="text/css" rel="Stylesheet" href="{% static 'grader/index.css' %}" /></iframe>
+    <!-- </div> -->
 
 </body>
 
