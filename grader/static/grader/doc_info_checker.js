@@ -9,6 +9,10 @@ function hide()
 {
     document.getElementById('mates_details').style.display = "none";
 }
+function hideDiv(d)
+{
+    document.getElementById(d).style.display = "none";
+}
 function selectRadio(selectedDiv) {
     // Deselect all divs
     const radios = document.querySelectorAll('.single-radio');
@@ -20,18 +24,22 @@ function selectRadio(selectedDiv) {
         const selectedValue = selectedRadio.getAttribute('data-value');
         document.getElementById("elements").value = selectedValue;
         change_check_box_text(selectedValue.split(" ")[0]);
+        document.getElementById('check-options').style.display = 'block';
     }
 }
 
 function change_check_box_text(etype){
   if(etype == 'partstudios'){
-    document.getElementById("Fcheck").innerHTML = "Features";
-    document.getElementById("Pcheck").innerHTML = "Parts";
+    document.getElementById("Fcheck").innerHTML = "Features:";
+    document.getElementById('fchecklist').innerHTML = "<ul><li>Feature count</li><li>Feature type count</li><li>Feature renaming</li><li>Errors</li></ul>";
+    document.getElementById("Pcheck").innerHTML = "Parts:";
+    document.getElementById('pchecklist').innerHTML = "<ul><li>Part count</li><li>Part renaming</li><li>Part marterials</li><li>Surface count</li></ul>";
   }
   else if (etype == 'assemblies'){
-    document.getElementById("Fcheck").innerHTML = "Mates";
-    document.getElementById("Pcheck").innerHTML = "Instances";
-
+    document.getElementById("Fcheck").innerHTML = "Mates:";
+    document.getElementById('fchecklist').innerHTML = "<ul><li>Mate count</li><li>Mate type count</li><li>Mate relation count</li><li>Mate renaming</li><li>Mate offsets and limits</li><li>Mate details</li><li>Errors</li></ul>";
+    document.getElementById("Pcheck").innerHTML = "Instances:";
+    document.getElementById('pchecklist').innerHTML = "<ul><li>Instance count</li><li>Subassembly count</li></ul>";
   }
 }
 function formSubmit() {
