@@ -18,6 +18,7 @@ function loading_spinner(divid) {
 }
 
 function loading_spinner_results(divid) {
+    console.log("spinner " + divid)
     const main_content = document.getElementById(divid); 
     main_content.innerHTML = "<div class=\"loader smaller_loader\"></div>"; 
 }
