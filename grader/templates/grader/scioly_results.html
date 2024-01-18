@@ -10,7 +10,6 @@
 
 
 <script>
-
         '{% for ref_url in ref_urls %}' 
 
             $(document).ready(function () {
@@ -24,20 +23,18 @@
                 type: "GET",
                 data:{
                     'ref_url':'{{ref_url}}',
+                    'key_answers':'{{key_answers}}'
                 },
                 success: function (response) {
-                console.log(response)
-                build_results(response, "{{forloop.counter0}}");
-                $('#features_{{forloop.counter0}}').html(" ");
+                    console.log(response)
+                    build_results(response, "{{forloop.counter0}}");
+                    $('#features_{{forloop.counter0}}').html(" ");
                 },
                 error: function (error) {
                 }
             });
         });
-        '{% endfor %}'
-       
-
-
+        '{% endfor %}'   
 </script>
 
 <body id = "whole">
@@ -64,9 +61,9 @@
     <div class = "property_box">
         <div class = "docinfo">
             <p class = "docname" id = "usr_docname">{{user_props.0.0}}</p>
-            <p class = "username" id = "usr_username">{{user_props.0.1}}</p>
+            <p class = "username" id = "usr_username">Owner: {{user_props.0.1}}</p>
             <p class = "doctime" id = "usr_doctime">Time from creation to last edit: {{user_props.0.2}}</p>
-            <p class = "score" id = "usr_score">{{user_props.0.4}}</p>
+            <p class = "score" id = "usr_score">Max Score: {{user_props.0.4}}</p>
             <p  hidden id = "usr_url">{{user_props.0.3}}</p>
         </div>
         <div>
@@ -99,7 +96,6 @@
     </div>
 {% endif %}
 
-
 {% for url in ref_urls %}    
     <div hidden id = "property_box_{{forloop.counter0}}" class = "property_box">
         <div class="spinner-container">
@@ -115,12 +111,12 @@
             <img id = "thumbnail_{{forloop.counter0}}" src = "{{ref_props.0.4}}" alt = "" />
             <div id = "ref_score_{{forloop.counter0}}" class = "score" ></div>
         </div>
-
-                    
+   
         <div class = "docinfo">
             <p class = "docname" id = "ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
             <p class = "username" id = "ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
-            <p class = "doctime" id = "ref_doctime_{{forloop.counter0}}">Time from creation to last edit: {{ref_props.0.3}}</p>
+            <p class = "doctime" id = "ref_doctime_{{forloop.counter0}}">{{ref_props.0.3}}</p>
+            <p class = "docscore" id = "ref_docscore_{{forloop.counter0}}"></p>
         </div>
 
         <div class = "table_error_message" id = "error_message_{{forloop.counter0}}"></div>
@@ -135,15 +131,12 @@
                             <th>Mass <span class = unit>(kg)</span></th>
                             <th>Points</th>
                         </tr>
-                        
                     </table>
                 </div>
             </div>
         </div>            
     </div>    
-
 {% endfor %} 
-
 
 <div id = "failed_url_box" class = "failed_url_box">
     The following URLs failed to return a result.    
@@ -164,6 +157,5 @@
     </ul>
 </div>
 <script> document.getElementById("failed_url_box").style.display = "none" </script>
-
 
 </body>

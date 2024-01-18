@@ -11,7 +11,8 @@ function build_results(response, url_num){
     document.getElementById("thumbnail_" + url_num).src = ref_props[0][4];
     document.getElementById("name_" + url_num).href = ref_props[0][5];
     document.getElementById("url_" + url_num).innerHTML = ref_props[0][5];
-    document.getElementById("ref_doctime_" + url_num).innerHTML = "Time from creation to last edit:" +ref_props[0][3];
+    document.getElementById("ref_docscore_" + url_num).innerHTML = "Score: " + ref_props[0][6].toString();
+    document.getElementById("ref_doctime_" + url_num).innerHTML = "Time from creation to last edit:" + ref_props[0][3];
 
     if (response.etype == 'partstudios'){ //if the etype is part studios then add a column called part name for parts
       col0 =  document.createElement("col");
