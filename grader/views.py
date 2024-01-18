@@ -172,9 +172,8 @@ def app_element(request: HttpRequest, os_user_id: str):
     :template:`grader/app_element.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    
     app_element_json = get_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.access_token)
-
+    error_msg = None
     if "tutorial_url" in app_element_json['tree']:
         tutorial_url = app_element_json['tree']['tutorial_url']
         if tutorial_url != request.GET.get("tutorial") and request.GET.get("tutorial") != None:
@@ -189,6 +188,72 @@ def app_element(request: HttpRequest, os_user_id: str):
         if ref_url != request.GET.get("reference") and request.GET.get("reference") != None:
             update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", request.GET.get("reference"), curr_user.access_token)
             ref_url = request.GET.get("reference")
+            ref_props = [] 
+            ref_url_ids = get_ref_url_ids(ref_url)
+            
+            # Get all additional info from the reference document
+            try:
+                element_info = get_element_info(ref_url_ids['domain'], ref_url_ids['did'], ref_url_ids['wv'], ref_url_ids['wvid'], ref_url_ids['eid'], auth_token=curr_user.access_token)
+                url = ref_url_ids['domain'] + "/documents/" + ref_url_ids['did'] + "/"+ ref_url_ids['wv'] + "/" + ref_url_ids['wvid'] + "/e/" + ref_url_ids['eid']
+                etype_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
+                elementType = etype_dict[element_info[0]['elementType']]
+                element_name = element_info[0]["name"]
+                doc_info = get_doc_info(ref_url_ids['domain'], ref_url_ids['did'], auth_token=curr_user.access_token)
+                user_name = doc_info["createdBy"]["name"]
+                doc_name = doc_info['name']
+                image = get_shaded_views(ref_url_ids['domain'], ref_url_ids['did'], ref_url_ids['wv'], ref_url_ids['wvid'], ref_url_ids['eid'], elementType, auth_token=curr_user.access_token)
+                
+            except:
+                error_msg = "Couldn't access the reference document. Make sure it is shared with you."
+
+            # Get mass props of model the user currently has opened
+            mass_props = get_mass_props(
+                    ref_url_ids['domain'], ref_url_ids['did'], ref_url_ids['wv'], ref_url_ids['wvid'], ref_url_ids['eid'], elementType, 
+                    massAsGroup=False, auth_token=curr_user.access_token
+                )
+            
+            if not mass_props: # API error 
+                error_msg = "Couldn't access the mass properties."
+
+            # Set list of props - different for each etype
+            try:
+                if elementType == "partstudios":
+                    # Get parts list for part studio and create dictionary of IDs to names
+                    part_list = get_part_list(ref_url_ids['domain'], ref_url_ids['did'], ref_url_ids['wv'], ref_url_ids['wvid'], ref_url_ids['eid'], curr_user.access_token)
+                    partId_to_name = {}     
+
+                    for item in part_list: 
+                        if 'material' in item:
+                            material = item['material']['displayName']
+                        else: 
+                            material = "No material"
+                        partId_to_name[item['partId']] = [item['name'], material]
+        
+                    mass_props = ignore_surfaces(mass_props)
+
+                    # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
+                    ref_props = make_props(mass_props, partId_to_name)
+
+                    #if the props returns -1, it means there were no parts in the part studio
+                    if(ref_props == -1):
+                        error_msg = "No parts were detected in the Part Studio."
+                    
+                elif elementType == "assemblies":
+                    # assemblies props = [mass, vol, periphery, principalInertia]
+                    ref_props = make_props(mass_props, None)
+                    if(ref_props == -1):
+                        error_msg = "No instances were detected in the Assembly."
+                
+            except:
+                # If anything above failed, add url to the fairled URL list
+                error_msg = 'Unknown error has occured when trying to get reference props.'
+            
+            ref_props.insert(0,[user_name, doc_name, element_name, elementType, image, url])
+            if "ref_url_props" in app_element_json['tree']:
+                update_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url_props", ref_props, curr_user.access_token)
+            else:
+                insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url_props", ref_props, curr_user.access_token)
+
     else:
         ref_url = ""
         insert_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, "ref_url", ref_url, curr_user.access_token)
@@ -196,7 +261,8 @@ def app_element(request: HttpRequest, os_user_id: str):
     context={
         "user": curr_user,
         "tutorial_url": tutorial_url,
-        "ref_url": ref_url
+        "ref_url": ref_url,
+        "error_msg": error_msg
     }
 
     return render(request, "grader/app_element.html", context=context)
@@ -218,8 +284,11 @@ def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: st
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
     app_json = get_app_element_json(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, app_element_id, auth_token=curr_user.access_token)
+    ref_props = app_json['tree']['ref_url_props']
     ref_url = get_ref_url_ids(app_json['tree']['ref_url'])
     tutorial_url = get_ref_url_ids(app_json['tree']['tutorial_url'])
+    user_props = None
+    error_msg = None
 
     # Load PDF from tutorial element
     try:
@@ -237,76 +306,10 @@ def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: st
         # Refresh token if needed 
         if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
             curr_user.refresh_oauth_token() 
-        
-        ##
-        ## Start by getting Ref Props
-        ##
-        ref_props = [] 
-        error_msg = None
-
-        element_info = get_element_info(ref_url.domain, ref_url.did, ref_url.wv, ref_url.wvid, ref_url.eid, auth_token=curr_user.access_token)
-        # Get all additional info from the reference document
-        try:
-            url = ref_url.domain + "/documents/" + ref_url.did + "/"+ ref_url.wv + "/" + ref_url.wvid + "/e/" + ref_url.eid
-            elementType = element_info[0]['elementType']
-            element_name = element_info[0]["name"]
-            doc_info = get_doc_info(ref_url.domain, ref_url.did, auth_token=curr_user.access_token)
-            user_name = doc_info["createdBy"]["name"]
-            doc_name = doc_info['name']
-            doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
-            image = get_shaded_views(ref_url.domain, ref_url.did, ref_url.wv, ref_url.wvid, ref_url.eid, curr_user.etype, auth_token=curr_user.access_token)
-            
-        except:
-            error_msg = "Couldn't access the reference document. Make sure it is shared with you."
 
         # Throw a proper error when the element type doesn't match    
-        type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
-        if( not elementType == type_dict[curr_user.etype]):
+        if( not ref_props[0][3] == curr_user.etype):
             error_msg = 'The element types mismatched.'
-
-        # Get mass props of model the user currently has opened
-        mass_props = get_mass_props(
-                curr_user.os_domain, ref_url.did, ref_url.wv, ref_url.wvid, ref_url.eid, curr_user.etype, 
-                massAsGroup=False, auth_token=curr_user.access_token
-            )
-        
-        if not mass_props: # API error 
-            error_msg = "Couldn't access the mass properties."
-
-        # Set list of props - different for each etype
-        try:
-            if curr_user.etype == "partstudios":
-                # Get parts list for part studio and create dictionary of IDs to names
-                part_list = get_part_list(curr_user.os_domain, did, wv, wvid, eid, curr_user.access_token)
-                partId_to_name = {}     
-
-                for item in part_list: 
-                    if 'material' in item:
-                        material = item['material']['displayName']
-                    else: 
-                        material = "No material"
-                    partId_to_name[item['partId']] = [item['name'], material]
-    
-                mass_props = ignore_surfaces(mass_props)
-
-                # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
-                ref_props = make_props(mass_props, partId_to_name)
-
-                #if the props returns -1, it means there were no parts in the part studio
-                if(ref_props == -1):
-                    error_msg = "No parts were detected in the Part Studio."
-                
-            elif curr_user.etype == "assemblies":
-                # assemblies props = [mass, vol, periphery, principalInertia]
-                ref_props = make_props(mass_props, None)
-                if(ref_props == -1):
-                    error_msg = "No instances were detected in the Assembly."
-            
-        except:
-            # If anything above failed, add url to the fairled URL list
-            error_msg = 'Unknown error has occured. Click the link to investigate the document.'
-        
-        ref_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
 
         ##
         ## Get currently opened doc props
@@ -319,7 +322,6 @@ def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: st
         if not mass_props: # API error 
             return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
 
-        error_msg = None
         # Set list of props - different for each etype
         try:
             if curr_user.etype == "partstudios":
@@ -346,7 +348,6 @@ def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: st
             
             # Get all additional info from the user document
             url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
-            image = get_shaded_views(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, auth_token=curr_user.access_token)
             element_info = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, auth_token=curr_user.access_token)
             element_name = element_info[0]["name"]
             doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
@@ -355,13 +356,13 @@ def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: st
             doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
             
             # Insert first element of array 
-            user_props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
-
+            user_props.insert(0,[user_name, doc_name, element_name, doc_time, url])
 
         except:
             # If anything above failed, add url to the fairled URL list
             error_msg = "Something went wrong."
 
+    error_msg = None
     context = {
         "user": curr_user,
         "pdf_tutorial": tutorial,

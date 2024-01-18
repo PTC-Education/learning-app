@@ -141,7 +141,7 @@ table.item_summary {
 }
 
 #tutorial{
-  height: 80vh;
+  height: fit-content;
 }
 
 /* Style the search menu */
