@@ -59,13 +59,13 @@ function build_results(response, url_num){
     //creat a new entry to failed url list
     var new_url = document.createElement("li");
     //set error message for title - get more info on hover
-    new_url.setAttribute('title', response.error_msg);
-    new_url.innerHTML = "<a href = " + response.failed_url + " target = '_blank'>" + response.failed_url + "</a>";
+    //new_url.setAttribute('title', response.error_msg);
+    console.log(response)
+    var new_link = response.failed_url.domain + "/documents/" + response.failed_url.did 
+    new_url.innerHTML =  "<a href= '" + new_link + "' target = '_blank'>" + new_link + "</a>";
     failed_url_list.appendChild(new_url);
-
   }
 }
-
 
 /*
 This function rounds off the data fromt the table to 6 decimal places

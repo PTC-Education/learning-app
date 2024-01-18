@@ -689,8 +689,6 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
             # assemblies props = [mass, vol, periphery, principalInertia]
             props = make_props(mass_props, None)
 
-
-        
         # Get all additional info from the reference document
         url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
         image = get_shaded_views(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, curr_user.eid, curr_user.etype, auth_token=curr_user.access_token)
@@ -704,19 +702,16 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
         # Insert first element of array 
         props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
 
-
     except:
         # If anything above failed, add url to the fairled URL list
         error_msg = "Something went wrong."
     
-   
     context = {
         'etype': curr_user.etype,
         'error_msg': error_msg,
         'user_props': props, 
     }
 
- 
     return HttpResponse(
         json.dumps(context),
         content_type="application/json"
@@ -733,7 +728,6 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     3. Check for successful property retrieval 
         - on failure > returns with error message converying something was wrong
 
-    
     **Arguments:**
     
     - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
@@ -835,9 +829,6 @@ def update_result_page(request: HttpRequest, os_user_id: str):
                     content_type="application/json"
                 )
         
-
-            
-
     except:
         # If anything above failed, add url to the fairled URL list
         failed_url = url
@@ -876,9 +867,6 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     cs_ref_urls = request.GET.getlist('ref_url')
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
-
-    print("ref", ref_urls)
-
 
     # Get all the relevant elements of the model that the user currently has open (PS and Assemblies)
     user_elems = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
@@ -1005,26 +993,16 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                         elem_mass_prop = [0,0,0]
                     else:
                         elem_mass_array = [round(float(string),4) for string in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz.  round to 4 decimal places
-                        print(elem_mass_array)
                         elem_mass_prop = ', '.join(map(str, elem_mass_array))
                     points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - answerArray[elemcount-1][0])/answerArray[elemcount-1][0])) + ((1/3)*abs((elem_mass_array[1] - answerArray[elemcount-1][1])/answerArray[elemcount-1][1])) + ((1/3)*abs((elem_mass_array[2] - answerArray[elemcount-1][2])/answerArray[elemcount-1][2])))
-                    # testPoints = elem_mass_array[0] - answerArray[elemcount-1][0] 
-                    #print(isinstance(elem_mass_array[0], str))
-                    #print(isinstance(answerArray[elemcount-1][0], str))
-                    
-                    # print(testPoints)
+
                     if points < 0:
                         points = 0
                     points = round(points, 2)
                     
-                    #for i in range(3):
-                    #    elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
-                    #elem_mass_prop = '( ' + elem_mass_prop[0] + ', ' + elem_mass_prop[1] + ', ' + elem_mass_prop[2] + ' )'
-                    
                 ref_elem_props =  [elem["elementType"], elem["name"], elem_mass_prop, points]
                 ref_props.append(ref_elem_props)
                 totalpoints = totalpoints + points
-                print(totalpoints)
                 elemcount = elemcount + 1
 
         # Get all additional info from the reference document
