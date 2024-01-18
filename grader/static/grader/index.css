@@ -485,8 +485,7 @@ font-size: 14px;
   justify-content: center;
   align-items: center;
   height:auto;
-  margin: 0 auto;
-  margin-top: 5%;
+  margin: 0px 0px 20px 0px;
   border-radius: 3px;
   background: #FFF;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
@@ -536,7 +535,6 @@ input.selectprop{
 #checkboxes label {
   display: flex;
   flex-direction: row;
-
 }
 
 #checkboxes label:hover {
@@ -670,9 +668,7 @@ cursor:pointer;
 }
 
 .file-UPLOAD{
-  border: 1px solid #ccc;
   padding: 10px;
-  border-radius: 4px;
   margin-top: 5px;
   margin-bottom: 5px;
   border-radius: 4px;
@@ -683,6 +679,7 @@ cursor:pointer;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   font-size: 14px;
   font-weight: 300;
+  height: 16px;
 }
 
 .file-UPLOAD:hover{
@@ -811,27 +808,20 @@ button.select{
   }
 
   .content {
-    background-color: rgba(215, 232, 195, 0.7);
-    box-shadow: 0 0 5px 5px rgba(215, 232, 195, 0.7);
-    border-radius: 2%;
+    /* background-color: rgba(215, 232, 195, 0.7); */
+    /* box-shadow: 0 0 5px 5px rgba(215, 232, 195, 0.7); */
+    /* border-radius: 2%; */
     padding: 3%;
-    margin-top: 5%;
-    margin-bottom: 5%;
-    margin-left: -2%;
-    margin-right: -2%;
+    margin: 0% -2%;
   }
 
   .title {
     text-align: center;
   }
 
-
-
   .external_link{
     font-size: x-small;
   }
-
-
 
 /*Tool Tips */
 
