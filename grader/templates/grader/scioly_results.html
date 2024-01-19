@@ -148,7 +148,7 @@
             <a id = "name_{{forloop.counter0}}" href = "{{ref_props.0.5|safe}}" target = "_blank">{{ref_props.0.2}}</a> 
             <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
             <p hidden id = "elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
-            <img id = "thumbnail_{{forloop.counter0}}" src = "{{ref_props.0.4}}" alt = "" />
+            <img id = "thumbnail_{{forloop.counter0}}" src = "{% static 'grader/images/nothumb.png' %}" width="60" alt = "" />
             <div id = "ref_score_{{forloop.counter0}}" class = "score" ></div>
         </div>
    

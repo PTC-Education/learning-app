@@ -1010,7 +1010,8 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
 
         # Get all additional info from the reference document
         totalpoints = round(totalpoints, 2)
-        image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
+        #image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
+        image = get_document_thumbnail(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
         element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
         element_name = element_info[0]["name"]
         ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
