@@ -70,30 +70,42 @@ function readfilecontent() {
 }
 
 //Function to read contents from the url field
-function show_url_as_buttons() {
+function show_url_as_buttons(is_scioly) {
   let urllist = document.forms["urlform"]["url"].value; //get the value in the text field
-  parse_list_of_url(urllist);
+  parse_list_of_url(urllist, is_scioly);
   document.forms["urlform"]["url"].value = ""; //make text box empty
 }
 
 //Function to parse the list of url from the input form and display as closable buttons in the list with id = urlButtonContainer
-function parse_list_of_url(urllist) {
+function parse_list_of_url(urllist, is_scioly) {
   document.getElementById("urlError").innerHTML = " "; //empty the error message when a new url is submitted
   var urlarray = urllist.split(/,\s*|\s+/); //split the url based on space and commas
   uniqueUrls = [...new Set(urlarray)]; //get the unique urls
-
+  
   for (let i = 0; i < uniqueUrls.length; i++) {
     //iterate over all the unique urls
     if (!uniqueUrls[i] == "") {
       //only if the url is not blank , might or might not need this
       //test urlvalidity
-      let regex =
-        /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
-      if (regex.test(uniqueUrls[i])) {
-        addURLasbutton(uniqueUrls[i]); //add the valid onshape url as a button if it is a valid onshape url
-      } else {
-        document.getElementById("urlError").innerHTML =
-          "At least one faulty url was detected. Please make sure all the urls are formatted correctly.";
+      if(is_scioly) {
+        let regex =
+          /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9]+(?:\?|$)/i;
+        if (regex.test(uniqueUrls[i])) {
+          addURLasbutton(uniqueUrls[i]); //add the valid onshape url as a button if it is a valid onshape url
+        } else {
+          document.getElementById("urlError").innerHTML =
+            "At least one faulty URL was detected. Please make sure all the urls are formatted correctly.";
+        }
+      }
+      else {
+        let regex =
+          /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
+        if (regex.test(uniqueUrls[i])) {
+          addURLasbutton(uniqueUrls[i]); //add the valid onshape url as a button if it is a valid onshape url
+        } else {
+          document.getElementById("urlError").innerHTML =
+            "At least one faulty url was detected. Please make sure all the urls are formatted correctly.";
+        }
       }
     }
   }

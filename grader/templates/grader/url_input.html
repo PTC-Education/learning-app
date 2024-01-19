@@ -83,7 +83,7 @@
                         </div>
                     </div>
                     <div id="urlfield">
-                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons()">
+                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons(false)">
                             <div class="twoButtonsonEdge">
                                 <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs">  
                                 <input class="submiturl-button" type="submit" value="Load document(s)">
@@ -93,7 +93,7 @@
                     <div class="selectedURL-DIV">
 
 
-                        <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
+                        <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons(false) &set_ref_url_as_array())">
                             <input id="ref_url_edu" hidden name="ref_url" type="text">
                             <div class="tooltip">
                                 <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
@@ -130,7 +130,7 @@
                         </div>
                     </div>
                     <div id="urlfield">
-                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons()">
+                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons(true)">
                             <div class="twoButtonsonEdge">
                                 <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs">  
                                 <input class="submiturl-button" type="submit" value="Upload">
@@ -139,7 +139,7 @@
                     </div>     
                     <div class="selectedURL-DIV">
 
-                        <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
+                        <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return (show_url_as_buttons(true) &set_ref_url_as_array())">
                             <input id="ref_url_edu" hidden name="ref_url" type="text">
                             <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
                         </form>
