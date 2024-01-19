@@ -88,8 +88,7 @@ function parse_list_of_url(urllist, is_scioly) {
       //only if the url is not blank , might or might not need this
       //test urlvalidity
       if(is_scioly) {
-        let regex =
-          /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9]+(?:\?|$)/i;
+        let regex = /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9_-]+(?:\/|$)/i;
         if (regex.test(uniqueUrls[i])) {
           addURLasbutton(uniqueUrls[i]); //add the valid onshape url as a button if it is a valid onshape url
         } else {
@@ -98,8 +97,7 @@ function parse_list_of_url(urllist, is_scioly) {
         }
       }
       else {
-        let regex =
-          /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
+        let regex = /https:\/\/[A-Za-z0-9_-]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
         if (regex.test(uniqueUrls[i])) {
           addURLasbutton(uniqueUrls[i]); //add the valid onshape url as a button if it is a valid onshape url
         } else {
