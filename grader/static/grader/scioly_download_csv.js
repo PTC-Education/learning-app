@@ -24,7 +24,7 @@ function tableToCSV(num_of_urls) {
 	var username = document.getElementById("usr_username").innerHTML;
 	var userurl = document.getElementById("usr_url").innerHTML;
     var userscore = document.getElementById("usr_score").innerHTML;
-    var doctime = document.getElementById("usr_doctime").innerHTML;
+    var doctime = document.getElementById("usr_doctime").innerHTML.replace(",", "");
 	csvrow.push(username,"Answer Key", docname, doctime, "", "", "", userscore, userurl); //element name and score are left blank
 	csv_data.push(csvrow.join(",")); //Next row with document information 
 	
@@ -54,7 +54,7 @@ function tableToCSV(num_of_urls) {
 		var docname = document.getElementById("ref_docname_" + u).innerHTML;
 		var username = document.getElementById("ref_username_" + u).innerHTML;
 		var docscore = document.getElementById("ref_docscore_" + u).innerHTML;
-        var doctime = document.getElementById("ref_doctime_" + u).innerHTML;
+        var doctime = document.getElementById("ref_doctime_" + u).innerHTML.replace(",", "");
 		var url =   document.getElementById('url_' + u).innerHTML;
 		var error_message = document.getElementById("error_message_" + u).innerHTML;
 	
