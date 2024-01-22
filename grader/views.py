@@ -965,7 +965,6 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
     try:
         # TO DO: ref_elems should be a list of all the elems, based on the DID.     
         ref_elems = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token) # get all the elems from the URL
-        
         ref_props=[] # initialize empty array of ref props
         elemcount = 1
         totalpoints = 0
@@ -1012,13 +1011,12 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         totalpoints = round(totalpoints, 2)
         #image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
         image = get_document_thumbnail(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-        element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], auth_token=curr_user.access_token)
+        element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token)
         element_name = element_info[0]["name"]
         ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
         user_name = ref_doc_info["createdBy"]["name"]
         doc_name = ref_doc_info['name']
         doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
-
         # Insert first element of array 
         ref_props.insert(0,[doc_name,user_name, element_name, doc_time, image, url, totalpoints])
     except:
@@ -1082,6 +1080,8 @@ def get_scioly_ref_url_ids(ref_url: str):
         ref = dict()
         ref['domain'] = ref_url.split("/documents/")[0]
         ref['did'] = ref_url.split("documents/")[1].split("/")[0]
+        ref['wv'] = ref_url.split("documents/")[1].split("/")[1].split("/")[0]
+        ref['wvid'] = ref_url.split("/e/")[0].split("/")[-1]
         return ref
     except:
         return None

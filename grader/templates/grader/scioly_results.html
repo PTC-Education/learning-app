@@ -15,7 +15,7 @@
             var url = "{% url 'grader:grade_scioly_results' user.os_user_id %}";
             console.log('making call ' + currentIndex);
             loading_spinner_results('features_' + currentIndex);
-            $('#result_status').html(currentIndex + '/' + urls.length + ' documents graded') //show result loading status
+            $('#result_status').html(currentIndex + '/' + urls.length + ' documents graded'); //show result loading status
             $('#property_box_' + currentIndex).css('display', 'block');    //turn on display for results table  
             $.ajax({
                 url: url,
@@ -35,7 +35,8 @@
             });
         }
         else {
-            $('#result_status_container').css('display', 'none');
+            //$('#result_status_container').css('display', 'none');
+            $('#result_status').html("<p class='resulttile'>Graded Documents</p>");
         }
     }
     
