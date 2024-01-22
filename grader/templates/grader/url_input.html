@@ -70,7 +70,7 @@
                             <span class="tooltiptext tooltiptext_left">Upload CSV file</span>
                         </div>                  
                         
-                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
+                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent(false)" onclick="this.value=null;"/>                     
                     </div>   
                     <div>
                         <p class="urlError" id="urlError">
@@ -117,7 +117,7 @@
                         <label for="csvfile"  class="file-UPLOAD" title="Click to select csv file with Onshape URLs to grade ">
                             <img src="{% static 'grader/images/Upload.png' %}"/>
                         </label>
-                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
+                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent(true)" onclick="this.value=null;"/>                     
                     </div>   
                     <div>
                         <p class="urlError" id="urlError">

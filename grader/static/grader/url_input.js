@@ -54,14 +54,14 @@ function generate_ref_urls() {
 }
 
 //Function to read contents of uploaded file - CSV file or Space separated file
-function readfilecontent() {
+function readfilecontent(is_scioly) {
   const fileInput = document.getElementById("csvfile"); //read file from the file upload button
   const selectedFile = fileInput.files[0]; // get the file
   let fr = new FileReader(); //initiate FileReader class
   fr.readAsText(selectedFile);
 
   fr.onload = () => {
-    parse_list_of_url(fr.result);
+    parse_list_of_url(fr.result, is_scioly);
   };
 
   fr.onerror = () => {
