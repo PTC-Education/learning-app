@@ -78,7 +78,7 @@
 <!-- Return to the home page -->
 <br>
 
-<button type = "button" class = "blue_button" onclick = "tableToCSV('{{all_ref_props|length}}')">Download report</button>
+<button type = "button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
 <form action = "{% url 'grader:index' user.os_user_id %}">
     <input type = "submit" value= "&lt; Home">
 </form>
