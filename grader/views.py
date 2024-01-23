@@ -1160,9 +1160,21 @@ def make_props(mass_props, partId_to_name):
 
 # Extract useful information from featurelist for partstudios
 def ps_feature_list_helper(feature_list):
-    default_features = ['sketch', 'extrude', 'revolve', 'sweep', 'loft', 'thicken', 'fill', 'enclose', 'fillet', 'faceblend', 'chamfer', 'draft', 'shell', 'rib', 'externalthread', 'curvepattern', 'linearpattern', 'circularpattern', 'plane', 'mirror', 'boolean', 'split', 'wrap', 'transform', 'deletepart', 'moveface', 'replaceface', 'offsetsurface', 'boundarysurface', 'moveboundary', 'ruledsurface', 'transform', 'mutualtrim', 'helix', '3dfitspline', 'projectedcurve', 'bridgingcurve', 'compositecurve', 'intersectioncurve', 'trimcurve', 'isocline', 'mateconnector', 'derived', 'transform', 'compositepart', 'sheetmetalmodel', 'flange', 'hem', 'tab', 'flange', 'makejoint', 'corner', 'bendrelief', 'finishsheetmetalmodel', 'frame', 'frametrim', 'gusset', 'endcap', 'cutlist', 'dfitspline', 'decal']
+    default_features = ['sketch', 'extrude', 'revolve', 'sweep', 'loft', 'thicken', 'fill', 'enclose', 'fillet', 'faceblend', 
+                        'chamfer', 'draft', 'shell', 'rib', 'externalthread', 'curvepattern', 'linearpattern', 'circularpattern', 
+                        'plane', 'mirror', 'boolean', 'split', 'wrap', 'transform', 'deletepart', 'moveface', 'replaceface', 'offsetsurface', 
+                        'boundarysurface', 'moveboundary', 'ruledsurface', 'transform', 'mutualtrim', 'helix', '3dfitspline', 
+                        'projectedcurve', 'bridgingcurve', 'compositecurve', 'intersectioncurve', 'trimcurve', 'isocline', 'mateconnector', 
+                        'derived', 'transform', 'compositepart', 'sheetmetalmodel', 'flange', 'hem', 'tab', 'flange', 'makejoint', 'corner', 
+                        'bendrelief', 'finishsheetmetalmodel', 'frame', 'frametrim', 'gusset', 'endcap', 'cutlist', 'dfitspline', 'decal']
     # types_to_check is every feature type except holes and variables.  it also filters out custom features
-    types_to_check = ['booleanBodies', 'boundarySurface', 'bridgingCurve', 'chamfer', 'circularPattern', 'compositeCurve', 'compositePart', 'cPlane', 'curvePattern', 'cutlist', 'deleteBodies', 'draft', 'decal', 'enclose', 'endcap', 'extendSurface', 'externalThread', 'extrude', 'faceBlend', 'fill', 'fillet', 'fitSpline', 'frame', 'frameTrim', 'gusset', 'helix', 'importDerived', 'intersectionCurve', 'isocline', 'linearPattern', 'loft', 'mateConnector', 'mirror', 'moveFace', 'mutualTrim', 'newSketch', 'offsetSurface', 'projectCurves', 'replaceFace', 'revolve', 'rib', 'ruledSurface', 'sheetMetalBendRelief', 'sheetMetalCorner', 'sheetMetalEnd', 'sheetMetalFlange', 'sheetMetalHem', 'sheetMetalMakeJoint', 'sheetMetalStart', 'sheetMetalTab', 'shell', 'splitPart', 'sweep', 'thicken', 'transform', 'trimCurve', 'wrap']
+    types_to_check = ['booleanBodies', 'boundarySurface', 'bridgingCurve', 'chamfer', 'circularPattern', 'compositeCurve', 'compositePart', 
+                      'cPlane', 'curvePattern', 'cutlist', 'deleteBodies', 'draft', 'decal', 'enclose', 'endcap', 'extendSurface', 'externalThread', 
+                      'extrude', 'faceBlend', 'fill', 'fillet', 'fitSpline', 'frame', 'frameTrim', 'gusset', 'helix', 'importDerived', 
+                      'intersectionCurve', 'isocline', 'linearPattern', 'loft', 'mateConnector', 'mirror', 'moveFace', 'mutualTrim', 'newSketch', 
+                      'offsetSurface', 'projectCurves', 'replaceFace', 'revolve', 'rib', 'ruledSurface', 'sheetMetalBendRelief', 'sheetMetalCorner', 
+                      'sheetMetalEnd', 'sheetMetalFlange', 'sheetMetalHem', 'sheetMetalMakeJoint', 'sheetMetalStart', 'sheetMetalTab', 
+                      'shell', 'splitPart', 'sweep', 'thicken', 'transform', 'trimCurve', 'wrap']
     features = {}
     renamed_count = 0
     number_of_features = len(feature_list['features'])
@@ -1213,6 +1225,7 @@ def as_get_mate_summary(feature_list):
     summary_msg = {
         'mates': 0,
         'mate_relations': 0,
+        'groups': 0
     }
     featureIds =[] #store all feature ids
 
@@ -1236,11 +1249,12 @@ def as_get_mate_summary(feature_list):
                             mates.update({val : 1})
                         else:
                             mates[val] += 1
+        elif  feature['featureType'] == 'mateGroup':
+            summary_msg['groups'] += 1
     error_count = 0
     for featureId in featureIds:
         if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
             error_count +=1
-    
     return {"mates": mates, "mate_relations": mate_relations, "summary_msg": summary_msg , "error_count" : error_count}
 
 # Extract array of mates and mate relations, including offsets and limits
@@ -1294,7 +1308,9 @@ def as_get_mate_details(feature_list):
 
             mate.update({'renamed': renamed})
             mate_details.append(mate)
-
+        elif  feature['featureType'] == 'mateGroup':
+            if re.sub('[0-9]', '', feature['name'].lower().replace(' ', '')) != "group":
+                detail_msg['renamed'] += 1
 
     return {"mate_details": mate_details, "detail_msg": detail_msg}
 

@@ -37,7 +37,7 @@ function change_check_box_text(etype){
   }
   else if (etype == 'assemblies'){
     document.getElementById("Fcheck").innerHTML = "Mates:";
-    document.getElementById('fchecklist').innerHTML = "<ul><li>Mate count</li><li>Mate type count</li><li>Mate relation count</li><li>Mate renaming</li><li>Mate offsets and limits</li><li>Mate details</li><li>Errors</li></ul>";
+    document.getElementById('fchecklist').innerHTML = "<ul><li>Mate count</li><li>Mate type count</li><li>Mate relation count</li><li>Mate renaming</li><li>Mate offsets and limits</li><li>Mate details</li><li>Groups</li><li>Errors</li></ul>";
     document.getElementById("Pcheck").innerHTML = "Instances:";
     document.getElementById('pchecklist').innerHTML = "<ul><li>Instance count</li><li>Subassembly count</li></ul>";
   }
@@ -144,8 +144,10 @@ function build_page(response){
         //mate and mate_relation details
         var number_of_mates = response.mates_summary["summary_msg"]["mates"];  
         var number_of_mate_relations = response.mates_summary["summary_msg"]["mate_relations"];
+        var number_of_groups = response.mates_summary["summary_msg"]["groups"];
         document.getElementById("mate_count").innerHTML = number_of_mates;                                                  // number of mates
         document.getElementById("mate_relations_count").innerHTML = number_of_mate_relations;                                // number of mate relations
+        document.getElementById("groups_count").innerHTML = number_of_groups;  
         document.getElementById("error_count").innerHTML = response.mates_summary["error_count"];                             // number of errors in mates
         
         document.getElementById("renamed").innerHTML = response.mate_details["detail_msg"]["renamed"];                         // number of instances
