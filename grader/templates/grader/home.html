@@ -10,30 +10,31 @@
             <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="95%"/>
         </div>
         <div class="support_container">
-            <h1>Support</h1>
+            <h1 id="support">Support</h1>
             <p>Welcome to the CAD Checker App.  The goal of this app is to aid students, instructors, or anyone working to make sure that they are at the top of their CAD game.  The app includes several components, all described below.  The components are divided into two categories, <strong>Self Check</strong> and <strong>Compare Models From List</strong>.</p>
             <h2>Self-Check</h2>
-            <h3>Compare model properties to reference</h3>
+            <h3 id="compare_to_reference">Compare model properties to reference</h3>
             <p>Select this option if you want to chck your model against a reference.  All you need is the URL for that reference model.  The checker works for both part studios and assemblies.</p>
             <p>Simply paste the URL into the input box and select "Grade model."  Your model will be graded against the reference. You may chose to check for mass, volume, surface area, and principal moment of interia.  Additionally, a tolerance slider allows you to specify how strict you want the checker to be.</p>
-            <h3>Check best practices</h3>
+            <h3 id="best_practices">Check best practices</h3>
             <p>The goal of this self-check option is to help CAD users develop good CAD practices.  No one wants an assembly of parts all named "Part 1."  This checker checks both part studios and assemblies for practices such as renaming parts and mates and using a diverse range of CAD features.  It even checks for modeling errors.</p>
             <h2>Compare Models From List</h2>
-            <h3>Grade list of URLs</h3>
+            <h3 id="grade_from_list">Grade list of URLs</h3>
             <p>Are you an instructor or TA looking to grade a large number of CAD models against a reference or key?  This option is meant for you.  Simply open the CAD Checker app from inside any document tab -- part studio or assembly -- intended to be the "key."  Then paste in a list of document URLs to check.</p>
             <p>Your model will be graded against the key. You may chose to check for mass, volume, surface area, and principal moment of interia.  Additionally, a tolerance slider allows you to specify how strict you want the checker to be.</p>
             <p>Once results have been calculated, with a click of a button, a report of all results can be download in CSV format.</p>
-            <h3>Grade from C&A submission list</h3>
+            <h3 id="grade_from_canda">Grade from C&A submission list</h3>
             <p>Classes & Assignments is a data management tool created for educators by educators, fascilitating the distribution, collection, and organization of student Onshape documents.  CAD Checker works with Classes & Assignments to making checking students models against a key quick and easy.</p>
             <p>Simply open the CAD Checker app from inside any document tab -- part studio or assembly -- intended to be the "key." Then, in the CAD Checker app, select a class and then an assignment.  Any student submissions associated with that document will be automatically loaded.  Click the "Grade" button.</p>
             <p>Models will be graded against the key. You may chose to check for mass, volume, surface area, and principal moment of interia.  Additionally, a tolerance slider allows you to specify how strict you want the checker to be.</p>
             <p>Once results have been calculated, with a click of a button, a report of all results can be download in CSV format.</p>
-            <h3>Grade for Science Olympiad competitions</h3>
+            <h3 id="science_olympiad">Grade for Science Olympiad competitions</h3>
             <p>Onshape is excited to be participating in the Engineering CAD Science Olympiad event!  We have added a grading option to the CAD Checker app just for graders of this event</p>
             <p>Simply collect a list of URLs from students after they complete their models.  Paste the URLs into the input box or upload them via CSV.  Click the "Grade models" button and students submissions will be graded according to the Science Olympiad event rules.</p>
-            <p>Once results have been calculated, with a click of a button, a report of all results can be download in CSV format.</p>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/T_Y5NAKGeFo?si=TBzkAlTit4vHrcyK" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-            <h2>Contact Us</h2>
+            <p>Once results have been calculated, with a click of a button, a report of all results can be download in CSV format.  The video below walks through the grading process for Science Olympiad.</p>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/jbKpc39tX8c?si=PmX_ocEGbCBP4CRt" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <p>For more information on grading and this category, please review the <a href="https://docs.google.com/document/d/1m4fMifwR76ODnmvDQXxo68cwWXsVjhHKTUBdmfLNRx8/edit?usp=sharing">Engineering CAD Supervisor Guide</a>.</p>
+            <h2 id="contact_us">Contact Us</h2>
             <p><a href="mailto:edutech@ptc.com">edutech@ptc.com</a></p>
         </div>
     </body>
