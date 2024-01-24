@@ -3,7 +3,8 @@ from .import views
 
 app_name = 'grader'
 urlpatterns = [
-    path('',views.index), 
+    path('',views.home), 
+    path('home/',views.home, name='home'),
     path('oauthSignin/', views.login, name='login'), 
     path('oauthRedirect/', views.authorize, name='authorize'), 
     path('index/<str:os_user_id>/', views.index, name='index'), 
@@ -24,8 +25,4 @@ urlpatterns = [
     path('user_data_on_result_page/<str:os_user_id>', views.user_data_on_result_page, name='user_data_on_result_page'),
     path('doc_info_checker_image_update/<str:os_user_id>', views.doc_info_checker_image_update, name='doc_info_checker_image_update'),
     path('doc_info_checker_results_update/<str:os_user_id>', views.doc_info_checker_results_update, name='doc_info_checker_results_update'),
-
-    
-
-
 ]

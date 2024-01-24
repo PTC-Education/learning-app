@@ -127,6 +127,24 @@ def index(request: HttpRequest, os_user_id: str):
     context = {"user": curr_user}
     return render(request, "grader/index.html", context=context)
 
+def home(request: HttpRequest, os_user_id=None):
+    """ 
+    The home page that can be accessed either logged in in-app or as a standard URL without login information. 
+    
+    The page documents more extensive user instructions, some technical tips, and a documentation on all data collections from the users. 
+
+    **Arguments:**
+        
+    **Template:**
+
+    :template:`grader/home.html`
+    """
+    context = {"user": None} 
+    if os_user_id: 
+        curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+        context['user'] = curr_user
+    return render(request, "grader/home.html", context=context)
+
 def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     """ 
 

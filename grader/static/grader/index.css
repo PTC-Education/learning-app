@@ -884,3 +884,23 @@ button.select{
 
 }
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+.footer {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  text-align: center;
+  padding: 4px;
+  font-size: 10px;
+  background-color: white;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  box-sizing: border-box;
+}
+.support_container {
+  max-width: 1000px;
+  margin:auto;
+}
+.support_container h1, h2, h3{
+  color: #3D4647;
+}

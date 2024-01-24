@@ -75,7 +75,7 @@
         <div class="dropdown">
             <div class="tooltip">
                 <button class="select">
-                Compare models from a list  
+                Compare Models From List
                 </button>
                 <span class="tooltiptext tooltiptext_top">Educator option</span>
             </div>
@@ -99,16 +99,14 @@
                 <!--Load url page for SCIENCE OLYMPIAD USERS-->
                 <div class="tooltip">
                     <form action="{% url 'grader:url_input_page' user.os_user_id 'scioly'%}">
-                        <input class="options" type="submit" value="Grade for Science Olympiad Competitions">
-                        <span class="tooltiptext tooltiptext_left">Grade for Science Olympiad Competitions</span>
+                        <input class="options" type="submit" value="Grade for Science Olympiad competitions">
+                        <span class="tooltiptext tooltiptext_left">Grade for Science Olympiad competitions</span>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-            
-
-
+    <div class="footer"><a href="{% url 'grader:home'%}" target="_blank">Support</a></div>
 </body>
 
 </html>
