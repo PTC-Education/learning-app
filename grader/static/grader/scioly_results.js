@@ -60,7 +60,6 @@ function build_results(response, url_num){
     var new_url = document.createElement("li");
     //set error message for title - get more info on hover
     //new_url.setAttribute('title', response.error_msg);
-    console.log(response)
     var new_link = response.failed_url.domain + "/documents/" + response.failed_url.did + "/" + response.failed_url.wv + "/" + response.failed_url.wvid;
     new_url.innerHTML =  "<a href= '" + new_link + "' target = '_blank'>" + new_link + "</a>";
     failed_url_list.appendChild(new_url);
