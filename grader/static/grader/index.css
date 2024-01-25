@@ -289,6 +289,19 @@ input.submiturl-button[type=submit]:hover {
     cursor:pointer;
 }
 
+input.check_model {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #CCCCCC;
+    border: 0 none;
+    border-radius: 5px;
+    margin: 10px 0px;
+}
+
+input.check_model:hover {
+  background-color: #ebebeb;
+}
+
 .options{
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
     background: #CCCCCC;

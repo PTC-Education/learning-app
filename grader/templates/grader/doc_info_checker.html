@@ -24,8 +24,7 @@
                     data:{
                         'etype': etype,
                         'eid' : eid,
-                        'doc_wid' : doc_wid,
-
+                        'doc_wid' : doc_wid
                     },
                     success: function (response) {
                         $('#image_{{forloop.counter0}}').attr('src',response.image);
@@ -45,34 +44,24 @@
                 $("#check_model").click(function (event) {
                     var url = "{% url 'grader:doc_info_checker_results_update' user.os_user_id %}";
                     var elements = $("#elements").val();
+                    loading_spinner('features2');
+                    $("#error_message").html("");
+                    $.ajax({
+                        url: url,
+                        type: "GET",
+                        data:{
+                            doc_wid : "{{doc_wid}}",
+                            elements : elements
+                        },
+                    
+                        success: function (response) {
+                            build_page(response);
+                            $('#features2').html(" ");
+                        },
+                        error: function (error) {
+                        }
+                    });
 
-                    check_type =[];
-                    check_type[0] = $("#Features_check").is(":checked")
-                    check_type[1] = $("#Parts_check").is(":checked")
-
-                    if(is_proper_selection_made(check_type,elements)){
-                        $("#error_message").html("");
-                        $.ajax({
-                            url: url,
-                            type: "GET",
-                            data:{
-                                doc_wid : "{{doc_wid}}",
-                                check_type : check_type,
-                                elements : elements,
-                            },
-                        
-                            success: function (response) {
-                                build_page(response);
-                                $('#features_1').html(" ");
-                            },
-                            error: function (error) {
-                            }
-                        });
-                    }
-                    else{
-                        $("#error_message").html("Please make a selection");
-                        hide_all_divs();
-                    }
                 });  
             });
 
@@ -91,7 +80,7 @@
                     <div id="features">
                         <!--This is where the spinner will load-->
                     </div>
-                    </div>
+                </div>
                 {% for element in element_list %}
                     <div class="single-radio" onclick="selectRadio(this)" data-value="{{ element.etype }} {{ element.id }}">
                         {% if element.etype == 'assemblies' %}
@@ -103,24 +92,17 @@
                         <div class="radio-label">{{ element.name }}</div>
                     </div>
                 {% endfor %}
-
             </div>
             {% endif %}
             <div id="check-options">
-                <p>Select the type of check(s) you would like to perform:</p>
-                <input id = "Features_check" type="checkbox" name="check_type" value="Features"><span id = "Fcheck"></span>
-                <div id="fchecklist" class="checklist">&nbsp;</div>    
-                <input id = "Parts_check" type="checkbox" name="check_type" value="Parts"><span id = "Pcheck"></span>
-                <div id="pchecklist" class="checklist">&nbsp;</div>
                 <input type="hidden" name="elements" id="elements" value="">  
-                <input type="button" id = "check_model" value="Check model"/>
+                <input type="button" class="check_model" id = "check_model" value="Check model"/>
                 <p class="msg" id="msg">&nbsp;</p>
             </div>
         </form>
     
-
         <div class="spinner-container">
-            <div id="features">
+            <div id="features2">
                 <!--This is where the spinner will load-->
             </div>
         </div>
@@ -173,7 +155,6 @@
                     <li>Groups:  <span id = "groups_count"></span></li>
                     <li>Total errors: <span id = "error_count"></span></li>
                 </ul>
-
 
                 <p class="list_title">Of the mates and mate relations:</p>
                 <ul class="summary">

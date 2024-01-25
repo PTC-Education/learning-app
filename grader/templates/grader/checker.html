@@ -7,47 +7,30 @@
         <script src="{% static 'grader/loading.js' %}" type="text/javascript"></script>
         <script src="{% static 'grader/doc_info_checker.js' %}" type="text/javascript"></script>
         <script src="{% static 'grader/jquery-3.7.1.js' %}" type="text/javascript"></script>
-
-
-
         <script>
             //get results for elememt 
-            $(document).ready(function () {
-                $("#check_model").click(function (event) {
+            $(document).ready(function () {                
                     var url = "{% url 'grader:doc_info_checker_results_update' user.os_user_id %}";
                     var doc_wid = '{{user.wvid}}';
                     var elements = '{{user.etype}}' + " " +'{{user.eid}}';
-
-                    check_type =[];
-                    check_type[0] = $("#Features_check").is(":checked")
-                    check_type[1] = $("#Parts_check").is(":checked")
-
-                    if(is_proper_selection_made(check_type,elements)){
-                        $("#error_message").html("");
-                        $.ajax({
-                            url: url,
-                            type: "GET",
-                            data:{
-                                doc_wid : doc_wid,
-                                check_type : check_type,
-                                elements : elements,
-                            },
-                        
-                            success: function (response) {
-                                build_page(response);
-                                $('#features_1').html(" ");
-                            },
-                            error: function (error) {
-                            }
-                        });
-                    }
-                    else{
-                        $("#error_message").html("Please make a selection");
-                        hide_all_divs();
-                    }
-                });  
+                    loading_spinner('features');
+                    $("#error_message").html("");
+                    $.ajax({
+                        url: url,
+                        type: "GET",
+                        data:{
+                            doc_wid : doc_wid,
+                            elements : elements,
+                        },
+                    
+                        success: function (response) {
+                            build_page(response);
+                            $('#features').html(" ");
+                        },
+                        error: function (error) {
+                        }
+                    });
             });
-
         </script>
 
     </head>
@@ -58,25 +41,12 @@
         </form>
         <!-- Check model -->
         <h3>Best Practices Checker</h3>
-        <form id="perform_check_form">
-            <div id="check-options">
-                <p>Select the type of check(s) you would like to perform:</p>
-                <input id = "Features_check" type="checkbox" name="check_type" value="Features"><span id = "Fcheck">Features/Mates</span>
-                <div id="fchecklist" class="checklist">&nbsp;</div>      
-                <input id = "Parts_check" type="checkbox" name="check_type" value="Parts"><span id = "Pcheck">Parts/Instances</span>
-                <div id="pchecklist" class="checklist">&nbsp;</div>
-                <input type="button" id = "check_model" value="Check model"/>
-                <p class="msg" id="msg">&nbsp;</p>
-            </div>
-        </form>
-        <script> change_check_box_text('{{user.etype}}') </script>
+        
         <div class="spinner-container">
             <div id="features">
                 <!--This is where the spinner will load-->
             </div>
         </div>
-
-
 
         <!-- Error message -->
         <div>

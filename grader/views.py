@@ -265,7 +265,6 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
 
     doc_wid = request.GET.get("doc_wid")
     element = request.GET.get('elements')
-    check_type = request.GET.getlist('check_type[]')
 
     try:
         etype = element.split(" ")[0]
@@ -279,8 +278,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
     features_details = {}
     mate_details = {}
 
-    
-    if check_type[0]=='true' and element:
+    if element:
         # Get feature list of model the user currently has opened
         feature_list = get_feature_list(
                 curr_user.os_domain, etype, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
@@ -296,7 +294,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
             mates_summary = as_get_mate_summary(feature_list)
             mate_details = as_get_mate_details(feature_list)
     
-    if check_type[1]=='true' and element:
+    if element:
         # Get parts list of model the user currently has opened
         if etype == "partstudios":
             part_list = get_part_list(
@@ -372,7 +370,6 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
           
     context={
         "etype" : etype,
-        "check_type" : check_type,
         "error_message": error_message,
         "count_summary": count_summary, 
         "features_details": features_details,
