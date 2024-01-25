@@ -23,7 +23,6 @@ function selectRadio(selectedDiv) {
     if (selectedRadio) {
         const selectedValue = selectedRadio.getAttribute('data-value');
         document.getElementById("elements").value = selectedValue;
-        change_check_box_text(selectedValue.split(" ")[0]);
         document.getElementById('check-options').style.display = 'block';
     }
 }

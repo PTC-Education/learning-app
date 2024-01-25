@@ -24,8 +24,7 @@
                     data:{
                         'etype': etype,
                         'eid' : eid,
-                        'doc_wid' : doc_wid,
-
+                        'doc_wid' : doc_wid
                     },
                     success: function (response) {
                         $('#image_{{forloop.counter0}}').attr('src',response.image);
@@ -103,17 +102,11 @@
                         <div class="radio-label">{{ element.name }}</div>
                     </div>
                 {% endfor %}
-
             </div>
             {% endif %}
             <div id="check-options">
-                <p>Select the type of check(s) you would like to perform:</p>
-                <input id = "Features_check" type="checkbox" name="check_type" value="Features"><span id = "Fcheck"></span>
-                <div id="fchecklist" class="checklist">&nbsp;</div>    
-                <input id = "Parts_check" type="checkbox" name="check_type" value="Parts"><span id = "Pcheck"></span>
-                <div id="pchecklist" class="checklist">&nbsp;</div>
                 <input type="hidden" name="elements" id="elements" value="">  
-                <input type="button" id = "check_model" value="Check model"/>
+                <input type="button" class="check_model" id = "check_model" value="Check model"/>
                 <p class="msg" id="msg">&nbsp;</p>
             </div>
         </form>
