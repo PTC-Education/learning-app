@@ -5,6 +5,13 @@ function showHideDetails(d,div) {
       document.getElementById(div).style.display = "none";
 }
 
+function show_hide_details() {
+  var icon = document.getElementById('rotateIcon');
+  var matesDetails = document.getElementById('mates_details');
+  icon.classList.toggle('rotate');
+  matesDetails.classList.toggle('hidden');
+}
+
 function hide() {
     document.getElementById('mates_details').style.display = "none";
 }
@@ -243,7 +250,7 @@ function build_page(response){
     
       //make instances studio div visible
       document.getElementById("instances_div").style.display = "block";
-      document.getElementById("instance_title").innerHTML = response.count_summary["title"];                              // title of list
+      //document.getElementById("instance_title").innerHTML = response.count_summary["title"];                              // title of list
       document.getElementById("instance_count").innerHTML = response.count_summary["instance_count"];                     // number of instances
       document.getElementById("part_instance_count").innerHTML = response.count_summary["part_instance_count"];           // number of instances that are parts
       document.getElementById("assemby_instance_count").innerHTML = response.count_summary["assemby_instance_count"];     // number of instances that are assemblies

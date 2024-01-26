@@ -108,8 +108,7 @@
         </div>
         <!-- Error message -->
         <div>
-            <strong><p id="error_message"></p></strong>
-            
+            <strong><p id="error_message"></p></strong>           
         </div>
   
         <div id="part_studio_div">
@@ -165,24 +164,36 @@
         <div id="assembly_div">
             <h3>Assembly details</h3>
             <div id="mates_div">
-                <h4>Mates Summary</h4>
-                <p class="list_title">This assembly contains:</p>
+                <h4>Mates summary</h4>
+                <table  id="features_summary_table" class="item_summary">
+                    <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                    <tbody>
+                        <tr><td>Mates</td><td><span id = "mate_count"></span></td></tr>
+                        <tr><td>Mate relations</td><td><span id = "mate_relations_count"></span></td></tr>
+                        <tr><td>Groups</td><td><span id = "groups_count"></span></td></tr>
+                        <tr><td>Errors</td><td><span id = "error_count"></span></td></tr>
+                        <tr><td>Renamed mates</td><td><span id = "renamed"></span></td></tr>
+                        <tr><td>Mates with offsets</td><td><span id = "offsets"></span></td></tr>
+                        <tr><td>Mates with limits</td><td><span id = "limits"></span></td></tr>
+                    </tbody>
+                </table>
+                <!-- <p class="list_title">This assembly contains:</p>
                 <ul class="summary">
                     <li>Mates:  <span id = "mate_count"></span></li>
                     <li>Mate relations:  <span id = "mate_relations_count"></span></li>
                     <li>Groups:  <span id = "groups_count"></span></li>
                     <li>Total errors: <span id = "error_count"></span></li>
-                </ul>
+                </ul> -->
 
-                <p class="list_title">Of the mates and mate relations:</p>
+                <!-- <p class="list_title">Of the mates and mate relations:</p>
                 <ul class="summary">
                     <li>Renamed mates: <span id = "renamed"></span></li>
                     <li>Offsets: <span id = "offsets"></span></li>
                     <li>Limits: <span id = "limits"></span></li>
-                </ul>
+                </ul> -->
 
                 <div id = "mates_table_div">
-                    <h4>Mates Count</h4>
+                    <h4>Mates count</h4>
                     <table  id="mates_table" class="item_summary">
                         <thead><tr><th>Type</th><th>Count</th></tr></thead>
                         <tbody>
@@ -191,20 +202,35 @@
                 </div>
 
                 <div id = "mate_relations_table_div">
-                    <h4>Mate Relations Count</h4>
+                    <h4>Mate relations count</h4>
                     <table  id="mate_relations_table" class="item_summary">
                         <thead><tr><th>Type</th><th>Count</th></tr></thead>
                         <tbody>
                         </tbody>
                     </table>
                 </div>
+                
+                <div id = "instances_div"></div>
+                    <h4>Instance summary</h4>
+                    <table  id="instance_summary_table" class="item_summary">
+                        <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                        <tbody>
+                            <tr><td>Instances</td><td><span id = "instance_count"></span></td></tr>
+                            <tr><td>Parts</td><td><span id = "part_instance_count"></span></td></tr>
+                            <tr><td>Subassemblies</td><td><span id = "assemby_instance_count"></span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <div id="mates_details_div">
-                    <div>
-                        <h4>Mate Details</h4> 
-                        Show mate details : <input id="show_hide_checkbox" type="checkbox" onclick="showHideDetails(this,'mates_details')"></p>
+                    <div class="arrow_and_title" onclick="show_hide_details()">
+                        <div class="arrow_icon" id="rotateIcon">
+                            <img src="{% static 'grader/images/menu_arrow.svg' %}" width="12px">
+                        </div>
+                        <div class="menu_title">Mate details</div>
                     </div>
-                    <div id="mates_details">
+                        <!-- Show mate details : <input id="show_hide_checkbox" type="checkbox" onclick="showHideDetails(this,'mates_details')"></p> -->
+                    <div id="mates_details" class="mate_details hidden">
                         <table  id="mate_details_table" class="item_summary">
                             <thead><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr></thead>
                             <tbody>
@@ -212,21 +238,20 @@
                         </table>
                     </div>
                 </div>
-            </div>
+        </div>
 
-            <div id = "instances_div">
+            <!-- <div id = "instances_div">
                 <h4 id = "instance_title"></h4></h4>
                 <ul class="summary">
                     <li>Total number of instances:  <span id = "instance_count"></span></li>
                     <li>Number of parts:  <span id = "part_instance_count"></span></li>
                     <li>Number of assemblies :  <span id = "assemby_instance_count"></span></li>
                 </ul>    
-            </div>
-        </div>
+            </div> -->
         
         <script>
         hide_all_divs();
-        showHideDetails("show_hide_checkbox",'mates_details');
+        //showHideDetails("show_hide_checkbox",'mates_details');
         hideDiv('check-options')
         </script>    
     </body>
