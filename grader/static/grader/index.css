@@ -75,10 +75,23 @@ ul.summary {
   font-weight: bold;
 }
 
-.arrow_and_title {
+.arrow_and_title, .home_arrow_and_title {
   display: flex;
   align-items: center;
   cursor: pointer;
+}
+
+.home_arrow_and_title:hover .home_icon {
+  transform: rotate(90deg);
+}
+
+.home_arrow_and_title:hover + .dropdown-content {
+  display: block;
+}
+
+.home_icon {
+  margin: 10px 0px;
+  transition: transform 0.3s ease;
 }
 
 .arrow_icon {
