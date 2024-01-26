@@ -87,7 +87,7 @@ function build_page(response){
       //make parts  div visible                                                               
       document.getElementById("parts_div").style.display = "block";  
 
-      document.getElementById("parts_title").innerHTML = response.count_summary["title"];               // title of list
+      //document.getElementById("parts_title").innerHTML = response.count_summary["title"];               // title of list
       document.getElementById("part_count").innerHTML = response.count_summary["part_count"];          // number of parts
       document.getElementById("part_rename_count").innerHTML = response.count_summary["part_rename_count"];          // number of renamed parts
       document.getElementById("part_material_count").innerHTML = response.count_summary["part_material_count"];         // number of parts with materials

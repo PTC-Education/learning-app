@@ -116,12 +116,20 @@
             <h3>Part Studio details</h3>
             <div id="feature_div">
                 <h4>Features Summary</h4>
-                <p class="list_title">This part studio contains:</p>
+                <table  id="features_summary_table" class="item_summary">
+                    <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                    <tbody>
+                        <tr><td>Features</td><td><span id = "renamed0"></span></td></tr>
+                        <tr><td>Renamed Features</td><td><span id = "renamed1"></span></td></tr>
+                        <tr><td>Errors</td><td><span id = "ps_errors"></span></td></tr>
+                    </tbody>
+                </table>
+                <!--<p class="list_title">This part studio contains:</p>
                 <ul class="summary">
                     <li>Features:  <span id = "renamed0"></span> <i>(not including Origin and default planes)</i></li>
                     <li>Renamed features:  <span id = "renamed1"></span></li>
                     <li>Total errors in features:  <span id = "ps_errors"></span></li>
-                </ul>
+                </ul>-->
                 
                 <div id = "feature_table_div">
                     <h4>Features Count</h4>
@@ -135,13 +143,23 @@
 
             </div>
             <div id = "parts_div">
-                <h4 id = "parts_title"></h4></h4>
+                <h4>Part Checking</h4>
+                <table  id="part_checking_table" class="item_summary">
+                    <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                    <tbody>
+                        <tr><td>Parts</td><td><span id = "part_count"></span></td></tr>
+                        <tr><td>Renamed Parts</td><td><span id = "part_rename_count"></span></td></tr>
+                        <tr><td>Parts with Materials</td><td><span id = "part_material_count"></span></td></tr>
+                        <tr><td>Surfaces</td><td><span id = "part_surface_count"></span></td></tr>
+                    </tbody>
+                </table>
+                <!-- <h4 id = "parts_title"></h4></h4>
                 <ul class="summary">
                     <li>Total number of parts:  <span id = "part_count"></span></li>
                     <li>Total number of renamed parts:  <span id = "part_rename_count"></span></li>
                     <li>Total number of parts with assigned materials :  <span id = "part_material_count"></span></li>
                     <li>Total number of surfaces:  <span id = "part_surface_count"></span></li>
-                </ul>
+                </ul> -->
             </div>
         </div>
         <div id="assembly_div">
