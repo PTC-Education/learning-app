@@ -100,6 +100,10 @@ ul.summary {
   transform: rotate(90deg);
 }
 
+.rotate {
+  transform: rotate(90deg);
+}
+
 .home_arrow_and_title:hover + .dropdown-content {
   display: block;
 }
@@ -524,8 +528,7 @@ font-size: 14px;
   
 }
 
-.tab-buttons
-{
+.tab-buttons {
   width:100%;
   display: inline-flex;
   border-radius: 4px;
@@ -540,6 +543,7 @@ font-size: 14px;
   padding-bottom:5px;
   border: none;
 }
+
 .tab-buttons:hover{
   cursor:pointer;
 }
@@ -671,7 +675,6 @@ ul.closeable_button li {
   margin:0;
   margin-block-end: 0;
   margin-block-start: 0;
-
 }
 
 button.uploadcsv-button{
@@ -682,7 +685,6 @@ button.uploadcsv-button{
   background-color: inherit;
   align-items: center;
   justify-content: center;
-
 }
 
 button.uploadcsv-button:hover{
@@ -710,7 +712,6 @@ button.uploadcsv-button:hover{
     font-size: 12px;
     font-weight: 400;
     font-style: italic;
-
 }
 
 .urlfield {
