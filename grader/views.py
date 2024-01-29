@@ -1283,11 +1283,23 @@ def as_get_mate_summary(feature_list):
                             mates[val] += 1
         elif  feature['featureType'] == 'mateGroup':
             summary_msg['groups'] += 1
+    
+    mates_cap = {}
+    mate_relations_cap = {}
+
+    for key, value in mates.items():
+        new_key = key.capitalize().replace('_', ' ')
+        mates_cap[new_key] = value
+    
+    for key, value in mate_relations.items():
+        new_key = key.capitalize().replace('_', ' ')
+        mate_relations_cap[new_key] = value
+
     error_count = 0
     for featureId in featureIds:
         if(feature_list['featureStates'][featureId]['featureStatus']) == "ERROR" or (feature_list['featureStates'][featureId]['featureStatus']) == "WARNING":
             error_count +=1
-    return {"mates": mates, "mate_relations": mate_relations, "summary_msg": summary_msg , "error_count" : error_count}
+    return {"mates": mates_cap, "mate_relations": mate_relations_cap, "summary_msg": summary_msg , "error_count" : error_count}
 
 # Extract array of mates and mate relations, including offsets and limits
 def as_get_mate_details(feature_list):
