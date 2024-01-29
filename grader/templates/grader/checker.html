@@ -40,7 +40,7 @@
             <input class = "go_home" type="submit" value="&lt; Home">
         </form>
         <!-- Check model -->
-        <h3>Best Practices Checker</h3>
+        <div class="checker"><h3>Best Practices Checker</h3></div>
         
         <div class="spinner-container">
             <div id="features">
@@ -54,15 +54,23 @@
         </div>
   
         <div id="part_studio_div">
-            <h3>Part Studio details</h3>
+            <!-- <h3>Part Studio details</h3> -->
             <div id="feature_div">
                 <h4>Features Summary</h4>
-                <p class="list_title">This part studio contains:</p>
+                <table  id="features_summary_table" class="item_summary">
+                    <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                    <tbody>
+                        <tr><td>Features</td><td><span id = "renamed0"></span></td></tr>
+                        <tr><td>Renamed Features</td><td><span id = "renamed1"></span></td></tr>
+                        <tr><td>Errors</td><td><span id = "ps_errors"></span></td></tr>
+                    </tbody>
+                </table>
+                <!-- <p class="list_title">This part studio contains:</p>
                 <ul class="summary">
                     <li>Features:  <span id = "renamed0"></span> <i>(not including Origin and default planes)</i></li>
                     <li>Renamed features:  <span id = "renamed1"></span></li>
                     <li>Total errors in features:  <span id = "ps_errors"></span></li>
-                </ul>
+                </ul> -->
                 
                 <div id = "feature_table_div">
                     <h4>Features Count</h4>
@@ -76,34 +84,56 @@
 
             </div>
             <div id = "parts_div">
-                <h4 id = "parts_title"></h4></h4>
+                <h4>Part Checking</h4>
+                <table  id="part_checking_table" class="item_summary">
+                    <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                    <tbody>
+                        <tr><td>Parts</td><td><span id = "part_count"></span></td></tr>
+                        <tr><td>Renamed Parts</td><td><span id = "part_rename_count"></span></td></tr>
+                        <tr><td>Parts with Materials</td><td><span id = "part_material_count"></span></td></tr>
+                        <tr><td>Surfaces</td><td><span id = "part_surface_count"></span></td></tr>
+                    </tbody>
+                </table>
+                <!-- <h4 id = "parts_title"></h4></h4>
                 <ul class="summary">
                     <li>Total number of parts:  <span id = "part_count"></span></li>
                     <li>Total number of renamed parts:  <span id = "part_rename_count"></span></li>
                     <li>Total number of parts with assigned materials :  <span id = "part_material_count"></span></li>
                     <li>Total number of surfaces:  <span id = "part_surface_count"></span></li>
-                </ul>
+                </ul> -->
             </div>
         </div>
         <div id="assembly_div">
-            <h3>Assembly details</h3>
+            <!-- <h3>Assembly details</h3> -->
             <div id="mates_div">
                 <h4>Mates Summary</h4>
-                <p class="list_title">This assembly contains:</p>
+                <table  id="features_summary_table" class="item_summary">
+                    <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                    <tbody>
+                        <tr><td>Mates</td><td><span id = "mate_count"></span></td></tr>
+                        <tr><td>Mate relations</td><td><span id = "mate_relations_count"></span></td></tr>
+                        <tr><td>Groups</td><td><span id = "groups_count"></span></td></tr>
+                        <tr><td>Errors</td><td><span id = "error_count"></span></td></tr>
+                        <tr><td>Renamed mates</td><td><span id = "renamed"></span></td></tr>
+                        <tr><td>Mates with offsets</td><td><span id = "offsets"></span></td></tr>
+                        <tr><td>Mates with limits</td><td><span id = "limits"></span></td></tr>
+                    </tbody>
+                </table>
+                <!-- <p class="list_title">This assembly contains:</p>
                 <ul class="summary">
                     <li>Mates:  <span id = "mate_count"></span></li>
                     <li>Mate relations:  <span id = "mate_relations_count"></span></li>
                     <li>Groups:  <span id = "groups_count"></span></li>
                     <li>Total errors: <span id = "error_count"></span></li>
-                </ul>
+                </ul> -->
 
 
-                <p class="list_title">Of the mates and mate relations:</p>
+                <!-- <p class="list_title">Of the mates and mate relations:</p>
                 <ul class="summary">
                     <li>Renamed mates: <span id = "renamed"></span></li>
                     <li>Offsets: <span id = "offsets"></span></li>
                     <li>Limits: <span id = "limits"></span></li>
-                </ul>
+                </ul> -->
 
                 <div id = "mates_table_div">
                     <h4>Mates Count</h4>
@@ -123,7 +153,38 @@
                     </table>
                 </div>
 
+                <div id = "instances_div"></div>
+                    <h4>Instance summary</h4>
+                    <table  id="instance_summary_table" class="item_summary">
+                        <thead><tr><th>Type</th><th>Count</th></tr></thead>
+                        <tbody>
+                            <tr><td>Instances</td><td><span id = "instance_count"></span></td></tr>
+                            <tr><td>Parts</td><td><span id = "part_instance_count"></span></td></tr>
+                            <tr><td>Subassemblies</td><td><span id = "assemby_instance_count"></span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="thin">
+                
                 <div id="mates_details_div">
+                    <div class="arrow_and_title" onclick="show_hide_details()">
+                        <div class="arrow_icon" id="rotateIcon">
+                            <img src="{% static 'grader/images/menu_arrow.svg' %}" width="12px">
+                        </div>
+                        <div class="menu_title">Mate details</div>
+                    </div>
+                        
+                    <div id="mates_details" class="mate_details hidden">
+                        <table  id="mate_details_table" class="item_summary">
+                            <thead><tr><th>Name</th><th>Type</th><th>Limits</th><th>Offsets</th><th>Renamed</th></tr></thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- <div id="mates_details_div">
                     <div>
                         <h4>Mate Details</h4> 
                         Show mate details : <input id="show_hide_checkbox" type="checkbox" onclick="showHideDetails(this,'mates_details')"></p>
@@ -136,21 +197,21 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
-            <div id = "instances_div">
+            <!-- <div id = "instances_div">
                 <h4 id = "instance_title"></h4></h4>
                 <ul class="summary">
                     <li>Total number of instances:  <span id = "instance_count"></span></li>
                     <li>Number of parts:  <span id = "part_instance_count"></span></li>
                     <li>Number of assemblies :  <span id = "assemby_instance_count"></span></li>
                 </ul>    
-            </div>
+            </div> -->
         </div>
         
         <script>
         hide_all_divs();
-        showHideDetails("show_hide_checkbox",'mates_details');
+        //showHideDetails("show_hide_checkbox",'mates_details');
         </script>    
     </body>
 </html>

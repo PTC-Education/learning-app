@@ -54,7 +54,7 @@ ul.summary {
   margin-bottom: 0px;
 }
 
-#part_studio_div h3, #assembly_div h3 {
+#part_studio_div h3, #assembly_div h3, .checker h3 {
   color: #333;
   background-color: #fafafa;
   border: solid 1px #dbdbdb;
@@ -120,6 +120,13 @@ ul.summary {
 
 .hidden {
   display: none;
+}
+
+.thin {
+    border: none;
+    height: 1px;
+    background-color: #d4d7d9;
+    margin-top: 24px;
 }
 
 /* Summary tables */
