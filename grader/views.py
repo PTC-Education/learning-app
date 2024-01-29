@@ -1182,6 +1182,7 @@ def ps_feature_list_helper(feature_list):
                         'projectedcurve', 'bridgingcurve', 'compositecurve', 'intersectioncurve', 'trimcurve', 'isocline', 'mateconnector', 
                         'derived', 'transform', 'compositepart', 'sheetmetalmodel', 'flange', 'hem', 'tab', 'flange', 'makejoint', 'corner', 
                         'bendrelief', 'finishsheetmetalmodel', 'frame', 'frametrim', 'gusset', 'endcap', 'cutlist', 'dfitspline', 'decal']
+    
     # types_to_check is every feature type except holes and variables.  it also filters out custom features
     types_to_check = ['booleanBodies', 'boundarySurface', 'bridgingCurve', 'chamfer', 'circularPattern', 'compositeCurve', 'compositePart', 
                       'cPlane', 'curvePattern', 'cutlist', 'deleteBodies', 'draft', 'decal', 'enclose', 'endcap', 'extendSurface', 'externalThread', 
@@ -1190,6 +1191,21 @@ def ps_feature_list_helper(feature_list):
                       'offsetSurface', 'projectCurves', 'replaceFace', 'revolve', 'rib', 'ruledSurface', 'sheetMetalBendRelief', 'sheetMetalCorner', 
                       'sheetMetalEnd', 'sheetMetalFlange', 'sheetMetalHem', 'sheetMetalMakeJoint', 'sheetMetalStart', 'sheetMetalTab', 
                       'shell', 'splitPart', 'sweep', 'thicken', 'transform', 'trimCurve', 'wrap']
+    
+    keyMap = {'booleanBodies' : 'Boolean', 'boundarySurface' : 'Boundary surface', 'bridgingCurve' : 'Bridging curve', 'chamfer' : 'Chamfer', 
+              'circularPattern' : 'Circular pattern', 'compositeCurve' : 'Composite curve', 'compositePart' : 'Composite part', 'cPlane' : 'Plane', 
+              'curvePattern' : 'Curve pattern', 'cutlist' : 'Cut list', 'deleteBodies' : 'Delete part', 'draft' : 'Draft', 'decal' : 'Decal', 
+              'enclose' : 'Enclose', 'endcap' : 'End cap', 'extendSurface' : 'Move boundary', 'externalThread' : 'External thread', 'extrude' : 'Extrude', 
+              'faceBlend' : 'Face blend', 'fill' : 'Fill', 'fillet' : 'Fillet', 'fitSpline' : 'Fit spline', 'frame' : 'Frame', 'frameTrim' : 'Frame trim', 
+              'gusset' : 'Gusset', 'helix' : 'Helix', 'importDerived' : 'Derived', 'intersectionCurve' : 'Intersection curve', 'isocline' : 'Isocline', 
+              'linearPattern' : 'Linear pattern', 'loft' : 'Loft', 'mateConnector' : 'Mate connector', 'mirror' : 'Mirror', 'moveFace' : 'Move face', 
+              'mutualTrim' : 'Mutual trim', 'newSketch' : 'Sketch', 'offsetSurface' : 'Offset surface', 'projectCurves' : 'Projected curve', 
+              'replaceFace' : 'Replace face', 'revolve' : 'Revolve', 'rib' : 'Rib', 'ruledSurface' : 'Ruled surface', 'sheetMetalBendRelief' : 
+              'Sheet metal bend relief', 'sheetMetalCorner' : 'Sheet metal corner', 'sheetMetalEnd' : 'Finish sheet metal model', 'sheetMetalFlange' : 
+              'Sheet metal flange', 'sheetMetalHem' : 'Sheet metal hem', 'sheetMetalMakeJoint' : 'Sheet metal make joint', 'sheetMetalStart' : 
+              'Sheet metal model', 'sheetMetalTab' : 'Sheet metal tab', 'shell' : 'Shell', 'splitPart' : 'Split part', 'sweep' : 'Sweep', 'thicken' : 
+              'Thicken', 'transform' : 'Transform', 'trimCurve' : 'Trim curve', 'wrap' : 'Wrap'}
+    
     features = {}
     renamed_count = 0
     number_of_features = len(feature_list['features'])
@@ -1214,9 +1230,10 @@ def ps_feature_list_helper(feature_list):
             error_count +=1
 
     features = dict(sorted(features.items(), key=lambda x:x[1], reverse=True)) # re-order feature count by descending number
+    prettyFeatures = {keyMap.get(k, k): v for k, v in features.items()}
     renamed = [number_of_features, renamed_count]
 
-    return {"features": features, "renamed": renamed , "error_count": error_count}
+    return {"features": prettyFeatures, "renamed": renamed , "error_count": error_count}
 
 # Extract useful information from featurelist for assemblies
 def as_feature_list_helper(feature_list):

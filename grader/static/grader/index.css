@@ -56,8 +56,8 @@ ul.summary {
 
 #part_studio_div h3, #assembly_div h3, .checker h3 {
   color: #333;
-  background-color: #fafafa;
-  border: solid 1px #dbdbdb;
+  /* background-color: #fafafa; */
+  border-bottom: solid 1px #dbdbdb;
   padding: 8px;
   font-size: 14px;
 }
