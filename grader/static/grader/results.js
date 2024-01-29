@@ -323,10 +323,10 @@ function calculate_error_for_url(url){
     }
 
     if(score > 0){
-      document.getElementById("ref_score_"+ url).innerHTML = "&#x274C";
+      document.getElementById("ref_score_"+ url).innerHTML = "<img src=\"/static/grader/images/red-x.png\" width='14px'>";
     }
     else{
-      document.getElementById("ref_score_"+ url).innerHTML = "&#x2705";
+      document.getElementById("ref_score_"+ url).innerHTML = "<img src=\"/static/grader/images/green-check.svg\" width='18px'>";
     }
 
     
@@ -339,7 +339,7 @@ function calculate_error_for_url(url){
           text.innerHTML="Extra parts were detected.";
         }
         ref_table.style.display="none";
-        document.getElementById("ref_score_"+ url).innerHTML =  "&#x274C";
+        document.getElementById("ref_score_"+ url).innerHTML =  "<img src=\"/static/grader/images/red-x.png\" width='14px'>";
     }
   }
 
