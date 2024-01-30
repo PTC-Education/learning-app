@@ -12,6 +12,13 @@ function show_hide_details() {
   matesDetails.classList.toggle('hidden');
 }
 
+function show_hide_table(d, i) {
+  var iconToRotate = document.getElementById(i);
+  var tableToHide = document.getElementById(d);
+  iconToRotate.classList.toggle('rotate');
+  tableToHide.classList.toggle('hidden');
+}
+
 function hide() {
     document.getElementById('mates_details').style.display = "none";
 }
@@ -91,14 +98,15 @@ function build_page(response){
       tbody.appendChild(row);
     }   
     features_table.appendChild(tbody);  
-      //make parts  div visible                                                               
-      document.getElementById("parts_div").style.display = "block";  
-
-      //document.getElementById("parts_title").innerHTML = response.count_summary["title"];               // title of list
-      document.getElementById("part_count").innerHTML = response.count_summary["part_count"];          // number of parts
-      document.getElementById("part_rename_count").innerHTML = response.count_summary["part_rename_count"];          // number of renamed parts
-      document.getElementById("part_material_count").innerHTML = response.count_summary["part_material_count"];         // number of parts with materials
-      document.getElementById("part_surface_count").innerHTML = response.count_summary["part_surface_count"];         // number of surfaces
+    //make parts  div visible                                                               
+    document.getElementById("parts_div").style.display = "block";  
+    document.getElementById("part_count").innerHTML = response.count_summary["part_count"];          // number of parts
+    document.getElementById("part_rename_count").innerHTML = response.count_summary["part_rename_count"];          // number of renamed parts
+    document.getElementById("part_material_count").innerHTML = response.count_summary["part_material_count"];         // number of parts with materials
+    document.getElementById("part_surface_count").innerHTML = response.count_summary["part_surface_count"];         // number of surfaces
+    show_hide_table('features_summary_table', 'rotate0');
+    show_hide_table('features_details_table', 'rotate1');
+    show_hide_table('part_checking_table', 'rotate2');
   }
 
   else if(response.etype == "assemblies"){
@@ -247,13 +255,14 @@ function build_page(response){
       //make mates studio div invisible
       document.getElementById("mates_div").style.display = "none";  
     }
-    
       //make instances studio div visible
       document.getElementById("instances_div").style.display = "block";
-      //document.getElementById("instance_title").innerHTML = response.count_summary["title"];                              // title of list
       document.getElementById("instance_count").innerHTML = response.count_summary["instance_count"];                     // number of instances
       document.getElementById("part_instance_count").innerHTML = response.count_summary["part_instance_count"];           // number of instances that are parts
       document.getElementById("assemby_instance_count").innerHTML = response.count_summary["assemby_instance_count"];     // number of instances that are assemblies
-
+      show_hide_table('mates_summary_table', 'rotate3');
+      show_hide_table('mates_table', 'rotate4');
+      show_hide_table('mate_relations_table', 'rotate5');
+      show_hide_table('instance_summary_table', 'rotate6');
     }
 }
