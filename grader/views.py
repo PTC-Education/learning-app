@@ -1353,8 +1353,12 @@ def as_get_mate_details(feature_list):
             mate.update({'renamed': renamed})
             mate_details.append(mate)
         elif  feature['featureType'] == 'mateGroup':
+            renamed = False
             if re.sub('[0-9]', '', feature['name'].lower().replace(' ', '')) != "group":
+                renamed = True
                 detail_msg['renamed'] += 1
+            mate = {'name' : feature['name'], 'type' : 'group', 'limits': [], 'offsets': [], 'renamed': renamed}
+            mate_details.append(mate)
 
     return {"mate_details": mate_details, "detail_msg": detail_msg}
 
