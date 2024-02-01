@@ -191,6 +191,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CSP security settings 
 CSP_FRAME_ANCESTORS = ["https://*.onshape.com"]
 CSP_IMG_SRC = ["'self' https://*.onshape.com data:"]
+CSP_OBJECT_SRC = ["'self' https://*.onshape.com data:"]
+CSP_FRAME_SRC = ["'self' https://*.onshape.com data:"]
 CSP_SCRIPT_SRC = ["'self'", "'unsafe-inline'"]
 CSP_FRAME_SRC = ["'self'", "www.youtube.com", "youtube.com"]
 CSRF_TRUSTED_ORIGINS = ["https://*.onshape.com", "https://cad-learner.herokuapp.com", "https://www.youtube.com/"] 

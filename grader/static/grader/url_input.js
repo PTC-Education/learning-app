@@ -28,6 +28,21 @@ function validateForm() {
   }
 }
 
+//Function to validate the urlfield -
+//returns true if valid url is presented
+function appElementValidateUrls() {
+  document.getElementById("urlError").innerHTML = " "; //empty the error message when a new url is submitted
+  var x = document.forms["tutorial_urls"]["tutorial"].value;
+  var y = document.forms["tutorial_urls"]["reference"].value;
+  let regex =
+    /https:\/\/[A-Za-z]+\.onshape\.com\/documents\/[A-Za-z0-9]+\/[A-Za-z]+\/[A-Za-z0-9]+\/e\/[A-Za-z0-9]+(?:\?|$)/i;
+  if (!regex.test(x) || !regex.test(y)) {
+    document.getElementById("urlError").innerHTML =
+      "Faulty url detected. Please make sure the url is correct."; //show the error message
+    return false;
+  }
+}
+
 //Function to set the value of input ref_url in urlinput.html to an array of ref_urls to submit to views.py
 //returns true in the end
 function set_ref_url_as_array() {

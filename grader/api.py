@@ -165,8 +165,81 @@ def get_feature_list(
     else: 
         return None
 
+def get_app_element_json(
+    domain: str, did: str, wvm: str, wvmid: str, eid: str, auth_token: str
+) -> Any:
+    """ Get json tree of app element
+    """
+    response = requests.get(
+        os.path.join(domain,"api/appelements/d/{}/{}/{}/e/{}/content/json".format(did, wvm, wvmid, eid)),
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09",
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok:
+        return response.json()
+    else:
+        return None
 
+def insert_app_element_json(
+    domain: str, did: str, wvm: str, wvmid: str, eid: str, key: str, value: str, auth_token: str
+) -> Any:
+    """ Insert keys into app element JSON tree
+    """
+    try:
+        changeId = get_app_element_json(domain, did, wvm, wvmid, eid, auth_token)['changeId']
+    except:
+        return None
+    payload = {
+      "parentChangeId": changeId,
+      "jsonTreeEdit": {"btType": "BTJEditInsert-2523",
+                      "path": {"btType": "BTJPath-3073", "startNode": "", "path": [{"btType": "BTJPathKey-3221", "key": key}]},
+                      "value": value}
+      }
+    response = requests.post(
+        os.path.join(domain,"api/appelements/d/{}/{}/{}/e/{}/content".format(did, wvm, wvmid, eid)),
+        data=json.dumps(payload),
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09",
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok:
+        return response.json()
+    else:
+        return None
 
+def update_app_element_json(
+    domain: str, did: str, wvm: str, wvmid: str, eid: str, key: str, value: str, auth_token: str
+) -> Any:
+    """ Update key values in app element JSON tree
+    """
+    try:
+        changeId = get_app_element_json(domain, did, wvm, wvmid, eid, auth_token)['changeId']
+    except:
+        return None
+    payload = {
+      "parentChangeId": changeId,
+      "jsonTreeEdit": {"btType": "BTJEditChange-2636",
+                      "path": {"btType": "BTJPath-3073", "startNode": "", "path": [{"btType": "BTJPathKey-3221", "key": key}]},
+                      "value": value}
+      }
+    response = requests.post(
+        os.path.join(domain,"api/appelements/d/{}/{}/{}/e/{}/content".format(did, wvm, wvmid, eid)),
+        data=json.dumps(payload),
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09",
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok:
+        return response.json()
+    else:
+        return None
 
 def get_doc_info(
     domain: str, did: str, auth_token: str
