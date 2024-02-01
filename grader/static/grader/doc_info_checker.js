@@ -259,8 +259,8 @@ function build_page(response){
               }
               c3.innerText = offsets_html;
           }
-          
-          if (response.mate_details["mate_details"][i]["renamed"] == "true"){
+          console.log(response.mate_details["mate_details"][i]["renamed"]);
+          if (response.mate_details["mate_details"][i]["renamed"] == true){
             c4.innerText = "✓";
           }
           else{
