@@ -15,8 +15,38 @@ function show_hide_details() {
 function show_hide_table(d, i) {
   var iconToRotate = document.getElementById(i);
   var tableToHide = document.getElementById(d);
-  iconToRotate.classList.toggle('rotate');
-  tableToHide.classList.toggle('hidden');
+  if (!iconToRotate.classList.contains('rotate')) {
+    iconToRotate.classList.add('rotate');
+  } else {
+    iconToRotate.classList.remove('rotate');
+  }
+  if(tableToHide.classList.contains('hidden')) {
+    tableToHide.classList.remove('hidden');
+  } else {
+    tableToHide.classList.add('hidden');
+  }
+}
+
+function show_table(d, i) {
+  var iconToRotate = document.getElementById(i);
+  var tableToHide = document.getElementById(d);
+  if (!iconToRotate.classList.contains('rotate')) {
+    iconToRotate.classList.add('rotate');
+  }
+  if(tableToHide.classList.contains('hidden')) {
+    tableToHide.classList.remove('hidden');
+  }
+}
+
+function hide_table(d, i) {
+  var iconToRotate = document.getElementById(i);
+  var tableToHide = document.getElementById(d);
+  if (iconToRotate.classList.contains('rotate')) {
+    iconToRotate.classList.remove('rotate');
+  }
+  if(!tableToHide.classList.contains('hidden')) {
+    tableToHide.classList.add('hidden');
+  }
 }
 
 function hide() {
@@ -104,9 +134,9 @@ function build_page(response){
     document.getElementById("part_rename_count").innerHTML = response.count_summary["part_rename_count"];          // number of renamed parts
     document.getElementById("part_material_count").innerHTML = response.count_summary["part_material_count"];         // number of parts with materials
     document.getElementById("part_surface_count").innerHTML = response.count_summary["part_surface_count"];         // number of surfaces
-    show_hide_table('features_summary_table', 'rotate0');
-    show_hide_table('features_details_table', 'rotate1');
-    show_hide_table('part_checking_table', 'rotate2');
+    show_table('features_summary_table', 'rotate0');
+    show_table('features_details_table', 'rotate1');
+    show_table('part_checking_table', 'rotate2');
   }
 
   else if(response.etype == "assemblies"){
@@ -131,7 +161,7 @@ function build_page(response){
   
     var  mates_table_div =  document.getElementById("mates_table_div");
 
-    if(number_of_mates > 0){
+    //if(number_of_mates > 0){
       mates_table_div.style.display = "block";
 
       //GENERATING MATES TABLE
@@ -250,19 +280,20 @@ function build_page(response){
         //make mates details table div invisible
         mates_details_div.style.display = "none";
       }
-    }
-    else{
-      //make mates studio div invisible
-      document.getElementById("mates_div").style.display = "none";  
-    }
+    // }
+    // else{
+    //   //make mates studio div invisible
+    //   document.getElementById("mates_div").style.display = "none";  
+    // }
       //make instances studio div visible
       document.getElementById("instances_div").style.display = "block";
       document.getElementById("instance_count").innerHTML = response.count_summary["instance_count"];                     // number of instances
       document.getElementById("part_instance_count").innerHTML = response.count_summary["part_instance_count"];           // number of instances that are parts
       document.getElementById("assemby_instance_count").innerHTML = response.count_summary["assemby_instance_count"];     // number of instances that are assemblies
-      show_hide_table('mates_summary_table', 'rotate3');
-      show_hide_table('mates_table', 'rotate4');
-      show_hide_table('mate_relations_table', 'rotate5');
-      show_hide_table('instance_summary_table', 'rotate6');
+      show_table('mates_summary_table', 'rotate3');
+      show_table('mates_table', 'rotate4');
+      show_table('mate_relations_table', 'rotate5');
+      show_table('instance_summary_table', 'rotate6');
+      hide_table('mate_details_table', 'rotate7');
     }
 }
