@@ -293,11 +293,10 @@ function calculate_error_for_url(url){
         ref_material = document.getElementById("ref_0_span" + url + "_" + part).innerHTML;
 
         if(user_material == ref_material){
-
-          document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #00FF00";
+          document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #009400";
         }
         else{
-          document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #FF0000";
+          document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #BD3039";
         }
       }
 
@@ -324,10 +323,10 @@ function calculate_error_for_url(url){
     }
 
     if(score > 0){
-      document.getElementById("ref_score_"+ url).innerHTML = "&#x274C";
+      document.getElementById("ref_score_"+ url).innerHTML = "<img src=\"/static/grader/images/red-x.png\" width='14px'>";
     }
     else{
-      document.getElementById("ref_score_"+ url).innerHTML = "&#x2705";
+      document.getElementById("ref_score_"+ url).innerHTML = "<img src=\"/static/grader/images/green-check.svg\" width='18px'>";
     }
 
     
@@ -340,7 +339,7 @@ function calculate_error_for_url(url){
           text.innerHTML="Extra parts were detected.";
         }
         ref_table.style.display="none";
-        document.getElementById("ref_score_"+ url).innerHTML =  "&#x274C";
+        document.getElementById("ref_score_"+ url).innerHTML =  "<img src=\"/static/grader/images/red-x.png\" width='14px'>";
     }
   }
 

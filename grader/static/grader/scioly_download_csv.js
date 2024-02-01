@@ -4,7 +4,6 @@ function tableToCSV(num_of_urls) {
 	var refTable = document.getElementById('reference');
 	var column_info = refTable.querySelectorAll('col');
 
-
 // ******************* /
 	//Header start
 	csvrow = [];
@@ -19,14 +18,13 @@ function tableToCSV(num_of_urls) {
 	//Header end
 	//******************* */
 
-
 	//Document owner information of the user
 	csvrow = [];
 	var docname = document.getElementById("usr_docname").innerHTML;
 	var username = document.getElementById("usr_username").innerHTML;
 	var userurl = document.getElementById("usr_url").innerHTML;
     var userscore = document.getElementById("usr_score").innerHTML;
-    var doctime = document.getElementById("usr_doctime").innerHTML;
+    var doctime = document.getElementById("usr_doctime").innerHTML.replace(",", "");
 	csvrow.push(username,"Answer Key", docname, doctime, "", "", "", userscore, userurl); //element name and score are left blank
 	csv_data.push(csvrow.join(",")); //Next row with document information 
 	
@@ -50,15 +48,13 @@ function tableToCSV(num_of_urls) {
 		csv_data.push(csvrow.join(",")); //Next row with properties
 	}
 
-
-
 	//Document name and owner information of the document from the urls
 	for (let u = 0; u< num_of_urls; u++){
 		csvrow = [];
 		var docname = document.getElementById("ref_docname_" + u).innerHTML;
 		var username = document.getElementById("ref_username_" + u).innerHTML;
-		var docscore = document.getElementById("ref_score_" + u).innerHTML;
-        var doctime = document.getElementById("ref_doctime_" + u).innerHTML;
+		var docscore = document.getElementById("ref_docscore_" + u).innerHTML;
+        var doctime = document.getElementById("ref_doctime_" + u).innerHTML.replace(",", "");
 		var url =   document.getElementById('url_' + u).innerHTML;
 		var error_message = document.getElementById("error_message_" + u).innerHTML;
 	
@@ -98,7 +94,6 @@ function tableToCSV(num_of_urls) {
 		}
 	}
 
-
 	//Adding failed URLs to the report
 	
 	var urllist = document.getElementById('failed_url_list');
@@ -107,12 +102,10 @@ function tableToCSV(num_of_urls) {
 		//console.log(failedurls); //add to the report 
 		for(let i = 0; i < failedurls.length; i++){
 			csvrow = [];
-			csvrow.push("", "❗" , "Failed URL", "", "",  failedurls[i].innerHTML);
+			csvrow.push("", "!" , "Failed URL", "", "",  failedurls[i].innerHTML);
 			csv_data.push(csvrow.join(","));
 		}
 	}
-
-
 
 	//for failed URLS
 

@@ -14,7 +14,7 @@
 
 <button type = "button" disabled id = "download_report_button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
 <form action = "{% url 'grader:index' user.os_user_id %}">
-    <input type = "submit" value= "Return to Home Page">
+    <input type = "submit" value= "&lt; Home">
 </form>
 
 <div>
@@ -148,7 +148,7 @@
     <p class = "resulttile">Results</p>
     <div class = "slidecontainer">
         <p>Tolerance: <span id = "slider_value"></span> %</p>
-        <input type = "range" min = "0" max = "100" value = "0" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
+        <input type = "range" min = "0" max = "100" value = "1" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
     </div>
     <div class = "propselector" onchange= "reform_result('{{ref_urls|length}}')" >
         <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1"  checked = "True" /> Mass</label>

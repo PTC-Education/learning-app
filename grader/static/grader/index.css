@@ -8,13 +8,7 @@ html, body {
     height: 100%;
     min-height: 100%;
 }
-h3 {
-  margin-bottom: 0px;
-}
-object {
-  height: auto;
-  width: 100%;
-}
+
 ol {
   margin-top: .2em;
   margin-bottom: .2em;
@@ -60,6 +54,81 @@ ul.summary {
 
 .list_title {
   margin-bottom: 0px;
+}
+
+#part_studio_div h3, #assembly_div h3, .checker h3 {
+  color: #333;
+  border-bottom: solid 1px #dbdbdb;
+  padding: 8px;
+  font-size: 14px;
+  margin-bottom: 0px;
+}
+
+#part_studio_div h4, #assembly_div h4, .menu_title {
+  color: #333;
+  font-size: 14px;
+  padding: 0px 8px;
+}
+
+.menu_title {
+  font-weight: bold;
+}
+
+.arrow_and_title, .home_arrow_and_title {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.home_arrow_and_title {
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  color: var(--zakim, #FFF);
+  background: var(--charles, #666);
+  text-align: center;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  margin: 0px 10px 5px 10px;
+  padding: 0px 15px 0px 10px;
+  justify-content: center; 
+}
+
+.home_arrow_and_title:hover .home_icon {
+  transform: rotate(90deg);
+}
+
+.dropdown:hover .home_icon {
+  transform: rotate(90deg);
+}
+
+.rotate {
+  transform: rotate(90deg);
+}
+
+.home_arrow_and_title:hover + .dropdown-content {
+  display: block;
+}
+
+.home_icon {
+  margin: 10px 10px 10px 0px;
+  transition: transform 0.3s ease;
+}
+
+.arrow_icon {
+  margin: 10px 0px;
+  transition: transform 0.3s ease;
+}
+
+.hidden {
+  display: none;
+}
+
+.thin {
+    border: none;
+    height: 1px;
+    background-color: #d4d7d9;
+    margin-top: 24px;
 }
 
 /* Summary tables */
@@ -240,7 +309,7 @@ table.item_summary {
     font-style: normal;
     font-weight: 350;
     line-height: normal;
-    margin-bottom:50px;
+    margin-bottom:20px;
 }
 
 /* Style the submit button of forms - generic*/ 
@@ -298,6 +367,19 @@ input.submiturl-button[type=submit]:hover {
     cursor:pointer;
 }
 
+input.check_model {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #CCCCCC;
+    border: 0 none;
+    border-radius: 5px;
+    margin: 10px 0px;
+}
+
+input.check_model:hover {
+  background-color: #ebebeb;
+}
+
 .options{
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
     background: #CCCCCC;
@@ -312,7 +394,6 @@ input.submiturl-button[type=submit]:hover {
     justify-content: center;
     border: 0; 
     z-index: -10;
-
 }
 
 .options:hover{
@@ -337,15 +418,15 @@ input.submiturl-button[type=submit]:hover {
     height: 80px;
     -webkit-animation: spin 2s linear infinite; /* Safari */
     animation: spin 2s linear infinite;
-  }
+}
 
-  .smaller_loader:after {
-    border: 6px solid #f3f3f3;
-    border-top: 6px solid #3498db;
-    width: 30px;
-    height: 30px;
+.smaller_loader:after {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  width: 30px;
+  height: 30px;
 
-  }
+}
 
 .button-container {
     display: flex;
@@ -355,9 +436,9 @@ input.submiturl-button[type=submit]:hover {
     margin: 100 px;
     align-items: center;
 
-  }
+}
 
-  .list-container {
+.list-container {
     display: flex;
     gap: 50 px;
     padding: 50 px;
@@ -422,9 +503,7 @@ button.blue-button{
   gap: 5px; 
 }
 
-    
-.tab-buttons
-{
+.tab-buttons {
 width:100%;
 display: inline-flex;
 border-radius: 4px;
@@ -462,8 +541,7 @@ font-size: 14px;
   
 }
 
-.tab-buttons
-{
+.tab-buttons {
   width:100%;
   display: inline-flex;
   border-radius: 4px;
@@ -478,6 +556,7 @@ font-size: 14px;
   padding-bottom:5px;
   border: none;
 }
+
 .tab-buttons:hover{
   cursor:pointer;
 }
@@ -494,8 +573,7 @@ font-size: 14px;
   justify-content: center;
   align-items: center;
   height:auto;
-  margin: 0 auto;
-  margin-top: 5%;
+  margin: 0px 0px 20px 0px;
   border-radius: 3px;
   background: #FFF;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;
@@ -545,7 +623,6 @@ input.selectprop{
 #checkboxes label {
   display: flex;
   flex-direction: row;
-
 }
 
 #checkboxes label:hover {
@@ -569,6 +646,12 @@ ul.closeable_button li {
   position: relative;
 }
 
+.checklist ul {
+  margin-top: 0px;
+}
+.checklist li {
+  font-size: 0.9em;
+}
 .close {
   cursor: pointer;
   top: 0%;
@@ -605,7 +688,6 @@ ul.closeable_button li {
   margin:0;
   margin-block-end: 0;
   margin-block-start: 0;
-
 }
 
 button.uploadcsv-button{
@@ -616,11 +698,10 @@ button.uploadcsv-button{
   background-color: inherit;
   align-items: center;
   justify-content: center;
-
 }
 
 button.uploadcsv-button:hover{
-cursor:pointer;
+  cursor:pointer;
 }
 
 .twoButtonsonEdge{
@@ -644,7 +725,6 @@ cursor:pointer;
     font-size: 12px;
     font-weight: 400;
     font-style: italic;
-
 }
 
 .urlfield {
@@ -673,9 +753,7 @@ cursor:pointer;
 }
 
 .file-UPLOAD{
-  border: 1px solid #ccc;
   padding: 10px;
-  border-radius: 4px;
   margin-top: 5px;
   margin-bottom: 5px;
   border-radius: 4px;
@@ -686,6 +764,7 @@ cursor:pointer;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   font-size: 14px;
   font-weight: 300;
+  height: 16px;
 }
 
 .file-UPLOAD:hover{
@@ -713,20 +792,18 @@ input[type="file"] {
   justify-content: center;
   align-items: center;
   z-index:-100;
- 
-
 }
 .selectedURL-DIV{
-      font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-      background-color: #f6f6f6;
-      font-size: 14px;
-      color: rgb(255, 255, 255);
-      display: inline;
-      height:10px;
-      margin:0px;
-      margin-block-end: 0;
-      margin-block-start: 0;
-    }
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    background-color: #f6f6f6;
+    font-size: 14px;
+    color: rgb(255, 255, 255);
+    display: inline;
+    height:10px;
+    margin:0px;
+    margin-block-end: 0;
+    margin-block-start: 0;
+  }
 
 button.select{
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
@@ -758,7 +835,7 @@ button.select{
 }
 
 .select-container{
-    margin-top: 50px;
+    margin-top: 30px;
     display:flex;
     justify-content: center;
 }
@@ -770,71 +847,64 @@ button.select{
     font-size: 16px;
     border: none;
     cursor: pointer;
-  }
+}
   
-  .dropdown {
+.dropdown {
     position: relative;
     display: inline-block;
-  }
+}
   
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    min-width: 160px;
-    z-index: 1;
+.dropdown-content {
+  display: none;
+  position: absolute;
+  min-width: 160px;
+  z-index: 1;
 
-  }
+}
   
-  .dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
 
-  }
+}
 
-  .dropdown:hover .dropdown-content {
-    display: block;
-    cursor: pointer;
-  }
+.dropdown:hover .dropdown-content {
+  display: block;
+  cursor: pointer;
+}
 
-  .dropdown:hover .select:after {
-    content: "\2212";
-  }
+.dropdown:hover .select:after {
+  content: "\2212";
+}
 
-  /* Science Olympiad style components */
+/* Science Olympiad style components */
 
-  .scioly_img {
-    position: absolute;
-    top: 3%;
-    right: 5%;
-    margin-left: auto;
-    margin-right: auto;
-    width: 15%;
-  }
+.scioly_img {
+  position: absolute;
+  top: 3%;
+  right: 5%;
+  margin-left: auto;
+  margin-right: auto;
+  width: 15%;
+}
 
-  .content {
-    background-color: rgba(215, 232, 195, 0.7);
-    box-shadow: 0 0 5px 5px rgba(215, 232, 195, 0.7);
-    border-radius: 2%;
-    padding: 3%;
-    margin-top: 5%;
-    margin-bottom: 5%;
-    margin-left: -2%;
-    margin-right: -2%;
-  }
+.content {
+  /* background-color: rgba(215, 232, 195, 0.7); */
+  /* box-shadow: 0 0 5px 5px rgba(215, 232, 195, 0.7); */
+  /* border-radius: 2%; */
+  padding: 3%;
+  margin: 0% -2%;
+}
 
-  .title {
-    text-align: center;
-  }
+.title {
+  text-align: center;
+}
 
-
-
-  .external_link{
-    font-size: x-small;
-  }
-
-
+.external_link{
+  font-size: x-small;
+}
 
 /*Tool Tips */
 
@@ -897,3 +967,23 @@ button.select{
 
 }
 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+.footer {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  text-align: center;
+  padding: 4px;
+  font-size: 10px;
+  background-color: white;
+  margin-bottom: 0px;
+  margin-top: 0px;
+  box-sizing: border-box;
+}
+.support_container {
+  max-width: 1000px;
+  margin:auto;
+}
+.support_container h1, .support_container h2, .support_container h3{
+  color: #3D4647;
+}

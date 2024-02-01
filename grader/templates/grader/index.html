@@ -32,83 +32,70 @@
     <!-- General instructions -->
     
     <div class="instructions">
-        <h3>
-            Instructions:
-        </h3>
+        <h3>Instructions</h3>
+        <h4>Self-Check (for students):</h4>
             <ul>
-
-                <li><b>Self-Check</b> (for students):</li>
-                <ul>
-                    <li>Select <i>Compare model properties to reference</i> if you have access to the reference document you want to compare.</li>
-                    <li>Select <i>Check best practices</i> if you want to check your documents for best practices.</li>
-                </ul>
-                <li><b>Compare models from a list</b> (for educators): </li>
-                <ul>
-                    <li>Select <i>Grade list of URLs</i> if you have URLs of your students' documents.</li>
-                    <li>Select <i>Grade from C&A submission list</i> if you assigned student work through Classes and Assignments.</li>
-                    <li>Select <i>Grade for Science Olympiad Competitions</i> if you are an event supervisor or volunteer grader the "Engineering CAD" category.</li>
-                </ul>
+                <li>Select <i>Compare model properties to reference</i> if you have access to the reference document you want to compare.</li>
+                <li>Select <i>Check best practices</i> if you want to check your documents for best practices.</li>
+            </ul>
+        <h4>Compare models from a list (for educators):</h4>
+            <ul>
+                <li>Select <i>Grade list of URLs</i> if you have URLs of your students' documents.</li>
+                <li>Select <i>Grade from C&A submission list</i> if you assigned student work through Classes and Assignments.</li>
+                <li>Select <i>Grade for Science Olympiad Competitions</i> if you are an event supervisor or volunteer grader the "Engineering CAD" category.</li>
             </ul>
     </div>
-
     
     <div class="select-container">
         <div class="dropdown">
-            <button class="select">Self-Check</button>
+            <div class="home_arrow_and_title">
+                <div class="home_icon" id="home_rotate">
+                    <img src="{% static 'grader/images/menu_arrow_white.svg' %}" width="12px">
+                </div>
+                <div class="home_title">Self-Check</div>
+            </div>
             <div class="dropdown-content">
                 <!--Load url page for single file comparison-->
                 <form action="{% url 'grader:url_input_page' user.os_user_id 'student'%}">
                     <input class="options" type="submit" value="Compare model properties to reference">
                 </form>
-              
                 <!--Load url page for best practices check-->
-
                 <form action="{% url 'grader:check_model' user.os_user_id %}">
                     <input class="options" type="submit" value="Check best practices">
                 </form>
-
-
             </div>
         </div>
 
-
         <div class="dropdown">
-            <div class="tooltip">
-                <button class="select">
-                Compare models from a list  
-                </button>
-                <span class="tooltiptext tooltiptext_top">Educator option</span>
+            <div class="home_arrow_and_title">
+                <div class="home_icon" id="home_rotate">
+                    <img src="{% static 'grader/images/menu_arrow_white.svg' %}" width="12px">
+                </div>
+                <div class="home_title">Compare Models From List</div>
             </div>
             <div class="dropdown-content">
                 <!--Load url page for multi file comparison-->
                 <div class="tooltip">
                     <form action="{% url 'grader:url_input_page' user.os_user_id 'educator'%}">
-                            <input class="options" type="submit" value="Grade list of URLs">
-                        </form>
-                    <span class="tooltiptext tooltiptext_left">Grade a list of URLs</span>
-                </div>
-
-            <!--Load url page for group comparison through classes and assignments -->
-                <div class="tooltip">
-                    <form action="{% url 'grader:list_classes' user.os_user_id 'educator'%}" onsubmit="loading_spinner('features')">
-                        <input class="options" type="submit" value="Grade from C&A submission list">
-                        <span class="tooltiptext tooltiptext_left">Grade from Classes and Assignments</span>
+                        <input class="options" type="submit" value="Grade list of URLs">
                     </form>
                 </div>
-
+                <!--Load url page for group comparison through classes and assignments -->
+                <div class="tooltip">
+                    <form action="{% url 'grader:list_classes' user.os_user_id 'educator'%}" onsubmit="loading_spinner('features')">
+                        <input class="options" type="submit" value="Grade using Classes & Assignments">
+                    </form>
+                </div>
                 <!--Load url page for SCIENCE OLYMPIAD USERS-->
                 <div class="tooltip">
                     <form action="{% url 'grader:url_input_page' user.os_user_id 'scioly'%}">
-                        <input class="options" type="submit" value="Grade for Science Olympiad Competitions">
-                        <span class="tooltiptext tooltiptext_left">Grade for Science Olympiad Competitions</span>
+                        <input class="options" type="submit" value="Grade for Science Olympiad competitions">
                     </form>
                 </div>
             </div>
         </div>
     </div>
-            
-
-
+    <div class="footer"><a href="{% url 'grader:home'%}" target="_blank">Support</a></div>
 </body>
 
 </html>

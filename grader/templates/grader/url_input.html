@@ -16,10 +16,7 @@
             <a href="https://www.soinc.org/" title="Click to go to the Science Olympiad Homepage ">
                 <img class="scioly_img" src="{% static 'grader/images/scioly_logo.png' %}">
             </a>
-            <br/>
-            <h3 class="title">Hello, Science Olympiad Grader! </h3>
-            <br/>
-
+            <h3 class="title">Hello, Science Olympiad Grader</h3>
         {% endif %}
 
         <div class="content">
@@ -73,7 +70,7 @@
                             <span class="tooltiptext tooltiptext_left">Upload CSV file</span>
                         </div>                  
                         
-                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
+                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent(false)" onclick="this.value=null;"/>                     
                     </div>   
                     <div>
                         <p class="urlError" id="urlError">
@@ -86,7 +83,7 @@
                         </div>
                     </div>
                     <div id="urlfield">
-                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons()">
+                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons(false)">
                             <div class="twoButtonsonEdge">
                                 <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs">  
                                 <input class="submiturl-button" type="submit" value="Load document(s)">
@@ -96,7 +93,7 @@
                     <div class="selectedURL-DIV">
 
 
-                        <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
+                        <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return (show_url_as_buttons(false) &set_ref_url_as_array())">
                             <input id="ref_url_edu" hidden name="ref_url" type="text">
                             <div class="tooltip">
                                 <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
@@ -120,7 +117,7 @@
                         <label for="csvfile"  class="file-UPLOAD" title="Click to select csv file with Onshape URLs to grade ">
                             <img src="{% static 'grader/images/Upload.png' %}"/>
                         </label>
-                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent()" onclick="this.value=null;"/>                     
+                        <input type="file" name="csvfile" id="csvfile"  required="True"  onchange="readfilecontent(true)" onclick="this.value=null;"/>                     
                     </div>   
                     <div>
                         <p class="urlError" id="urlError">
@@ -133,7 +130,7 @@
                         </div>
                     </div>
                     <div id="urlfield">
-                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons()">
+                        <form  name="urlform"  method="post" action="javascript:show_url_as_buttons(true)">
                             <div class="twoButtonsonEdge">
                                 <input class="urlfield-INPUT" type="text" name="url" id="referenceModel" placeholder="Onshape URL... or comma separated URLs">  
                                 <input class="submiturl-button" type="submit" value="Upload">
@@ -142,24 +139,16 @@
                     </div>     
                     <div class="selectedURL-DIV">
 
-                        <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return (show_url_as_buttons() &set_ref_url_as_array())">
+                        <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return (show_url_as_buttons(true) &set_ref_url_as_array())">
                             <input id="ref_url_edu" hidden name="ref_url" type="text">
-
                             <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('Grade')"/>
-
                         </form>
-
-                            <ul class="closeable_button" id="urlButtonContainer">
-                            </ul>    
+                            <ul class="closeable_button" id="urlButtonContainer"></ul>    
 
                     </div>
                 </div>
 
-                <p class="external_link">
-                    <a href="https://docs.google.com/document/d/1m4fMifwR76ODnmvDQXxo68cwWXsVjhHKTUBdmfLNRx8/edit?usp=sharing">
-                        For more information on grading and this category, please review the supervisor guide.
-                    </a> 
-                </p>
+                <div class="footer"><a href="{% url 'grader:home'%}#science_olympiad" target="_blank">Support</a></div>
 
             {% elif user_type == "student" %}
                 <div class="URLinput-DIV">
@@ -190,6 +179,3 @@
             {% endif %}
         </div>
     </body>
-
-    
-    
