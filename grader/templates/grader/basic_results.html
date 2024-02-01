@@ -148,7 +148,7 @@
     <p class = "resulttile">Results</p>
     <div class = "slidecontainer">
         <p>Tolerance: <span id = "slider_value"></span> %</p>
-        <input type = "range" min = "0" max = "100" value = "0" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
+        <input type = "range" min = "0" max = "100" value = "1" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
     </div>
     <div class = "propselector" onchange= "reform_result('{{ref_urls|length}}')" >
         <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1"  checked = "True" /> Mass</label>
