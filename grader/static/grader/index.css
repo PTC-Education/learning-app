@@ -2,8 +2,8 @@
 html, body {
     color: #333;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    padding-left: 5%;
-    padding-right: 5%;
+    padding-left: 10px;
+    padding-right: 10px;
     line-height: normal;
     height: 100%;
     min-height: 100%;
@@ -209,9 +209,6 @@ table.item_summary {
   width: 300px;
 }
 
-#tutorial{
-  height: fit-content;
-}
 
 /* Style the search menu */
 #searchInput {

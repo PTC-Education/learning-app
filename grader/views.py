@@ -11,6 +11,8 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpRes
 from django.utils import timezone 
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
+from csp.decorators import csp_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from .models import * 
 from .api import *
@@ -43,6 +45,7 @@ def login(request: HttpRequest):
                 pass
     except ObjectDoesNotExist: 
         # Create a new user 
+        print('creating new user')
         user = AuthUser(os_user_id=user_id)
     
     user.os_domain = request.GET.get('server')
@@ -97,6 +100,7 @@ def authorize(request: HttpRequest):
         ), 
         headers={'Content-Type': "application/x-www-form-urlencoded"}
     ).json() 
+    print(token_response)
     
     # Use the sessioninfo API request to get the user's info 
     # for backend data storage 
@@ -270,6 +274,9 @@ def app_element(request: HttpRequest, os_user_id: str):
 
     return render(request, "grader/app_element.html", context=context)
 
+# Probably not secure to do this...
+@csp_exempt
+@xframe_options_exempt
 def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: str): 
     """ 
     The index view of the app. 
@@ -290,6 +297,8 @@ def tutorial_extension(request: HttpRequest, os_user_id: str, app_element_id: st
     ref_props = app_json['tree']['ref_url_props']
     ref_url = get_ref_url_ids(app_json['tree']['ref_url'])
     tutorial_url = get_ref_url_ids(app_json['tree']['tutorial_url'])
+    # TO DO: go get the PDF when you click "load tutorial" and store the PDF base64 data in the json tree
+    # TO DO: figure out why it's so small!
     user_props = None
     error_msg = None
 
