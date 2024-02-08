@@ -9,14 +9,19 @@
         <body>
         <!-- Return to the home page -->
         <form action="{% url 'grader:index' user.os_user_id %}">
-            <input class = "go_home" type="submit" value="Return to Home Page">
+            <input class = "go_home" type="submit" value="&lt; Home">
         </form>
 
-        
+        <!-- Error message -->
+        <div>
+            {% if error_message %}
+            <p id="err_msg"><strong>{{ error_message }}</strong></p>
+            {% endif %}
+        </div>
         <!--Instructions section for each page-->
         <div class="instructions">
             <h3>
-                Instuctions:
+                Instructions:
             </h3>
             {% if page == "classes" %}
                 Click on the class name to view assignments list.
@@ -39,7 +44,7 @@
             <!-- No classes error message is generated from views.Error is displayed on index.html page-->
             <div class = "docinfo">
                 <!-- Return to classes home page -->
-                <form action="{% url 'grader:list_classes' user.os_user_id%}">
+                <form action="{% url 'grader:list_classes' user.os_user_id user_type%}">
                     <input class="quick_link" type="submit" value="Classes">
                 </form>
             </div>
@@ -47,11 +52,11 @@
                 <table>
                     <tr>
                         <th class = "set_to_left_in_table bigger_font_th" title="Class name">  Class name              </th>
-                        <th class = "status_column_34 set_to_left_in_table bigger_font_th" title="number of assignments">       # assignments   </th>
-                        <th class = "status_column_34 set_to_left_in_table bigger_font_th" title="number of members">        # members       </th>
+                        <th class = "status_column_34 set_to_left_in_table bigger_font_th" title="number of assignments"># assignments</th>
+                        <th class = "status_column_34 set_to_left_in_table bigger_font_th" title="number of members"># members</th>
                     </tr>
                     {% for class in classes %}
-                        <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id class.0|safe class.1|safe%}" onsubmit="loading_spinner('features')">
+                        <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id user_type class.0|safe class.1|safe%}" onsubmit="loading_spinner('features')">
                             <tr class="classlist">
                                 <td><input class="row_selector set_to_left_in_table small_font_td" type="submit" value="{{class.1|safe}}" title="{{class.1|safe}}"></td>
                                 <td><input class="row_selector small_font_td" type="submit" value="{{class.2|safe}}" title="{{class.2|safe}}"></td>
@@ -66,10 +71,10 @@
         {% if page == "assignments"%}
             <div class = "docinfo">
                 <!-- Return to classes home page -->
-                <form action="{% url 'grader:list_classes' user.os_user_id%}">
+                <form action="{% url 'grader:list_classes' user.os_user_id user_type%}">
                     <input class="quick_link" type="submit" value="Classes">
                 </form>
-                <form action="{% url 'grader:list_assignments' user.os_user_id class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
+                <form action="{% url 'grader:list_assignments' user.os_user_id user_type class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
                     <input class="quick_link" type="submit" value="{{class_name}}" title="{{class_name}}">
                 </form>
                 <p class = "quick_link" id = "class_name">Assignments</p>
@@ -81,17 +86,18 @@
                             <th class = "set_to_left_in_table bigger_font_th single_line_text">Assignment name</th>
                             <th class = "status_column_34 set_to_left_in_table bigger_font_th">Status</th>
                             <th class = "status_column_34 set_to_left_in_table bigger_font_th">Submitted</th>
-                            <th class = "status_column_34 set_to_left_in_table bigger_font_th single_line_text">Not submitted</th>
                             <th class = "status_column_34 set_to_left_in_table bigger_font_th">In progress</th>
+                            <th class = "status_column_34 set_to_left_in_table bigger_font_th single_line_text">Not started</th>
                         </tr>
                         {% for assignment in assignments %}
-                            <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id class_id|safe class_name|safe assignment.0|safe assignment.1|safe %}" onsubmit="loading_spinner('features')">
+                            <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id user_type class_id|safe class_name|safe assignment.0|safe assignment.1|safe %}" onsubmit="loading_spinner('features')">
                                 <tr class="classlist">
                                     <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.1}}" onmouseover = "show_popup_assignment('description_assignment','{{assignment.6}}', '{{assignment.7}}')" onmouseleave = "hide_popup_assignment('description_assignment')"></th>
                                     <th><input class = "row_selector status_column_34 set_to_left_in_table small_font_td" type="submit" value="{{assignment.2}}" title="{{assignment.2}}"></th>
                                     <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.3}}" title="{{assignment.3}}"></th>
-                                    <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.4}}" title="{{assignment.4}}"></th>
                                     <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.5}}" title="{{assignment.5}}"></th>
+                                    <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.4}}" title="{{assignment.4}}"></th>
+                                    
 
                                 </tr>
                             </form>
@@ -114,22 +120,35 @@
             <!-- Navigation buttons-->
             <div class = "docinfo">
                 <!-- Return to classes home page -->
-                <form action="{% url 'grader:list_classes' user.os_user_id%}">
+                <form action="{% url 'grader:list_classes' user.os_user_id user_type%}">
                     <input class="quick_link" type="submit" value="Classes">
                 </form>
                 <!-- Return to assignments page -->
-                <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
+                <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id user_type class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
                     <td><input class="quick_link" type="submit" value="{{class_name}}"></td>
                 </form>
                 <p class = "quick_link" id = "assignment_name">{{assignment_name}}</p>
             </div>
 
+
+            <p id = "submission_error" > </p>
+
             <div class="classes_assignments_box" id="submitted_box">
                 <p class = "table_header">Grading list</p>
-                <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
-                    <input id="ref_url_edu" hidden name="ref_url" type="text">
-                    <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
-                </form>
+
+                {% if user_type == 'educator' %}
+                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
+                        <input id="ref_url_edu" hidden name="ref_url" type="text">
+                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
+                    </form>
+                {% elif user_type == 'scioly' %}
+                    <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return form_ref_url_array()">
+                        <input id="ref_url_edu" hidden name="ref_url" type="text">
+                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('features')"/>
+
+                    </form>
+                {% endif %}
+
 
                 <table id="submitted_work">
                     <tr>
