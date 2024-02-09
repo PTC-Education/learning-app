@@ -25,5 +25,6 @@ urlpatterns = [
     path('user_data_on_result_page/<str:os_user_id>', views.user_data_on_result_page, name='user_data_on_result_page'),
     path('doc_info_checker_image_update/<str:os_user_id>', views.doc_info_checker_image_update, name='doc_info_checker_image_update'),
     path('doc_info_checker_results_update/<str:os_user_id>', views.doc_info_checker_results_update, name='doc_info_checker_results_update'),
-    path('microversions_checker/<str:os_user_id>', views.microversions_checker, name='microversions_checker'),
+    path('microversions_checker/<str:os_user_id>/', views.microversions_checker, name="microversions_checker"),
+    path('update_html/<str:os_user_id>/<str:wm>/<str:wmid>', views.update_html, name='update_html')
 ]
