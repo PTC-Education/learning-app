@@ -159,10 +159,10 @@ table.item_summary {
     background-color: #fafafa;
 }
 .table_comment {
-  font-size: 9pt;   
+  font-size: 11pt;   
   color: #333;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-  margin-top: 10px;
+  margin: 10px 0px;
 }
 
 /* == Radio button styling == */
