@@ -158,6 +158,12 @@ table.item_summary {
 .item_summary tbody tr:nth-child(odd) {
     background-color: #fafafa;
 }
+.table_comment {
+  font-size: 9pt;   
+  color: #333;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  margin-top: 10px;
+}
 
 /* == Radio button styling == */
 .single-radio {

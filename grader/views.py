@@ -865,6 +865,78 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         content_type="application/json"
     )
 
+def microversions_checker(request: HttpRequest, os_user_id: str):
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    context={
+        "user": curr_user,
+    }
+
+    return render(
+        request, "grader/microversions_checker.html",
+        context=context
+    )
+
+def update_html(request: HttpRequest, os_user_id: str, wm: str, wmid: str): 
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
+    # wm = "w"
+    if wm == 'w':
+        wmid = doc_info["defaultWorkspace"]["id"]
+
+    context={
+        "user": curr_user,
+    }
+
+    latest_microversions = get_microversions(curr_user.os_domain, curr_user.did, wm, wmid, auth_token=curr_user.access_token)
+    next_microversion = ""
+    # s = "<table class='item_summary'>"
+    # s += "<thead><tr><th>Date</th><th>Description</th><th>User Name</th></tr></thead>"
+    # s += "<tbody>"
+    usernames = {}
+    oldest_microversion = ""
+    for microversion in latest_microversions:
+        username = microversion['username']
+        # s += "<tr>"
+        # date_arr = microversion['date'].split('.')
+        # s += "<td>" + date_arr[0].replace('T', ' ') + "</td>"
+        # s += "<td>" + microversion['description'] + "</td>"
+        # s += "<td>" + username + "</td>"
+        # s += "</tr>"
+        next_microversion = microversion['nextMicroversionId']
+        if username not in usernames:
+            usernames.update({username : 1})
+        else:
+            usernames[username] += 1
+        date_arr = microversion['date'].split('.')
+        oldest_microversion = date_arr[0].replace('T', ' ')
+    # s += "</tbody>"
+    # s += "</table>"
+    s = "<table class='item_summary'>"
+    s += "<thead><tr><th>Document Edits</th><th>Count</th></tr></thead>"
+    s += "<tbody>"
+    totaledits = 0
+    for key, value in usernames.items():
+        s += "<tr><td>" + str(key) + "</td><td>" + str(value) + "</td></tr>"
+        totaledits += value
+    s += "<tr><td><strong>Total</strong></td><td><span id='total-edits'>" + str(totaledits) + "</span></td></tr>"
+    s += "</tbody>"
+    s += "</table>"
+    updated_html = s
+    usernames_json = json.dumps(usernames)
+
+    # Return the updated HTML
+    return JsonResponse({'updated_html': updated_html, 'next_microversion': next_microversion, 'oldest_microversion': oldest_microversion, 'usernames_json' : usernames_json})
+
 
 def grade_scioly(request: HttpRequest, os_user_id: str): 
     """ 

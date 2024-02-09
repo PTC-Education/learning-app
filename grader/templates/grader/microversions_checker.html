@@ -9,6 +9,7 @@
         <script>
             $(document).ready(function () {
                 // Attach a submit event handler to the form
+                var usernames_json;
                 $("#update_form").submit(function (event) {
                     loading_spinner('features');
                     console.log("loading first batch");
@@ -19,7 +20,11 @@
                         url: url,
                         type: "GET",
                         success: function (data) {
-                            $('#results-container').append(data.updated_html);
+                            usernames_json = JSON.parse(data.usernames_json);
+                            //$('#results-container').append(usernames_json);
+                            $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                            $('#summary-table').html(makeTable(usernames_json));
+                            // $('#results-container').append(data.updated_html);
                             $('#load-more-container').css('display', 'block');
                             $('#wmid').val(data.next_microversion);
                             $('#features').html(" ");
@@ -32,7 +37,7 @@
                 $("#load_more").submit(function (event) {
                     loading_spinner('features');
                     var newYpos = $('#load-more-container').offset().top;
-                    console.log(newYpos);
+                    //console.log(newYpos);
                     $('#features').css('position', 'absolute');
                     $('#features').css('top', newYpos + 'px');
                     console.log("loading second batch");
@@ -45,7 +50,19 @@
                         url: url,
                         type: "GET",
                         success: function (data) {
-                            $('#results-container').append(data.updated_html);
+                            //$('#results-container').append(data.updated_html);
+                            $.each(JSON.parse(data.usernames_json), function(key, value) {
+                                console.log(value);
+                                if(usernames_json.hasOwnProperty(key)) {
+                                   usernames_json[key] += value; 
+                                } else {
+                                    usernames_json[key] = 0;
+                                }
+                            }); 
+                            s = makeTable(usernames_json);
+                            $('#summary-table').html(s);
+                            $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                            // $('#results-container').append(data.updated_html);
                             $('#wmid').val(data.next_microversion);
                             $('#features').html(" ");
                         },
@@ -60,11 +77,28 @@
                 document.getElementById('load-more-container').style.display = "none";
             }
             window.onload = hide;
+            function makeTable(usernames_json) {
+                s = "<table class='item_summary'>";
+                s += "<thead><tr><th>User</th><th>Changes</th></tr></thead>"
+                s += "<tbody>"
+                var total_changes = 0;
+                for (var username in usernames_json) {
+                    s += "<tr>"
+                    s += "<td>" + username + "</td>"
+                    s += "<td>" + usernames_json[username] + "</td>"
+                    total_changes += usernames_json[username];
+                    s += "</tr>"
+                    }
+                s += "<tr><td><strong>Total</strong></td><td><strong>" + total_changes + "</strong></td></tr>"
+                s += "</tbody>"
+                s += "</table>"
+                return s;
+            }
         </script>
     </head>
     <body>
         <form action="{% url 'grader:index' user.os_user_id %}">
-            <input type="submit" value="Return to Home Page"/>
+            <input type="submit" value="&lt; Home"/>
         </form>
         <!-- Check model -->
         <form method="get" id="update_form">
@@ -76,6 +110,8 @@
                 <!--This is where the spinner will load-->
             </div>
         </div>
+        <div id="summary-table"></div>
+        <div class="table_comment" id="oldest_microversion"></div>
         <div id="results-container"></div>
         <div class="spinner-container">
             <div id="features">

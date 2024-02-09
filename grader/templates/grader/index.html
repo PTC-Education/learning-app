@@ -63,6 +63,10 @@
                 <form action="{% url 'grader:check_model' user.os_user_id %}">
                     <input class="options" type="submit" value="Check best practices">
                 </form>
+                <!--Load url page for microversions history-->
+                <form action="{% url 'grader:microversions_checker' user.os_user_id %}">
+                    <input class="options" type="submit" value="Check microversions">
+                </form>
             </div>
         </div>
 
