@@ -43,25 +43,36 @@
             $(document).ready(function () {
                 $("#check_model").click(function (event) {
                     var url = "{% url 'grader:doc_info_checker_results_update' user.os_user_id %}";
-                    var elements = $("#elements").val();
-                    loading_spinner('features2');
-                    $("#error_message").html("");
-                    $.ajax({
-                        url: url,
-                        type: "GET",
-                        data:{
-                            doc_wid : "{{doc_wid}}",
-                            elements : elements
-                        },
-                    
-                        success: function (response) {
-                            build_page(response);
-                            $('#features2').html(" ");
-                        },
-                        error: function (error) {
-                        }
-                    });
-
+                    var elementArray = $("#elements").val().split(" ");
+                    var etype = elementArray[0];
+                    var elementName = elementArray.splice(2).join(" ");
+                    var elements = elementArray.splice(0,2).join(" ");
+                    if(etype == 'partstudios') {
+                        $('#partstudio_details_title').html("PartStudio details: " + elementName);
+                    } else {
+                        $('#assembly_details_title').html("Assembly details: " + elementName);
+                    }
+                    if(elements) {
+                        loading_spinner('features2');
+                        $("#error_message").html("");
+                        $.ajax({
+                            url: url,
+                            type: "GET",
+                            data:{
+                                doc_wid : "{{doc_wid}}",
+                                elements : elements
+                            },
+                            success: function (response) {
+                                build_page(response);
+                                $('#msg').html("");
+                                $('#features2').html(" ");
+                            },
+                            error: function (error) {
+                            }
+                        });
+                    } else {
+                        $('#msg').html("Please select an element.");
+                    }
                 });  
             });
 
@@ -69,9 +80,17 @@
 
     </head>
     <body>
-        <p>Select the element you would like to check:</p>
-        <!-- Check model -->
-
+        <div id="logo" class="logo">
+            <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="50%"/>
+        </div>
+        <p class="doc_info_title">Document Info Options</p>
+        <p class="doc_info_normal">Click the <strong>Load summary</strong> button below to view a count of the edits on this document, summarized by user.  Or, or select an element from the list below then click <strong>Check model</strong> to view details of the selected part studio or assembly.</p>
+        <hr class="hr_thin">
+        <div id="check-options2">
+            <input type="button" class="check_model" id="check_model2" value="Load summary"/>
+        </div>
+        <hr class="hr_thin">
+        <p class="doc_info_title">Select the element you would like to check:</p>
         <form id="perform_check_form">
             <!-- Select element -->
             {% if element_list %}
@@ -82,7 +101,7 @@
                     </div>
                 </div>
                 {% for element in element_list %}
-                    <div class="single-radio" onclick="selectRadio(this)" data-value="{{ element.etype }} {{ element.id }}">
+                    <div class="single-radio" onclick="selectRadio(this)" data-value="{{ element.etype }} {{ element.id }} {{ element.name }}">
                         {% if element.etype == 'assemblies' %}
                             <div class="radio-svg"><img src="{% static 'grader/images/assem.svg' %}"></div>
                         {% else %}
@@ -96,7 +115,7 @@
             {% endif %}
             <div id="check-options">
                 <input type="hidden" name="elements" id="elements" value="">  
-                <input type="button" class="check_model" id = "check_model" value="Check model"/>
+                <input type="button" class="check_model" id="check_model" value="Check model"/>
                 <p class="msg" id="msg">&nbsp;</p>
             </div>
         </form>
@@ -112,7 +131,7 @@
         </div>
   
         <div id="part_studio_div">
-            <h3>Part Studio details</h3>
+            <h3 id="partstudio_details_title">Part Studio details</h3>
             <div id="feature_div">
                 <div class="arrow_and_title" onclick="show_hide_table('features_summary_table', 'rotate0')">
                     <div class="arrow_icon" id="rotate0">
@@ -164,7 +183,7 @@
             </div>
         </div>
         <div id="assembly_div">
-            <h3>Assembly details</h3>
+            <h3 id="assembly_details_title">Assembly details</h3>
             <div id="mates_div">
                 <div class="arrow_and_title" onclick="show_hide_table('mates_summary_table', 'rotate3')">
                     <div class="arrow_icon" id="rotate3">
