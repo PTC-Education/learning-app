@@ -159,7 +159,7 @@ table.item_summary {
     background-color: #fafafa;
 }
 .table_comment {
-  font-size: 11pt;   
+  font-size: 9pt;   
   color: #333;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   margin: 10px 0px;
@@ -180,6 +180,9 @@ table.item_summary {
     border: none;
     height: 1px;
     background-color: #d4d7d9;
+}
+#summary-start {
+  margin-top: 12px;
 }
 /* == Radio button styling == */
 .single-radio {

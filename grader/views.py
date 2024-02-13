@@ -933,7 +933,7 @@ def update_html(request: HttpRequest, os_user_id: str, wm: str, wmid: str):
     s += "</table>"
     updated_html = s
     usernames_json = json.dumps(usernames)
-
+    print(usernames_json)
     # Return the updated HTML
     return JsonResponse({'updated_html': updated_html, 'next_microversion': next_microversion, 'oldest_microversion': oldest_microversion, 'usernames_json' : usernames_json})
 

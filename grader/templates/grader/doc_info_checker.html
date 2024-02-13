@@ -41,6 +41,58 @@
           
             //get results for elememt 
             $(document).ready(function () {
+                var usernames_json;
+                $("#load_summary").submit(function (event) {
+                    loading_spinner('summary-spinner');
+                    event.preventDefault();
+                    usernames_json = {"System": 3, "Matt Shields": 47}
+                    var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
+                    $.ajax({
+                        url: url,
+                        type: "GET",
+                        success: function (data) {
+                            $('#summary-end').css('display', 'block');
+                            $('#summary-start').css('display', 'none');
+                            usernames_json = JSON.parse(data.usernames_json);
+                            $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                            $('#summary-table').html(makeTable(usernames_json));
+                            $('#wmid').val(data.next_microversion);
+                            $('#summary-spinner').html(" ");
+                        },
+                        error: function (error) {
+                            console.log("Error:", error);
+                        }
+                    });
+                });
+                $("#load_more").submit(function (event) {
+                    loading_spinner('load-more-spinner');
+                    console.log("loading second batch");
+                    var wmidVal = $('#wmid').val();
+                    event.preventDefault();
+                    var url = "{% url 'grader:update_html' user.os_user_id 'm' 'wmid' %}".replace('wmid', wmidVal);
+                    $.ajax({
+                        url: url,
+                        type: "GET",
+                        success: function (data) {
+                            $.each(JSON.parse(data.usernames_json), function(key, value) {
+                                console.log(value);
+                                if(usernames_json.hasOwnProperty(key)) {
+                                   usernames_json[key] += value; 
+                                } else {
+                                    usernames_json[key] = 0;
+                                }
+                            }); 
+                            s = makeTable(usernames_json);
+                            $('#summary-table').html(s);
+                            $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                            $('#wmid').val(data.next_microversion);
+                            $('#load-more-spinner').html(" ");
+                        },
+                        error: function (error) {
+                            console.log("Error:", error);
+                        }
+                    });
+                });
                 $("#check_model").click(function (event) {
                     var url = "{% url 'grader:doc_info_checker_results_update' user.os_user_id %}";
                     var elementArray = $("#elements").val().split(" ");
@@ -75,7 +127,24 @@
                     }
                 });  
             });
-
+            function makeTable(usernames_json) {
+                s = "<p class='doc_info_title'>Microversions Summary</p>";
+                s += "<table class='item_summary'>";
+                s += "<thead><tr><th>User</th><th>Changes</th></tr></thead>"
+                s += "<tbody>"
+                var total_changes = 0;
+                for (var username in usernames_json) {
+                    s += "<tr>"
+                    s += "<td>" + username + "</td>"
+                    s += "<td>" + usernames_json[username] + "</td>"
+                    total_changes += usernames_json[username];
+                    s += "</tr>"
+                    }
+                s += "<tr><td><strong>Total</strong></td><td><strong>" + total_changes + "</strong></td></tr>"
+                s += "</tbody>"
+                s += "</table>"
+                return s;
+            }
         </script>
 
     </head>
@@ -84,10 +153,32 @@
             <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="50%"/>
         </div>
         <p class="doc_info_title">Document Info Options</p>
-        <p class="doc_info_normal">Click the <strong>Load summary</strong> button below to view a count of the edits on this document, summarized by user.  Or, or select an element from the list below then click <strong>Check model</strong> to view details of the selected part studio or assembly.</p>
+        <p class="doc_info_normal">Click the <strong>Document summary</strong> button below to view a count of the edits on this document, summarized by user.  Or, or select an element from the list below then click <strong>Check element</strong> to view details of the selected part studio or assembly.</p>
         <hr class="hr_thin">
-        <div id="check-options2">
-            <input type="button" class="check_model" id="check_model2" value="Load summary"/>
+        <div id="summary-start">
+            <form method="get" id="load_summary">
+                <input type="hidden" id="wm" value="w">
+                <input type="submit" value="Document summary">
+            </form>
+            <div class="spinner-container">
+                <div id="summary-spinner">
+                    <!--This is where the spinner will load-->
+                </div>
+            </div>
+        </div>
+        <div id="summary-end">
+            <div id="summary-table"></div>
+            <div class="table_comment" id="oldest_microversion"></div>
+            <form method="get" id="load_more">
+                <input type="hidden" id="wm" value="m">
+                <input type="hidden" id="wmid" value=" ">
+                <input type="submit" value="Load More">
+            </form>
+            <div class="spinner-container">
+                <div id="load-more-spinner">
+                    <!--This is where the spinner will load-->
+                </div>
+            </div>
         </div>
         <hr class="hr_thin">
         <p class="doc_info_title">Select the element you would like to check:</p>
@@ -115,7 +206,7 @@
             {% endif %}
             <div id="check-options">
                 <input type="hidden" name="elements" id="elements" value="">  
-                <input type="button" class="check_model" id="check_model" value="Check model"/>
+                <input type="button" class="check_model" id="check_model" value="Check element"/>
                 <p class="msg" id="msg">&nbsp;</p>
             </div>
         </form>
@@ -266,9 +357,9 @@
                     </div>
                 </div>
         </div>
-        
         <script>
         hide_all_divs();
+        document.getElementById("summary-end").style.display = "none";
         </script>    
     </body>
 </html>
