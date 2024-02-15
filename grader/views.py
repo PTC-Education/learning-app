@@ -897,13 +897,14 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     # first indexing is an array of the element labels and the corresponding mass property [eType, name, [mass/center of mass]]
     # second indexing of the mass property is [mass] for part studios or [COM_xaxis, COM_yaxis, COM_zaxis] for assemblies
     key_answers = []
+    elements_to_grade = []
     for elem in user_elems:
-        if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
+        if (elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY") and "source" not in elem["name"].lower():
+            elements_to_grade.append(elem["name"])
             mass_props = get_mass_props(
                     curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, elem["id"], type_dict[elem["elementType"]], 
                     massAsGroup=True, auth_token=curr_user.access_token
                 )
-
             elem_mass_prop = [] #initialize
             if elem["elementType"] == "PARTSTUDIO":
                 if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
@@ -935,7 +936,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
 
     # Append user related information along with mass properties
     user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url, totalpoints])
-
+    print(elements_to_grade)
     context={
         "user": curr_user, 
         "user_props": user_props,
@@ -983,9 +984,8 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         ref_props=[] # initialize empty array of ref props
         elemcount = 1
         totalpoints = 0
-        
         for elem in ref_elems:
-            if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":               
+            if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
                 mass_props = get_mass_props(
                         curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
                         massAsGroup=True, auth_token=curr_user.access_token
