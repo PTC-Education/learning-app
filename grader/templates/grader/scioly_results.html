@@ -22,7 +22,8 @@
                 type: "GET",
                 data:{
                     'ref_url':urls[currentIndex],
-                    'key_answers':'{{key_answers}}'
+                    'key_answers':'{{key_answers}}',
+                    'elems_to_grade':'{{elems_to_grade}}'
                 },
                 success: function (response) {
                     build_results(response, currentIndex);
@@ -48,30 +49,7 @@
         console.log(ref_urls)
         makeSequentialAjaxCalls(ref_urls, 0);
     });
-
-    // '{% for ref_url in ref_urls %}' 
-    //     $(document).ready(function () {
-    //         console.log('getting {{forloop.counter0}}')
-    //         $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table  
-    //         loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
-    //         var url = "{% url 'grader:grade_scioly_results' user.os_user_id %}";
-    //         $.ajax({
-    //             url: url,
-    //             type: "GET",
-    //             data:{
-    //                 'ref_url':'{{ref_url}}',
-    //                 'key_answers':'{{key_answers}}'
-    //             },
-    //             success: function (response) {
-    //                 console.log(response)
-    //                 build_results(response, "{{forloop.counter0}}");
-    //                 $('#features_{{forloop.counter0}}').html(" ");
-    //             },
-    //             error: function (error) {
-    //             }
-    //         });
-    //     });
-    // '{% endfor %}'   
+  
 </script>
 
 <body id = "whole">
