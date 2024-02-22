@@ -30,7 +30,7 @@
             {% if page == "classes" %}
                 <p>Click on the class name to view assignments list.</p>
                 {% if user_type == 'scioly' %}
-                    <p>If you want to use Classes & Assignments without Science Olympiad grading, <a href="{% url 'grader:list_classes' user.os_user_id 'educator'%}">click here</a>.</p>
+                    <p>If you want to use Classes & Assignments <em>without</em> Science Olympiad grading, <a href="{% url 'grader:list_classes' user.os_user_id 'educator'%}">click here</a>.</p>
                 {% else %}
                     <p>If you want to use Classes & Assignments for Science Olympiad, <a href="{% url 'grader:list_classes' user.os_user_id 'scioly'%}">click here</a>.</p>
                 {% endif %}
@@ -155,10 +155,8 @@
                     <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return form_ref_url_array()">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
                         <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('features')"/>
-
                     </form>
                 {% endif %}
-
 
                 <table id="submitted_work">
                     <tr>
