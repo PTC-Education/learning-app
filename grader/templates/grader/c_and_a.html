@@ -18,19 +18,28 @@
             <p id="err_msg"><strong>{{ error_message }}</strong></p>
             {% endif %}
         </div>
+        {% if user_type == 'scioly' %}
+            <h3>Science Olympiad Classes & Assignments Grading</h3>
+        {% else %}
+            <h3>Classes & Assignments Grading</h3>
+        {% endif %}
+        <hr class="thin">
         <!--Instructions section for each page-->
         <div class="instructions">
-            <h3>
-                Instructions:
-            </h3>
+            <h3>Instructions:</h3>
             {% if page == "classes" %}
-                Click on the class name to view assignments list.
+                <p>Click on the class name to view assignments list.</p>
+                {% if user_type == 'scioly' %}
+                    <p>If you want to use Classes & Assignments without Science Olympiad grading, <a href="{% url 'grader:list_classes' user.os_user_id 'educator'%}">click here</a>.</p>
+                {% else %}
+                    <p>If you want to use Classes & Assignments for Science Olympiad, <a href="{% url 'grader:list_classes' user.os_user_id 'scioly'%}">click here</a>.</p>
+                {% endif %}
             {% endif %}
             {% if page == "assignments" %}
-                Click on the assignment's name to view submission list and grade.
+                <p>Click on the assignment's name to view submission list and grade.</p>
             {% endif %}
             {% if page == "submissions" %}
-                Click on grade to grade the submitted assignments.
+                <p>Click on grade to grade the submitted assignments.</p>
             {% endif %}
         </div>
 
@@ -44,9 +53,10 @@
             <!-- No classes error message is generated from views.Error is displayed on index.html page-->
             <div class = "docinfo">
                 <!-- Return to classes home page -->
-                <form action="{% url 'grader:list_classes' user.os_user_id user_type%}">
+                <!-- <form action="{% url 'grader:list_classes' user.os_user_id user_type%}">
                     <input class="quick_link" type="submit" value="Classes">
-                </form>
+                </form> -->
+                <p class="quick_link">Classes</p>
             </div>
             <div class="classes_assignments_box">
                 <table>
@@ -74,10 +84,11 @@
                 <form action="{% url 'grader:list_classes' user.os_user_id user_type%}">
                     <input class="quick_link" type="submit" value="Classes">
                 </form>
-                <form action="{% url 'grader:list_assignments' user.os_user_id user_type class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
+                <div class="breadcrumbs">&gt;</div>
+                <p class="quick_link">{{class_name}}</p>
+                <!-- <form action="{% url 'grader:list_assignments' user.os_user_id user_type class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
                     <input class="quick_link" type="submit" value="{{class_name}}" title="{{class_name}}">
-                </form>
-                <p class = "quick_link" id = "class_name">Assignments</p>
+                </form> -->
             </div>
             {% if assignments %}
                 <div class="classes_assignments_box">
@@ -116,25 +127,24 @@
 
 
         {% if page == "submissions" %}
-
             <!-- Navigation buttons-->
             <div class = "docinfo">
                 <!-- Return to classes home page -->
                 <form action="{% url 'grader:list_classes' user.os_user_id user_type%}">
                     <input class="quick_link" type="submit" value="Classes">
                 </form>
+                <div class="breadcrumbs">&gt;</div>
                 <!-- Return to assignments page -->
                 <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id user_type class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
                     <td><input class="quick_link" type="submit" value="{{class_name}}"></td>
                 </form>
-                <p class = "quick_link" id = "assignment_name">{{assignment_name}}</p>
+                <div class="breadcrumbs">&gt;</div>
+                <p class="quick_link" id="assignment_name">{{assignment_name}}</p>
             </div>
 
-
-            <p id = "submission_error" > </p>
+            <p id="submission_error">&nbsp;</p>
 
             <div class="classes_assignments_box" id="submitted_box">
-                <p class = "table_header">Grading list</p>
 
                 {% if user_type == 'educator' %}
                     <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
