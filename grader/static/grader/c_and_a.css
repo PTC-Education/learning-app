@@ -9,6 +9,7 @@ body {
 h3 {
     margin-bottom: 0px;
 }
+
 .instructions{
   width: 90%;
   color: #000;
@@ -18,7 +19,11 @@ h3 {
   font-style: normal;
   font-weight: 350;
   line-height: normal;
-  margin-bottom:50px;
+  margin-bottom:10px;
+}
+
+.instructions p {
+  margin: 2px 0px;
 }
 
 input.go_home[type=submit] {
@@ -200,51 +205,64 @@ p.single_line_text{
   text-overflow: ellipsis;
 }
 
+.docinfo form {
+  margin-bottom: 2px;
+}
+.breadcrumbs {
+  font-weight: bold;
+  font-size: 14px;
+  margin: 0px 5px;
+}
+
+.box_title {
+  font-size: 14px;
+  font-weight: bold;
+}
 
 input.quick_link[type=submit]{
-  margin:0 5px auto;
+  margin:0px;
   display:block;
-  font-size: 12px;
-  padding: 10px;
+  font-size: 14px;
+  padding: 0px;
   border: none;
-  font-weight: 300;
+  font-weight:bold;
   background-color: transparent;
-  color: #666; 
+  color: #333; 
 }
 input.quick_link[type=submit]:hover{
-cursor: pointer;
-text-decoration: underline;
-
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 p.quick_link{
-
   display:block;
-  padding: 10px 0;
-  font-weight: 600;
-  font-size: 12px;
+  padding: 4px 0;
+  margin-bottom: 2px;
+  font-weight:bold;
+  font-size: 14px;
 }
-
 
 .dropbtn {
   background-color: #4CAF50;
   color: white;
-
   border: none;
   cursor: pointer;
   font-size: 11px;
   width: 100%;
-
   color: black;
   padding: 10px 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
-
 }
 
-
+.thin {
+  border: none;
+  height: 1px;
+  background-color: #d4d7d9;
+  margin-top: 2px;
+}
 
 .dropdown {
   font-size: 11px;

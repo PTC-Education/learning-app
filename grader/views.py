@@ -918,7 +918,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                     return HttpResponse("The Answer Key's Assembly is empty or does not have a materials assigned. Please check the current document and regrade.")
                 else:
                     elem_mass_prop = ['%.4f' % val for val in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz.  round to 4 decimal places
-                    if elem_mass_prop[0] == 0 or elem_mass_prop[1] == 0 or elem_mass_prop[2] == 0: #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
+                    if "%g" % float(elem_mass_prop[0]) == '0' or "%g" % float(elem_mass_prop[1]) == '0' or "%g" % float(elem_mass_prop[2]) == '0': #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
                         return HttpResponse("The Answer Key's Assembly Center of Mass has a zero in it. Please check the current document and regrade.")
                     #key_answers.append(elem_mass_prop)
                     key_answers[elem['name']] = elem_mass_prop
