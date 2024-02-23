@@ -21,8 +21,10 @@
                         type: "GET",
                         success: function (data) {
                             usernames_json = JSON.parse(data.usernames_json);
-                            //$('#results-container').append(usernames_json);
-                            $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                            $('#summary-start').css('display', 'none');
+                            // $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                            var dateString = makeDateString(data.oldest_microversion);
+                            $('#oldest_microversion').html(dateString);
                             $('#summary-table').html(makeTable(usernames_json));
                             // $('#results-container').append(data.updated_html);
                             $('#load-more-container').css('display', 'block');
@@ -42,6 +44,7 @@
                     $('#features').css('top', newYpos + 'px');
                     console.log("loading second batch");
                     var wmidVal = $('#wmid').val();
+                    if (wmidVal) {
                     // Prevent the default form submission behavior
                     event.preventDefault();
                     var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
@@ -61,7 +64,9 @@
                             }); 
                             s = makeTable(usernames_json);
                             $('#summary-table').html(s);
-                            $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                            var dateString = makeDateString(data.oldest_microversion);
+                            $('#oldest_microversion').html(dateString);
+                            // $('#oldest_microversion').html("Since " + data.oldest_microversion);
                             // $('#results-container').append(data.updated_html);
                             $('#wmid').val(data.next_microversion);
                             $('#features').html(" ");
@@ -70,6 +75,9 @@
                             console.log("Error:", error);
                         }
                     });
+                } else {
+                    $('#load-more').val("No more");
+                }
                 });
             });
             function hide()
@@ -95,17 +103,52 @@
                 s += "</table>"
                 return s;
             }
+            function makeDateString(s) {
+                var oldest_microversion = new Date(s);
+                var now = new Date();
+
+                var deltaT = now - oldest_microversion;
+                var days = Math.floor(deltaT / (1000 * 60 * 60 * 24));
+                var hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((deltaT % (1000 * 60)) / 1000);
+                
+                var dayStr = "";
+                if (days > 0) {
+                    dayStr += days + "D ";
+                }
+                var dateString = "Over " + dayStr + hours + "H " + minutes + "M, from " + fixDate(s) + "-" + fixDate(now.toISOString());
+                return dateString;
+            }
+            function fixDate(s) {
+                console.log(s);
+                arr1 = s.split("T");
+                arr2 = arr1[0].split("-");
+                newS = arr2[1] + "/" + arr2[2] + "/" + arr2[0].substring(2);
+                return newS;
+            }
         </script>
     </head>
     <body>
         <form action="{% url 'grader:index' user.os_user_id %}">
             <input type="submit" value="&lt; Home"/>
         </form>
-        <!-- Check model -->
-        <form method="get" id="update_form">
-            <input type="hidden" id="wm" value="w">
-            <input type="submit" value="Get Microversions">
-        </form>
+        <div id="logo" class="logo">
+            <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="50%"/>
+        </div>
+        <p class="doc_info_normal">Click the <strong>Document summary</strong> button below to view a count of the edits on this document, summarized by user.</p>
+        <hr class="hr_thin">
+        <div id="summary-start">
+            <div class="spinner-container">
+                <div id="summary-spinner">
+                    <!--This is where the spinner will load-->
+                </div>
+            </div>
+            <form method="get" id="update_form">
+                <input type="hidden" id="wm" value="w">
+                <input type="submit" value="Document Summary">
+            </form>
+        </div>
         <div class="spinner-container">
             <div id="features">
                 <!--This is where the spinner will load-->
