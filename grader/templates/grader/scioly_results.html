@@ -22,7 +22,8 @@
                 type: "GET",
                 data:{
                     'ref_url':urls[currentIndex],
-                    'key_answers':'{{key_answers}}'
+                    'key_answers':'{{key_answers}}',
+                    'elems_to_grade':'{{elems_to_grade}}'
                 },
                 success: function (response) {
                     build_results(response, currentIndex);
@@ -48,30 +49,7 @@
         console.log(ref_urls)
         makeSequentialAjaxCalls(ref_urls, 0);
     });
-
-    // '{% for ref_url in ref_urls %}' 
-    //     $(document).ready(function () {
-    //         console.log('getting {{forloop.counter0}}')
-    //         $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table  
-    //         loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
-    //         var url = "{% url 'grader:grade_scioly_results' user.os_user_id %}";
-    //         $.ajax({
-    //             url: url,
-    //             type: "GET",
-    //             data:{
-    //                 'ref_url':'{{ref_url}}',
-    //                 'key_answers':'{{key_answers}}'
-    //             },
-    //             success: function (response) {
-    //                 console.log(response)
-    //                 build_results(response, "{{forloop.counter0}}");
-    //                 $('#features_{{forloop.counter0}}').html(" ");
-    //             },
-    //             error: function (error) {
-    //             }
-    //         });
-    //     });
-    // '{% endfor %}'   
+  
 </script>
 
 <body id = "whole">
@@ -180,13 +158,13 @@
 {% endfor %} 
 
 <div id = "failed_url_box" class = "failed_url_box">
-    The following URLs failed to return a result.    
+    The following URLs failed to return a result. Please confirm the tab names in the student document match the tab names in this document.
     <div class = "failed_url_reasons" id = "failed_url_reasons" >
         <br>
         Here are some reasons the CAD Checker may have failed to grade the document.
         <ul>
             <li>You may not have permission to access the document - make sure the document owner has shared it with you.</li>
-            <li>The url may be a different element type than you currently have open - make sure you are comparing a Part Studio with a Part Studio or an Assembly with an Assembly.</li>
+            <li>The document does not have all the tabs with matching names to the currently opened document (except for tabs named with the word "source" in this document).</li>
             
         </ul>
     </div>                 

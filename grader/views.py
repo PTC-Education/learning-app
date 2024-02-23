@@ -968,29 +968,32 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     user_props = [] # a 3D array that lists all the PS and Assemblies in a document along with their corresponding mass properties
     # first indexing is an array of the element labels and the corresponding mass property [eType, name, [mass/center of mass]]
     # second indexing of the mass property is [mass] for part studios or [COM_xaxis, COM_yaxis, COM_zaxis] for assemblies
-    key_answers = []
+    key_answers = {}
+    elems_to_grade = []
     for elem in user_elems:
-        if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":
+        if (elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY") and "source" not in elem["name"].lower():
+            elems_to_grade.append(elem["name"])
             mass_props = get_mass_props(
                     curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, elem["id"], type_dict[elem["elementType"]], 
                     massAsGroup=True, auth_token=curr_user.access_token
                 )
-
             elem_mass_prop = [] #initialize
             if elem["elementType"] == "PARTSTUDIO":
                 if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
                     return HttpResponse("The Answer Key's Part Studio(s) are empty or do not have a material assigned. Please check the current document and regrade.")
                 else:
                     elem_mass_prop = round(mass_props["bodies"]["-all-"]["mass"][0], 4) #round to 4 decimal places
-                    key_answers.append(elem_mass_prop)
+                    #key_answers.append(elem_mass_prop)
+                    key_answers[elem['name']] = elem_mass_prop
             else: #elem["elementType"] == "ASSEMBLY"
                 if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
                     return HttpResponse("The Answer Key's Assembly is empty or does not have a materials assigned. Please check the current document and regrade.")
                 else:
                     elem_mass_prop = ['%.4f' % val for val in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz.  round to 4 decimal places
-                    if elem_mass_prop[0] == 0 or elem_mass_prop[1] == 0 or elem_mass_prop[2] == 0: #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
+                    if "%g" % float(elem_mass_prop[0]) == '0' or "%g" % float(elem_mass_prop[1]) == '0' or "%g" % float(elem_mass_prop[2]) == '0': #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
                         return HttpResponse("The Answer Key's Assembly Center of Mass has a zero in it. Please check the current document and regrade.")
-                    key_answers.append(elem_mass_prop)
+                    #key_answers.append(elem_mass_prop)
+                    key_answers[elem['name']] = elem_mass_prop
                     elem_mass_prop = ', '.join(elem_mass_prop)
                     
             elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
@@ -1007,12 +1010,12 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
 
     # Append user related information along with mass properties
     user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url, totalpoints])
-
     context={
         "user": curr_user, 
         "user_props": user_props,
         "key_answers": key_answers,
-        "ref_urls": ref_urls
+        "ref_urls": ref_urls,
+        "elems_to_grade": elems_to_grade 
     }
     return render(
         request, "grader/scioly_results.html", 
@@ -1036,8 +1039,11 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         curr_user.refresh_oauth_token() 
         
     url = request.GET.get('ref_url') 
-    key_answers = request.GET.get('key_answers').replace('&#x27;','')
-    answerArray = string_to_array(key_answers)
+    key_string = request.GET.get('key_answers').replace('&#x27;','')
+    key_answers = string_to_json(key_string)
+    elems_to_grade = request.GET.get('elems_to_grade').replace('&#x27;','')[1:-1]
+    #answerArray = string_to_array(key_answers)
+    toGradeArray = elems_to_grade.split(', ')
     ref_url = get_scioly_ref_url_ids(url)
 
     ## Initialize arrays for ref docs
@@ -1047,22 +1053,26 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
     failed_url = "None" # Array of all URLs that we failed to get info from
 
     type_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
-
     # Get info and mass props for ref urls
     try:
-        # TO DO: ref_elems should be a list of all the elems, based on the DID.     
         ref_elems = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token) # get all the elems from the URL
         ref_props=[] # initialize empty array of ref props
+        ref_names=[]
+        for elem in ref_elems:
+            ref_names.append(elem['name'])
+        # First, we chek that the student has all of the necessary elements
+        for name in toGradeArray:
+            if name not in ref_names:
+                raise Exception("Missing element")
         elemcount = 1
         totalpoints = 0
-        
+        # Next, we grade only those elements
         for elem in ref_elems:
-            if elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY":               
+            if (elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY") and elem['name'] in toGradeArray:
                 mass_props = get_mass_props(
                         curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
                         massAsGroup=True, auth_token=curr_user.access_token
                     )
-                
                 elem_mass_prop = 0 #initialize
                 points = 0
                 if elem["elementType"] == "PARTSTUDIO":
@@ -1071,20 +1081,25 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                         elem_mass_prop = 0
                     else:
                         elem_mass_prop = round(mass_props["bodies"]["-all-"]["mass"][0], 4) #round to 4 decimal places
-                    points = 20 - 100*abs((elem_mass_prop - answerArray[elemcount-1])/answerArray[elemcount-1])
+                    ans = key_answers[elem['name']]
+                    points = 20 - 100*abs((elem_mass_prop - ans)/ans)
+                    #points = 20 - 100*abs((elem_mass_prop - answerArray[elemcount-1])/answerArray[elemcount-1])
                     if points < 0:
                         points = 0
                     points = round(points, 2)
                     #elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
                     
                 else: #elem["elementType"] == "ASSEMBLY"
+                    print(elem['name'])
                     if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
                         elem_mass_prop = [0,0,0]
                     else:
                         elem_mass_array = [round(float(string),4) for string in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz.  round to 4 decimal places
                         elem_mass_prop = ', '.join(map(str, elem_mass_array))
-                    points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - answerArray[elemcount-1][0])/answerArray[elemcount-1][0])) + ((1/3)*abs((elem_mass_array[1] - answerArray[elemcount-1][1])/answerArray[elemcount-1][1])) + ((1/3)*abs((elem_mass_array[2] - answerArray[elemcount-1][2])/answerArray[elemcount-1][2])))
-
+                        print(elem_mass_array)
+                    ans = key_answers[elem['name']]
+                    points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - ans[0])/ans[0])) + ((1/3)*abs((elem_mass_array[1] - ans[1])/ans[1])) + ((1/3)*abs((elem_mass_array[2] - ans[2])/ans[2])))
+                    #points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - answerArray[elemcount-1][0])/answerArray[elemcount-1][0])) + ((1/3)*abs((elem_mass_array[1] - answerArray[elemcount-1][1])/answerArray[elemcount-1][1])) + ((1/3)*abs((elem_mass_array[2] - answerArray[elemcount-1][2])/answerArray[elemcount-1][2])))
                     if points < 0:
                         points = 0
                     points = round(points, 2)
@@ -1106,26 +1121,11 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
         # Insert first element of array 
         ref_props.insert(0,[doc_name,user_name, element_name, doc_time, image, url, totalpoints])
-    except:
+    except Exception as error:
+        print(error)
         # If anything above failed, add url to the fairled URL list
         failed_url = ref_url
             
-    #Here, I am converting the user_props mass and centroid to scientific notation (type:str)
-    #Remember, the user_props is a 2D array of all the PS and Assemblies in the document (does NOT include drawings, pdfs, etc.)
-    #Each value in the array is an array with these values in it: [elem["elementType"], elem["name"], elem_mass_prop]
-    #elem_mass_prop is a number (mass in kg) for PS and an array (center of mass for the three axis in [x,y,z])
-    
-    #for elem in user_props:
-    ##    if elem == user_props[0]:
-    #       continue
-    #    if elem[0] == "PARTSTUDIO":
-    #        elem[2] = '{:.2e}'.format(elem[2])
-    #    else: #elem["elementType"] == "ASSEMBLY"
-    #        for i in range(3):
-    #            elem[2][i] = '{:.2e}'.format(elem[2][i])
-    #        elem[2] = '( ' + elem[2][0] + ', ' + elem[2][1] + ', ' + elem[2][2] + ' )'
-    
-
     context={
         "failed_url": failed_url,
         "ref_props": ref_props
@@ -1135,7 +1135,6 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         json.dumps(context),
         content_type="application/json"
     )
-
 
 #################### Other helper functions ####################
 
@@ -1499,3 +1498,25 @@ def string_to_array(s):
             myArr[i] = float(elem)
 
     return myArr
+
+def string_to_json(s):
+    s = s.replace(':', '":')
+    s = s.replace('{', '{"')
+
+    inArray = False
+    skipNext = False
+    s_fixed = ""
+    for i in range(0, len(s)):
+        c = s[i]
+        if c == "[":
+            inArray = True
+        elif c == "]":
+            inArray = False
+        if c == "," and not inArray:
+            s_fixed += ', "'
+        else:
+            s_fixed += c
+    s_fixed = s_fixed.replace('" ', '"')
+
+    j = json.loads(s_fixed)
+    return j

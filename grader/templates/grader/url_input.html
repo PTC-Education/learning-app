@@ -31,12 +31,8 @@
                     <li>Copy and paste multiple Onshape URLs that are either separated by comma or a space.</li>
                     <li>Upload a CSV file containing Onshape URLs.</li>
                 </ul>
-                <p class="external_link">
-                    <a href="{% url 'grader:list_classes' user.os_user_id user_type%}">
-                        If you are using classes and assignments to administer this category, click here.
-                    </a> 
+                <p><strong>Note:</strong> you can also <a href="{% url 'grader:list_classes' user.os_user_id user_type%}">use Classes & Assignments</a> to grade student submissions.</p> 
 
-            
             {% else %}
                 <div class="instructions">
                     <h3 class="title">
@@ -148,7 +144,7 @@
                     </div>
                 </div>
 
-                <div class="footer"><a href="{% url 'grader:home'%}#science_olympiad" target="_blank">Support</a></div>
+                <div class="footer"><a href="{% url 'grader:home'%}#science_olympiad" target="_blank">Support</a> | <a href="{% url 'grader:home'%}#tos" target="_blank">Terms of Service</a></div>
 
             {% elif user_type == "student" %}
                 <div class="URLinput-DIV">

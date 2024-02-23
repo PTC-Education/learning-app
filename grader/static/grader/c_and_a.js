@@ -141,15 +141,17 @@ function check_submitted_content(){
   
   if(submitted_table.rows.length == 1){ //if there is only one row left
     document.getElementById("submitted_box").hidden = true; //hide the enitre box with the table
-    error_text = document.getElementById("submission_error");
+    var error_text = document.getElementById("submission_error");
+    error_text.style.display = "block";
     error_text.innerHTML = "No submissions detected for grading. ";
     console.log("done");
-
   }
   else{
     document.getElementById("submitted_box").hidden = false; //show the enitre box with the table
-    error_text = document.getElementById("submission_error");
+    var error_text = document.getElementById("submission_error");
     error_text.innerHTML = "";
+    console.log("no submission error");
+    error_text.style.display = "none";
   }
 
 }

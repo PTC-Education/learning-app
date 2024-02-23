@@ -1003,7 +1003,9 @@ button.select{
 }
 .support_container {
   max-width: 1000px;
-  margin:auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 400px;
 }
 .support_container h1, .support_container h2, .support_container h3{
   color: #3D4647;
