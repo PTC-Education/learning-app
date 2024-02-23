@@ -54,7 +54,8 @@
                             $('#summary-end').css('display', 'block');
                             $('#summary-start').css('display', 'none');
                             usernames_json = JSON.parse(data.usernames_json);
-                            $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                            var dateString = makeDateString(data.oldest_microversion);
+                            $('#oldest_microversion').html(dateString);
                             $('#summary-table').html(makeTable(usernames_json));
                             $('#wmid').val(data.next_microversion);
                             $('#summary-spinner').html(" ");
@@ -85,7 +86,8 @@
                                 }); 
                                 s = makeTable(usernames_json);
                                 $('#summary-table').html(s);
-                                $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                                var dateString = makeDateString(data.oldest_microversion);
+                                $('#oldest_microversion').html(dateString);
                                 $('#wmid').val(data.next_microversion);
                                 $('#load-more-spinner').html(" ");
                             },
@@ -364,6 +366,30 @@
         <script>
         hide_all_divs();
         document.getElementById("summary-end").style.display = "none";
+        function makeDateString(s) {
+            var oldest_microversion = new Date(s);
+            var now = new Date();
+
+            var deltaT = now - oldest_microversion;
+            var days = Math.floor(deltaT / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((deltaT % (1000 * 60)) / 1000);
+            
+            var dayStr = "";
+            if (days > 0) {
+                dayStr += days + "D ";
+            }
+            var dateString = "Over " + dayStr + hours + "H " + minutes + "M, from " + fixDate(s) + "-" + fixDate(now.toISOString());
+            return dateString;
+        }
+        function fixDate(s) {
+            console.log(s);
+            arr1 = s.split("T");
+            arr2 = arr1[0].split("-");
+            newS = arr2[1] + "/" + arr2[2] + "/" + arr2[0].substring(2);
+            return newS;
+        }
         </script>    
     </body>
 </html>

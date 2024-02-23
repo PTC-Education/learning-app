@@ -913,12 +913,13 @@ def update_html(request: HttpRequest, os_user_id: str, wm: str, wmid: str):
         # s += "<td>" + username + "</td>"
         # s += "</tr>"
         next_microversion = microversion['nextMicroversionId']
-        if username not in usernames:
-            usernames.update({username : 1})
-        else:
-            usernames[username] += 1
+        if username != "System":
+            if username not in usernames:
+                usernames.update({username : 1})
+            else:
+                usernames[username] += 1
         date_arr = microversion['date'].split('.')
-        oldest_microversion = date_arr[0].replace('T', ' ')
+        oldest_microversion = date_arr[0]
     # s += "</tbody>"
     # s += "</table>"
     s = "<table class='item_summary'>"
