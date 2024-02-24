@@ -37,47 +37,47 @@
                     });
                 });
                 $("#load_more").submit(function (event) {
-                    loading_spinner('features');
-                    var newYpos = $('#load-more-container').offset().top;
+                    event.preventDefault();
+                    //var newYpos = $('#load-more-container').offset().top;
                     //console.log(newYpos);
-                    $('#features').css('position', 'absolute');
-                    $('#features').css('top', newYpos + 'px');
-                    console.log("loading second batch");
+                    //$('#features').css('position', 'absolute');
+                    //$('#features').css('top', newYpos + 'px');
                     var wmidVal = $('#wmid').val();
                     if (wmidVal) {
-                    // Prevent the default form submission behavior
-                    event.preventDefault();
-                    var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
-                    var url = "{% url 'grader:update_html' user.os_user_id 'm' 'wmid' %}".replace('wmid', wmidVal);
-                    $.ajax({
-                        url: url,
-                        type: "GET",
-                        success: function (data) {
-                            //$('#results-container').append(data.updated_html);
-                            $.each(JSON.parse(data.usernames_json), function(key, value) {
-                                console.log(value);
-                                if(usernames_json.hasOwnProperty(key)) {
-                                   usernames_json[key] += value; 
-                                } else {
-                                    usernames_json[key] = 0;
-                                }
-                            }); 
-                            s = makeTable(usernames_json);
-                            $('#summary-table').html(s);
-                            var dateString = makeDateString(data.oldest_microversion);
-                            $('#oldest_microversion').html(dateString);
-                            // $('#oldest_microversion').html("Since " + data.oldest_microversion);
-                            // $('#results-container').append(data.updated_html);
-                            $('#wmid').val(data.next_microversion);
-                            $('#features').html(" ");
-                        },
-                        error: function (error) {
-                            console.log("Error:", error);
-                        }
-                    });
-                } else {
-                    $('#load-more').val("No more");
-                }
+                        console.log("loading second batch");
+                        loading_spinner('features');
+                        var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
+                        var url = "{% url 'grader:update_html' user.os_user_id 'm' 'wmid' %}".replace('wmid', wmidVal);
+                        $.ajax({
+                            url: url,
+                            type: "GET",
+                            success: function (data) {
+                                //$('#results-container').append(data.updated_html);
+                                $.each(JSON.parse(data.usernames_json), function(key, value) {
+                                    console.log(value);
+                                    if(usernames_json.hasOwnProperty(key)) {
+                                    usernames_json[key] += value; 
+                                    } else {
+                                        usernames_json[key] = value;
+                                    }
+                                }); 
+                                s = makeTable(usernames_json);
+                                $('#summary-table').html(s);
+                                var dateString = makeDateString(data.oldest_microversion);
+                                $('#oldest_microversion').html(dateString);
+                                // $('#oldest_microversion').html("Since " + data.oldest_microversion);
+                                // $('#results-container').append(data.updated_html);
+                                $('#wmid').val(data.next_microversion);
+                                $('#features').html(" ");
+                            },
+                            error: function (error) {
+                                console.log("Error:", error);
+                            }
+                        });
+                    } else {
+                        console.log("no more");
+                        $('#load-more').val("No more");
+                    }
                 });
             });
             function hide()
@@ -166,7 +166,7 @@
             <form method="get" id="load_more">
                 <input type="hidden" id="wm" value="m">
                 <input type="hidden" id="wmid" value=" ">
-                <input type="submit" value="Load More">
+                <input type="submit" id="load-more" value="Load More">
             </form>
         </div>
     </body>
