@@ -112,7 +112,7 @@ def get_shaded_views(
         #return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAAy0lEQVRIie2VXQ6CMBCEP7yDXkEjeA/x/icQgrQcAh9czKZ0qQgPRp1kk4ZZZvYnFPhjJi5ABfRvRgWUUwZLxIe4asEsMOhndmzhqbtZSdDExxh0EhacRBIt46V5oJDwEd4BuYQjscc90ATiJ8UfgFvEXPNNqotCKtEvF8HZS87wLAeOijeRTwhahsNoWmVi4pWRhLweqe4qCp1kLVUv3UX4VgtaX7IXbmsU0knuzuCz0SEwWIovvirqFTSrKbLkcZ8v+RecVyjyl3AHdAl3ObMLisAAAAAASUVORK5CYII="
 
 def get_document_thumbnail(
-    domain: str, did: str, auth_token: str
+    domain: str, did: str, sz: str, auth_token: str
 ) -> Any: 
     """Get a thumbnail image of the question for display 
     """
@@ -128,7 +128,7 @@ def get_document_thumbnail(
         sizes = response.json()['sizes']
         href = ''
         for size in sizes:
-            if size['size'] == '300x300':
+            if size['size'] == sz:
                 href = size['href']
         
         response2 = requests.get(
