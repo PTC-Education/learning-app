@@ -543,6 +543,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                 number_of_attempts = submission["numberOfAttempts"]
                 splitted_url = url.split("/documents/")[1].split("/")
                 did = splitted_url[0]
+                
                 if(len(splitted_url)==1): # url has a document id only
                     doc_info = get_doc_info(curr_user.os_domain, did,  auth_token=curr_user.access_token)
                     wv = "w"
@@ -551,24 +552,32 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                     wv      = splitted_url[1]
                     wvid    = splitted_url[2]
 
-                if not url.find("/e/") < 0: # if there is an element id in the url of the submitted document
-                    tab_id = splitted_url[4].split("?")[0]
-                    tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, tab_id, auth_token=curr_user.access_token)
-                    tab_type = tab_info[0]["elementType"]
+                if user_type == "scioly":
+                    require_user_action = False  #dont require action from user
+                    tab_name = "scioly"
+                    tab_image = get_document_thumbnail(curr_user.os_domain, did, '70x40', auth_token=curr_user.access_token) 
+                    tab_names_and_ids.append([url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
+                    submitted_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
 
-                    #if the type of eid in the url is the same as the current user etype
-                    if( tab_type == type_dict[curr_user.etype]):
-                        require_user_action = False  #dont require action from user
-                        tab_name = tab_info[0]["name"]
-                        tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
-                        tab_names_and_ids.append([url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
-                        submitted_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
-                    else:
+                else:
+                    if not url.find("/e/") < 0: # if there is an element id in the url of the submitted document
+                        tab_id = splitted_url[4].split("?")[0]
+                        tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, tab_id, auth_token=curr_user.access_token)
+                        tab_type = tab_info[0]["elementType"]
+
+                        #if the type of eid in the url is the same as the current user etype
+                        if( tab_type == type_dict[curr_user.etype]):
+                            require_user_action = False  #dont require action from user
+                            tab_name = tab_info[0]["name"]
+                            tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
+                            tab_names_and_ids.append([url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
+                            submitted_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
+                        else:
+                            require_user_action = True #require action from user
+                                        
+                    else:  # if there is no element id in the url of the submitted document
                         require_user_action = True #require action from user
-                                      
-                else:  # if there is no element id in the url of the submitted document
-                     require_user_action = True #require action from user
-                
+                    
                 if require_user_action:
                     tab_infos = get_element_info(curr_user.os_domain, did, wv, wvid, " ", auth_token=curr_user.access_token) #get all tab info
                     
@@ -598,14 +607,14 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                     url = submission["documents"][0]["viewRef"]
                     
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
-
+        print(submitted_student_works)
     except:
          error_message = "We encountered an issue. Please check your internet connection. "
     context={
             "user": curr_user, 
             "user_type": user_type,
             "page": "submissions",
-            "submitted_student_works":submitted_student_works,
+            "submitted_student_works": submitted_student_works,
             "action_required_student_works": action_required_student_works,
             "inprogress_student_works": inprogress_student_works,
             "class_name": class_name,
@@ -1113,7 +1122,7 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         # Get all additional info from the reference document
         totalpoints = round(totalpoints, 2)
         #image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
-        image = get_document_thumbnail(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
+        image = get_document_thumbnail(curr_user.os_domain, ref_url['did'], '300x300', auth_token=curr_user.access_token)
         element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token)
         element_name = element_info[0]["name"]
         ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)

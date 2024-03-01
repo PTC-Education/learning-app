@@ -151,42 +151,70 @@
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
                         <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
                     </form>
+                    <table id="submitted_work">
+                        <tr>
+                            <th class = "set_to_left_in_table bigger_font_th single_line_text">Student name</th>
+                            <th class = "set_to_left_in_table bigger_font_th single_line_text">Document name</th>
+                            <th class = "set_to_left_in_table bigger_font_th single_line_text">Tab name</th>
+                            <th class = "bigger_font_th">Thumbnail</th>
+                        </tr>
+                        <!--
+                        # element 0 - student id 
+                        # element 1 - student name
+                        # element 2 - number of submission attempts
+                        # element 3 - submitted document name
+                        # element 4 - submitted document url
+                        # element 5 - array of tabs with 3 elements
+                            # subelement 0 - element url
+                            # subelement 1 - element name
+                            # subelement 2 - element thumbnail
+                        -->
+    
+                        {% for studentwork in submitted_student_works %}
+                            <tr>
+                                <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
+                                <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
+                                <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
+                                <td class = "set_to_left_in_table small_font_td"> {{studentwork.5.0.1 }}</td>
+                                <td> <img id = preview_image_{{studentwork.0}} src = "{{studentwork.5.0.2 }}" alt = "" /></td>
+                            </tr>  
+                        {% endfor %}   
+                    </table>
                 {% elif user_type == 'scioly' %}
                     <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return form_ref_url_array()">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
                         <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('features')"/>
                     </form>
+                    <table id="submitted_work">
+                        <tr>
+                            <th class = "set_to_left_in_table bigger_font_th single_line_text">Student name</th>
+                            <th class = "set_to_left_in_table bigger_font_th single_line_text">Document name</th>
+                            <th class = "bigger_font_th">Thumbnail</th>
+                        </tr>
+                        <!--
+                        # element 0 - student id 
+                        # element 1 - student name
+                        # element 2 - number of submission attempts
+                        # element 3 - submitted document name
+                        # element 4 - submitted document url
+                        # element 5 - array of tabs with 3 elements
+                            # subelement 0 - element url
+                            # subelement 1 - element name
+                            # subelement 2 - element thumbnail
+                        -->
+    
+                        {% for studentwork in submitted_student_works %}
+                            <tr>
+                                <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
+                                <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
+                                <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
+                                <td> <img id = preview_image_{{studentwork.0}} src = "{{studentwork.5.0.2 }}" alt = "" /></td>
+                            </tr>  
+                        {% endfor %}   
+                    </table>
                 {% endif %}
 
-                <table id="submitted_work">
-                    <tr>
-                        <th class = "set_to_left_in_table bigger_font_th single_line_text">Student name</th>
-                        <th class = "set_to_left_in_table bigger_font_th single_line_text">Document name</th>
-                        <th class = "set_to_left_in_table bigger_font_th single_line_text">Tab name</th>
-                        <th class = "bigger_font_th">Thumbnail</th>
-                    </tr>
-                    <!--
-                    # element 0 - student id 
-                    # element 1 - student name
-                    # element 2 - number of submission attempts
-                    # element 3 - submitted document name
-                    # element 4 - submitted document url
-                    # element 5 - array of tabs with 3 elements
-                        # subelement 0 - element url
-                        # subelement 1 - element name
-                        # subelement 2 - element thumbnail
-                    -->
-
-                    {% for studentwork in submitted_student_works %}
-                        <tr>
-                            <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
-                            <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
-                            <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
-                            <td class = "set_to_left_in_table small_font_td"> {{studentwork.5.0.1 }}</td>
-                            <td> <img id = preview_image_{{studentwork.0}} src = "{{studentwork.5.0.2 }}" alt = "" /></td>
-                        </tr>  
-                    {% endfor %}   
-                </table>
+                
             </div>
 
             <script>check_submitted_content();</script> <!-- hide submitted table if there is no content-->
