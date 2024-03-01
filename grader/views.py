@@ -913,6 +913,7 @@ def update_html(request: HttpRequest, os_user_id: str, wm: str, wmid: str):
     # s += "<tbody>"
     usernames = {}
     oldest_microversion = ""
+    newest_microversion = latest_microversions[0]['date'].split('.')[0]
     for microversion in latest_microversions:
         username = microversion['username']
         # s += "<tr>"
@@ -943,10 +944,10 @@ def update_html(request: HttpRequest, os_user_id: str, wm: str, wmid: str):
     s += "</table>"
     updated_html = s
     usernames_json = json.dumps(usernames)
-    print(usernames_json)
+    print(oldest_microversion)
+    print(newest_microversion)
     # Return the updated HTML
-    return JsonResponse({'updated_html': updated_html, 'next_microversion': next_microversion, 'oldest_microversion': oldest_microversion, 'usernames_json' : usernames_json})
-
+    return JsonResponse({'updated_html': updated_html, 'next_microversion': next_microversion, 'oldest_microversion': oldest_microversion, 'newest_microversion': newest_microversion, 'usernames_json' : usernames_json})
 
 def grade_scioly(request: HttpRequest, os_user_id: str): 
     """ 

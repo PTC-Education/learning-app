@@ -17,7 +17,6 @@
                 var eid =   "{{element.id}}";
                 var doc_wid =  "{{doc_wid}}";
                 var count = 0;
-        
                 $.ajax({      
                     url: url,
                     type: "GET",
@@ -42,10 +41,10 @@
             //get results for elememt 
             $(document).ready(function () {
                 var usernames_json;
+                var newest_microversion;
                 $("#load_summary").submit(function (event) {
                     loading_spinner('summary-spinner');
                     event.preventDefault();
-                    usernames_json = {"System": 3, "Matt Shields": 47}
                     var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
                     $.ajax({
                         url: url,
@@ -54,7 +53,8 @@
                             $('#summary-end').css('display', 'block');
                             $('#summary-start').css('display', 'none');
                             usernames_json = JSON.parse(data.usernames_json);
-                            var dateString = makeDateString(data.oldest_microversion);
+                            newest_microversion = data.newest_microversion;
+                            var dateString = makeDateString(data.oldest_microversion, newest_microversion);
                             $('#oldest_microversion').html(dateString);
                             $('#summary-table').html(makeTable(usernames_json));
                             $('#wmid').val(data.next_microversion);
@@ -77,7 +77,6 @@
                             type: "GET",
                             success: function (data) {
                                 $.each(JSON.parse(data.usernames_json), function(key, value) {
-                                    console.log(value);
                                     if(usernames_json.hasOwnProperty(key)) {
                                         usernames_json[key] += value; 
                                     } else {
@@ -86,7 +85,7 @@
                                 }); 
                                 s = makeTable(usernames_json);
                                 $('#summary-table').html(s);
-                                var dateString = makeDateString(data.oldest_microversion);
+                                var dateString = makeDateString(data.oldest_microversion, newest_microversion);
                                 $('#oldest_microversion').html(dateString);
                                 $('#wmid').val(data.next_microversion);
                                 $('#load-more-spinner').html(" ");
@@ -366,11 +365,11 @@
         <script>
         hide_all_divs();
         document.getElementById("summary-end").style.display = "none";
-        function makeDateString(s) {
-            var oldest_microversion = new Date(s);
-            var now = new Date();
+        function makeDateString(oldest, newest) {
+            var oldest_microversion = new Date(oldest);
+            var newest_microversion = new Date(newest);
 
-            var deltaT = now - oldest_microversion;
+            var deltaT = newest_microversion - oldest_microversion;
             var days = Math.floor(deltaT / (1000 * 60 * 60 * 24));
             var hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             var minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
@@ -380,11 +379,10 @@
             if (days > 0) {
                 dayStr += days + "D ";
             }
-            var dateString = "Over " + dayStr + hours + "H " + minutes + "M, from " + fixDate(s) + "-" + fixDate(now.toISOString());
+            var dateString = "Over " + dayStr + hours + "H " + minutes + "M, from " + fixDate(oldest) + "-" + fixDate(newest);
             return dateString;
         }
         function fixDate(s) {
-            console.log(s);
             arr1 = s.split("T");
             arr2 = arr1[0].split("-");
             newS = arr2[1] + "/" + arr2[2] + "/" + arr2[0].substring(2);

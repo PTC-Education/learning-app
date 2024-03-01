@@ -10,6 +10,7 @@
             $(document).ready(function () {
                 // Attach a submit event handler to the form
                 var usernames_json;
+                var newest_microversion;
                 $("#update_form").submit(function (event) {
                     loading_spinner('features');
                     console.log("loading first batch");
@@ -22,11 +23,10 @@
                         success: function (data) {
                             usernames_json = JSON.parse(data.usernames_json);
                             $('#summary-start').css('display', 'none');
-                            // $('#oldest_microversion').html("Since " + data.oldest_microversion);
-                            var dateString = makeDateString(data.oldest_microversion);
+                            newest_microversion = data.newest_microversion;
+                            var dateString = makeDateString(data.oldest_microversion, newest_microversion);
                             $('#oldest_microversion').html(dateString);
                             $('#summary-table').html(makeTable(usernames_json));
-                            // $('#results-container').append(data.updated_html);
                             $('#load-more-container').css('display', 'block');
                             $('#wmid').val(data.next_microversion);
                             $('#features').html(" ");
@@ -38,10 +38,6 @@
                 });
                 $("#load_more").submit(function (event) {
                     event.preventDefault();
-                    //var newYpos = $('#load-more-container').offset().top;
-                    //console.log(newYpos);
-                    //$('#features').css('position', 'absolute');
-                    //$('#features').css('top', newYpos + 'px');
                     var wmidVal = $('#wmid').val();
                     if (wmidVal) {
                         console.log("loading second batch");
@@ -52,7 +48,6 @@
                             url: url,
                             type: "GET",
                             success: function (data) {
-                                //$('#results-container').append(data.updated_html);
                                 $.each(JSON.parse(data.usernames_json), function(key, value) {
                                     console.log(value);
                                     if(usernames_json.hasOwnProperty(key)) {
@@ -63,10 +58,8 @@
                                 }); 
                                 s = makeTable(usernames_json);
                                 $('#summary-table').html(s);
-                                var dateString = makeDateString(data.oldest_microversion);
+                                var dateString = makeDateString(data.oldest_microversion, newest_microversion);
                                 $('#oldest_microversion').html(dateString);
-                                // $('#oldest_microversion').html("Since " + data.oldest_microversion);
-                                // $('#results-container').append(data.updated_html);
                                 $('#wmid').val(data.next_microversion);
                                 $('#features').html(" ");
                             },
@@ -103,11 +96,11 @@
                 s += "</table>"
                 return s;
             }
-            function makeDateString(s) {
-                var oldest_microversion = new Date(s);
-                var now = new Date();
+            function makeDateString(oldest, newest) {
+                var oldest_microversion = new Date(oldest);
+                var newest_microversion = new Date(newest);
 
-                var deltaT = now - oldest_microversion;
+                var deltaT = newest_microversion - oldest_microversion;
                 var days = Math.floor(deltaT / (1000 * 60 * 60 * 24));
                 var hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 var minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
@@ -117,11 +110,10 @@
                 if (days > 0) {
                     dayStr += days + "D ";
                 }
-                var dateString = "Over " + dayStr + hours + "H " + minutes + "M, from " + fixDate(s) + "-" + fixDate(now.toISOString());
+                var dateString = "Over " + dayStr + hours + "H " + minutes + "M, from " + fixDate(oldest) + "-" + fixDate(newest);
                 return dateString;
             }
             function fixDate(s) {
-                console.log(s);
                 arr1 = s.split("T");
                 arr2 = arr1[0].split("-");
                 newS = arr2[1] + "/" + arr2[2] + "/" + arr2[0].substring(2);
