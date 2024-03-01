@@ -9,6 +9,8 @@
         <script>
             $(document).ready(function () {
                 // Attach a submit event handler to the form
+                var usernames_json;
+                var newest_microversion;
                 $("#update_form").submit(function (event) {
                     loading_spinner('features');
                     console.log("loading first batch");
@@ -19,7 +21,12 @@
                         url: url,
                         type: "GET",
                         success: function (data) {
-                            $('#results-container').append(data.updated_html);
+                            usernames_json = JSON.parse(data.usernames_json);
+                            $('#summary-start').css('display', 'none');
+                            newest_microversion = data.newest_microversion;
+                            var dateString = makeDateString(data.oldest_microversion, newest_microversion);
+                            $('#oldest_microversion').html(dateString);
+                            $('#summary-table').html(makeTable(usernames_json));
                             $('#load-more-container').css('display', 'block');
                             $('#wmid').val(data.next_microversion);
                             $('#features').html(" ");
@@ -30,29 +37,40 @@
                     });
                 });
                 $("#load_more").submit(function (event) {
-                    loading_spinner('features');
-                    var newYpos = $('#load-more-container').offset().top;
-                    console.log(newYpos);
-                    $('#features').css('position', 'absolute');
-                    $('#features').css('top', newYpos + 'px');
-                    console.log("loading second batch");
-                    var wmidVal = $('#wmid').val();
-                    // Prevent the default form submission behavior
                     event.preventDefault();
-                    var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
-                    var url = "{% url 'grader:update_html' user.os_user_id 'm' 'wmid' %}".replace('wmid', wmidVal);
-                    $.ajax({
-                        url: url,
-                        type: "GET",
-                        success: function (data) {
-                            $('#results-container').append(data.updated_html);
-                            $('#wmid').val(data.next_microversion);
-                            $('#features').html(" ");
-                        },
-                        error: function (error) {
-                            console.log("Error:", error);
-                        }
-                    });
+                    var wmidVal = $('#wmid').val();
+                    if (wmidVal) {
+                        console.log("loading second batch");
+                        loading_spinner('features');
+                        var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
+                        var url = "{% url 'grader:update_html' user.os_user_id 'm' 'wmid' %}".replace('wmid', wmidVal);
+                        $.ajax({
+                            url: url,
+                            type: "GET",
+                            success: function (data) {
+                                $.each(JSON.parse(data.usernames_json), function(key, value) {
+                                    console.log(value);
+                                    if(usernames_json.hasOwnProperty(key)) {
+                                    usernames_json[key] += value; 
+                                    } else {
+                                        usernames_json[key] = value;
+                                    }
+                                }); 
+                                s = makeTable(usernames_json);
+                                $('#summary-table').html(s);
+                                var dateString = makeDateString(data.oldest_microversion, newest_microversion);
+                                $('#oldest_microversion').html(dateString);
+                                $('#wmid').val(data.next_microversion);
+                                $('#features').html(" ");
+                            },
+                            error: function (error) {
+                                console.log("Error:", error);
+                            }
+                        });
+                    } else {
+                        console.log("no more");
+                        $('#load-more').val("No more");
+                    }
                 });
             });
             function hide()
@@ -60,22 +78,76 @@
                 document.getElementById('load-more-container').style.display = "none";
             }
             window.onload = hide;
+            function makeTable(usernames_json) {
+                s = "<h4>Microversions Summary</h4>";
+                s += "<table class='item_summary'>";
+                s += "<thead><tr><th>User</th><th>Changes</th></tr></thead>"
+                s += "<tbody>"
+                var total_changes = 0;
+                for (var username in usernames_json) {
+                    s += "<tr>"
+                    s += "<td>" + username + "</td>"
+                    s += "<td>" + usernames_json[username] + "</td>"
+                    total_changes += usernames_json[username];
+                    s += "</tr>"
+                    }
+                s += "<tr><td><strong>Total</strong></td><td><strong>" + total_changes + "</strong></td></tr>"
+                s += "</tbody>"
+                s += "</table>"
+                return s;
+            }
+            function makeDateString(oldest, newest) {
+                var oldest_microversion = new Date(oldest);
+                var newest_microversion = new Date(newest);
+
+                var deltaT = newest_microversion - oldest_microversion;
+                var days = Math.floor(deltaT / (1000 * 60 * 60 * 24));
+                var hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((deltaT % (1000 * 60)) / 1000);
+                
+                var dayStr = "";
+                if (days > 0) {
+                    dayStr += days + "D ";
+                }
+                var dateString = "Over " + dayStr + hours + "H " + minutes + "M, from " + fixDate(oldest) + "-" + fixDate(newest);
+                return dateString;
+            }
+            function fixDate(s) {
+                arr1 = s.split("T");
+                arr2 = arr1[0].split("-");
+                newS = arr2[1] + "/" + arr2[2] + "/" + arr2[0].substring(2);
+                return newS;
+            }
         </script>
     </head>
     <body>
         <form action="{% url 'grader:index' user.os_user_id %}">
-            <input type="submit" value="Return to Home Page"/>
+            <input type="submit" value="&lt; Home"/>
         </form>
-        <!-- Check model -->
-        <form method="get" id="update_form">
-            <input type="hidden" id="wm" value="w">
-            <input type="submit" value="Get Microversions">
-        </form>
+        <div id="logo" class="logo">
+            <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="50%"/>
+        </div>
+        <p class="doc_info_normal">Click the <strong>Document summary</strong> button below to view a count of the edits on this document, summarized by user.</p>
+        <hr class="hr_thin">
+        <div id="summary-start">
+            <div class="spinner-container">
+                <div id="summary-spinner">
+                    <!--This is where the spinner will load-->
+                </div>
+            </div>
+            <form method="get" id="update_form">
+                <input type="hidden" id="wm" value="w">
+                <input type="submit" value="Document Summary">
+            </form>
+        </div>
         <div class="spinner-container">
             <div id="features">
                 <!--This is where the spinner will load-->
             </div>
         </div>
+        <div id="summary-table"></div>
+        <div class="table_comment" id="oldest_microversion"></div>
         <div id="results-container"></div>
         <div class="spinner-container">
             <div id="features">
@@ -86,7 +158,7 @@
             <form method="get" id="load_more">
                 <input type="hidden" id="wm" value="m">
                 <input type="hidden" id="wmid" value=" ">
-                <input type="submit" value="Load More">
+                <input type="submit" id="load-more" value="Load More">
             </form>
         </div>
     </body>

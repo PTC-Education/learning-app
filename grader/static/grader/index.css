@@ -158,7 +158,32 @@ table.item_summary {
 .item_summary tbody tr:nth-child(odd) {
     background-color: #fafafa;
 }
+.table_comment {
+  font-size: 9pt;   
+  color: #333;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  margin: 10px 0px;
+}
 
+/* === DOC INFO PANEL === */
+.doc_info_title, .doc_info_normal {
+  font-size: 14px;
+  color:#333;
+}
+.doc_info_title {
+  font-weight: bold;
+}
+.doc_info_normal {
+  font-weight: normal;
+}
+.hr_thin {
+    border: none;
+    height: 1px;
+    background-color: #d4d7d9;
+}
+#summary-start {
+  margin-top: 12px;
+}
 /* == Radio button styling == */
 .single-radio {
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
@@ -204,7 +229,9 @@ table.item_summary {
   margin-left: auto;
   margin-right: auto;
   align-items: center;
-  width: 300px;
+  text-align: center;
+  max-width: 450px;
+  /* width: 300px; */
 }
 
 /* Style the search menu */

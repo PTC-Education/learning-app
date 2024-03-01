@@ -17,7 +17,6 @@
                 var eid =   "{{element.id}}";
                 var doc_wid =  "{{doc_wid}}";
                 var count = 0;
-        
                 $.ajax({      
                     url: url,
                     type: "GET",
@@ -41,37 +40,153 @@
           
             //get results for elememt 
             $(document).ready(function () {
-                $("#check_model").click(function (event) {
-                    var url = "{% url 'grader:doc_info_checker_results_update' user.os_user_id %}";
-                    var elements = $("#elements").val();
-                    loading_spinner('features2');
-                    $("#error_message").html("");
+                var usernames_json;
+                var newest_microversion;
+                $("#load_summary").submit(function (event) {
+                    loading_spinner('summary-spinner');
+                    event.preventDefault();
+                    var url = "{% url 'grader:update_html' user.os_user_id 'w' ' ' %}";
                     $.ajax({
                         url: url,
                         type: "GET",
-                        data:{
-                            doc_wid : "{{doc_wid}}",
-                            elements : elements
-                        },
-                    
-                        success: function (response) {
-                            build_page(response);
-                            $('#features2').html(" ");
+                        success: function (data) {
+                            $('#summary-end').css('display', 'block');
+                            $('#summary-start').css('display', 'none');
+                            usernames_json = JSON.parse(data.usernames_json);
+                            newest_microversion = data.newest_microversion;
+                            var dateString = makeDateString(data.oldest_microversion, newest_microversion);
+                            $('#oldest_microversion').html(dateString);
+                            $('#summary-table').html(makeTable(usernames_json));
+                            $('#wmid').val(data.next_microversion);
+                            $('#summary-spinner').html(" ");
                         },
                         error: function (error) {
+                            console.log("Error:", error);
                         }
                     });
-
+                });
+                $("#load_more").submit(function (event) {
+                    event.preventDefault();
+                    var wmidVal = $('#wmid').val();
+                    if (wmidVal) {
+                        loading_spinner('load-more-spinner');
+                        console.log("loading second batch");
+                        var url = "{% url 'grader:update_html' user.os_user_id 'm' 'wmid' %}".replace('wmid', wmidVal);
+                        $.ajax({
+                            url: url,
+                            type: "GET",
+                            success: function (data) {
+                                $.each(JSON.parse(data.usernames_json), function(key, value) {
+                                    if(usernames_json.hasOwnProperty(key)) {
+                                        usernames_json[key] += value; 
+                                    } else {
+                                        usernames_json[key] = value;
+                                    }
+                                }); 
+                                s = makeTable(usernames_json);
+                                $('#summary-table').html(s);
+                                var dateString = makeDateString(data.oldest_microversion, newest_microversion);
+                                $('#oldest_microversion').html(dateString);
+                                $('#wmid').val(data.next_microversion);
+                                $('#load-more-spinner').html(" ");
+                            },
+                            error: function (error) {
+                                console.log("Error:", error);
+                            }
+                        });
+                    } else {
+                        $('#load-more').val("No more");
+                    }
+                });
+                $("#check_model").click(function (event) {
+                    var url = "{% url 'grader:doc_info_checker_results_update' user.os_user_id %}";
+                    var elementArray = $("#elements").val().split(" ");
+                    var etype = elementArray[0];
+                    var elementName = elementArray.splice(2).join(" ");
+                    var elements = elementArray.splice(0,2).join(" ");
+                    if(etype == 'partstudios') {
+                        $('#partstudio_details_title').html("PartStudio details: " + elementName);
+                    } else {
+                        $('#assembly_details_title').html("Assembly details: " + elementName);
+                    }
+                    if(elements) {
+                        loading_spinner('features2');
+                        $("#error_message").html("");
+                        $.ajax({
+                            url: url,
+                            type: "GET",
+                            data:{
+                                doc_wid : "{{doc_wid}}",
+                                elements : elements
+                            },
+                            success: function (response) {
+                                build_page(response);
+                                $('#msg').html("");
+                                $('#features2').html(" ");
+                            },
+                            error: function (error) {
+                            }
+                        });
+                    } else {
+                        $('#msg').html("Please select an element.");
+                    }
                 });  
             });
-
+            function makeTable(usernames_json) {
+                s = "<p class='doc_info_title'>Microversions Summary</p>";
+                s += "<table class='item_summary'>";
+                s += "<thead><tr><th>User</th><th>Changes</th></tr></thead>"
+                s += "<tbody>"
+                var total_changes = 0;
+                for (var username in usernames_json) {
+                    s += "<tr>"
+                    s += "<td>" + username + "</td>"
+                    s += "<td>" + usernames_json[username] + "</td>"
+                    total_changes += usernames_json[username];
+                    s += "</tr>"
+                    }
+                s += "<tr><td><strong>Total</strong></td><td><strong>" + total_changes + "</strong></td></tr>"
+                s += "</tbody>"
+                s += "</table>"
+                return s;
+            }
         </script>
 
     </head>
     <body>
-        <p>Select the element you would like to check:</p>
-        <!-- Check model -->
-
+        <div id="logo" class="logo">
+            <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="50%"/>
+        </div>
+        <p class="doc_info_title">Document Info Options</p>
+        <p class="doc_info_normal">Click the <strong>Document summary</strong> button below to view a count of the edits on this document, summarized by user.  Or, or select an element from the list below then click <strong>Check element</strong> to view details of the selected part studio or assembly.</p>
+        <hr class="hr_thin">
+        <div id="summary-start">
+            <form method="get" id="load_summary">
+                <input type="hidden" id="wm" value="w">
+                <input type="submit" value="Document summary">
+            </form>
+            <div class="spinner-container">
+                <div id="summary-spinner">
+                    <!--This is where the spinner will load-->
+                </div>
+            </div>
+        </div>
+        <div id="summary-end">
+            <div id="summary-table"></div>
+            <div class="table_comment" id="oldest_microversion"></div>
+            <form method="get" id="load_more">
+                <input type="hidden" id="wm" value="m">
+                <input type="hidden" id="wmid" value=" ">
+                <input type="submit" id="load-more" value="Load More">
+            </form>
+            <div class="spinner-container">
+                <div id="load-more-spinner">
+                    <!--This is where the spinner will load-->
+                </div>
+            </div>
+        </div>
+        <hr class="hr_thin">
+        <p class="doc_info_title">Select the element you would like to check:</p>
         <form id="perform_check_form">
             <!-- Select element -->
             {% if element_list %}
@@ -82,7 +197,7 @@
                     </div>
                 </div>
                 {% for element in element_list %}
-                    <div class="single-radio" onclick="selectRadio(this)" data-value="{{ element.etype }} {{ element.id }}">
+                    <div class="single-radio" onclick="selectRadio(this)" data-value="{{ element.etype }} {{ element.id }} {{ element.name }}">
                         {% if element.etype == 'assemblies' %}
                             <div class="radio-svg"><img src="{% static 'grader/images/assem.svg' %}"></div>
                         {% else %}
@@ -96,7 +211,7 @@
             {% endif %}
             <div id="check-options">
                 <input type="hidden" name="elements" id="elements" value="">  
-                <input type="button" class="check_model" id = "check_model" value="Check model"/>
+                <input type="button" class="check_model" id="check_model" value="Check element"/>
                 <p class="msg" id="msg">&nbsp;</p>
             </div>
         </form>
@@ -112,7 +227,7 @@
         </div>
   
         <div id="part_studio_div">
-            <h3>Part Studio details</h3>
+            <h3 id="partstudio_details_title">Part Studio details</h3>
             <div id="feature_div">
                 <div class="arrow_and_title" onclick="show_hide_table('features_summary_table', 'rotate0')">
                     <div class="arrow_icon" id="rotate0">
@@ -164,7 +279,7 @@
             </div>
         </div>
         <div id="assembly_div">
-            <h3>Assembly details</h3>
+            <h3 id="assembly_details_title">Assembly details</h3>
             <div id="mates_div">
                 <div class="arrow_and_title" onclick="show_hide_table('mates_summary_table', 'rotate3')">
                     <div class="arrow_icon" id="rotate3">
@@ -247,9 +362,33 @@
                     </div>
                 </div>
         </div>
-        
         <script>
         hide_all_divs();
-        </script>    
+        document.getElementById("summary-end").style.display = "none";
+        function makeDateString(oldest, newest) {
+            var oldest_microversion = new Date(oldest);
+            var newest_microversion = new Date(newest);
+
+            var deltaT = newest_microversion - oldest_microversion;
+            var days = Math.floor(deltaT / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((deltaT % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((deltaT % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((deltaT % (1000 * 60)) / 1000);
+            
+            var dayStr = "";
+            if (days > 0) {
+                dayStr += days + "D ";
+            }
+            var dateString = "Over " + dayStr + hours + "H " + minutes + "M, from " + fixDate(oldest) + "-" + fixDate(newest);
+            return dateString;
+        }
+        function fixDate(s) {
+            arr1 = s.split("T");
+            arr2 = arr1[0].split("-");
+            newS = arr2[1] + "/" + arr2[2] + "/" + arr2[0].substring(2);
+            return newS;
+        }
+        </script>
+        <div class="footer"><a href="{% url 'grader:home'%}" target="_blank">Support</a> | <a href="{% url 'grader:home'%}#tos" target="_blank">Terms of Service</a></div>    
     </body>
 </html>

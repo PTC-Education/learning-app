@@ -36,7 +36,8 @@
         <h4>Self-Check (for students):</h4>
             <ul>
                 <li>Select <i>Compare model properties to reference</i> if you have access to the reference document you want to compare.</li>
-                <li>Select <i>Check best practices</i> if you want to check your documents for best practices.</li>
+                <li>Select <i>Check best practices</i> to check your documents for best practices.</li>
+                <li>Select <i>Check document history</i> to check the edit history for this document.</li>
             </ul>
         <h4>Compare models from a list (for educators):</h4>
             <ul>
@@ -62,6 +63,10 @@
                 <!--Load url page for best practices check-->
                 <form action="{% url 'grader:check_model' user.os_user_id %}">
                     <input class="options" type="submit" value="Check best practices">
+                </form>
+                <!--Load url page for microversions history-->
+                <form action="{% url 'grader:microversions_checker' user.os_user_id %}">
+                    <input class="options" type="submit" value="Check document history">
                 </form>
             </div>
         </div>
