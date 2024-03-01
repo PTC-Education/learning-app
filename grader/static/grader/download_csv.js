@@ -45,14 +45,12 @@ function tableToCSV(num_of_urls) {
 				csvrow.push(""); 
 			}
 			else if(column_info[i].style.visibility != "collapse"){
-				csvrow.push(part[i].innerHTML); 
+				csvrow.push(part[i].innerHTML);
 			}
 		}
 		csv_data.push(csvrow.join(",")); //Next row with properties
 		
 	}
-
-
 
 	//Document name and owner information of the document from the urls
 	for (let u = 0; u< num_of_urls; u++){
@@ -60,7 +58,12 @@ function tableToCSV(num_of_urls) {
 		var docname = document.getElementById("ref_docname_" + u).innerHTML;
 		var username = document.getElementById("ref_username_" + u).innerHTML;
 		var elname =   document.getElementById('elname_' + u).innerHTML;
-		var score = document.getElementById("ref_score_" + u).innerHTML;
+		var score;
+		if (document.getElementById("ref_score_" + u).innerHTML.includes('red-x')) {
+			score = "Fail";
+		} else {
+			score = "Pass";
+		}
 		var url =   document.getElementById('url_' + u).innerHTML;
 		var error_message = document.getElementById("error_message_" + u).innerHTML;
 	
@@ -89,7 +92,6 @@ function tableToCSV(num_of_urls) {
 		}
 	}
 
-
 	//Adding failed URLs to the report
 	
 	var urllist = document.getElementById('failed_url_list');
@@ -106,7 +108,6 @@ function tableToCSV(num_of_urls) {
 
 
 	//for failed URLS
-
 	csv_data=csv_data.join("\n");
     downloadCSVFile(csv_data);
 }
