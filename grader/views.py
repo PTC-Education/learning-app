@@ -54,6 +54,8 @@ def login(request: HttpRequest):
         user.etype = request.GET.get('etype')
         user.save() 
     except:
+        user.etype = "grant"
+        user.save() 
         pass
     
     return redirect(
@@ -108,6 +110,8 @@ def authorize(request: HttpRequest):
 
     if user.etype == "infopanel":
         return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
+    elif user.etype == "grant":
+        return HttpResponse("App successfully authorized! Please return to Onshape and open the CAD Checker app from the right panel.")
     else:
         return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
