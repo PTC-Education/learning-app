@@ -45,15 +45,17 @@ def login(request: HttpRequest):
         # Create a new user 
         user = AuthUser(os_user_id=user_id)
     
-    user.os_domain = request.GET.get('server')
-    user.did = request.GET.get('did')
-    user.wv = request.GET.get('wvm')
-    user.wvid = request.GET.get('wvmid')
-    user.eid = request.GET.get('eid')
-    user.etype = request.GET.get('etype')
-    user.save() 
+    try:
+        user.os_domain = request.GET.get('server')
+        user.did = request.GET.get('did')
+        user.wv = request.GET.get('wvm')
+        user.wvid = request.GET.get('wvmid')
+        user.eid = request.GET.get('eid')
+        user.etype = request.GET.get('etype')
+        user.save() 
+    except:
+        pass
     
-
     return redirect(
         os.path.join(
             os.environ['OAUTH_URL'], 
