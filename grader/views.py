@@ -11,6 +11,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpRes
 from django.utils import timezone 
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ObjectDoesNotExist
+from django.template.defaultfilters import register
 
 from .models import * 
 from .api import *
@@ -415,7 +416,7 @@ def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
         for item in items:
             if(item["resourceType"]=="classroom"):
                 class_id = item["id"]
-                class_name = item["name"]
+                class_name = item["name"].replace("/", "%2F")
                 number_of_assignment = item["numberOfAssignments"]
                 number_of_members = item["numberOfMembers"]
                 classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
@@ -445,6 +446,10 @@ def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
         context=context
     )
 
+@register.filter
+def unslash(value):
+    return value.replace("%2F", "/")
+
 def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class_id:str , class_name:str):
     """ 
    This function will get the list of classes created by the user.
@@ -473,7 +478,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class
             next_assignments = assignment_list['next']
             for item in items:
                 assignment_id = item["id"]
-                assignment_name = item["name"]
+                assignment_name = item["name"].replace("/", "%2F")
                 status = item["stateName"]
                 in_progress = item["numberOfSubmissionsInProgress"]
                 submitted = item["numberOfSubmissionsSubmitted"]
