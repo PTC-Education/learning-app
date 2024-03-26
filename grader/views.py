@@ -462,20 +462,26 @@ def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class
         curr_user.refresh_oauth_token() 
 
     assignments = []
-
+    offset = 0
+    next_assignments = ""
     try:
-        assignment_list = get_assignment_list(curr_user.os_domain, class_id, auth_token = curr_user.access_token)
-        items = assignment_list["items"]
-        for item in items:
-            assignment_id = item["id"]
-            assignment_name = item["name"]
-            status = item["stateName"]
-            in_progress = item["numberOfSubmissionsInProgress"]
-            submitted = item["numberOfSubmissionsSubmitted"]
-            not_submitted = item["numberOfSubmissionsNotStarted"]
-            description = item["description"]
-            published_date = item["publishedDate"]
-            assignments.append([assignment_id, assignment_name, status, submitted, not_submitted, in_progress, published_date, description,])
+        print("assignment loop")
+        while next_assignments != None:
+            print("getting assignments")
+            assignment_list = get_assignment_list(curr_user.os_domain, class_id, offset, auth_token = curr_user.access_token)
+            items = assignment_list["items"]
+            next_assignments = assignment_list['next']
+            for item in items:
+                assignment_id = item["id"]
+                assignment_name = item["name"]
+                status = item["stateName"]
+                in_progress = item["numberOfSubmissionsInProgress"]
+                submitted = item["numberOfSubmissionsSubmitted"]
+                not_submitted = item["numberOfSubmissionsNotStarted"]
+                description = item["description"]
+                published_date = item["publishedDate"]
+                assignments.append([assignment_id, assignment_name, status, submitted, not_submitted, in_progress, published_date, description,])
+            offset += 20
 
     except:
         print("Error in assignment") #need better error message here
@@ -492,7 +498,6 @@ def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class
         request, "grader/c_and_a.html", 
         context=context
     )
-
 
 def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
     """ 
@@ -575,8 +580,10 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                         if( tab_type == type_dict[curr_user.etype]):
                             require_user_action = False  #dont require action from user
                             tab_name = tab_info[0]["name"]
-                            tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
-                            tab_names_and_ids.append([url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
+                            # let's not get thumbnails for now
+                            # tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
+                            tab_names_and_ids.append([url, tab_name])  # bundle the  url ,  name and image each tab
+                            # tab_names_and_ids.append([url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
                             submitted_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
                         else:
                             require_user_action = True #require action from user
