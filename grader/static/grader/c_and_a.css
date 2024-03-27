@@ -51,17 +51,13 @@ input.go_home[type=submit]:hover {
   margin:10px auto;  
 }
 
-
 table {
   table-layout: fixed;
   width: 100%;
   font-size: 11px;
   border: 0px;
   border-spacing: 0px;
-
-
 }
-
 
 th.small_15{
   width: 15%;
@@ -73,7 +69,6 @@ th.status_column_34{
   width: 34%;
    vertical-align: bottom;
 }
-
 
 tr,th,td {
   width: 100%;
@@ -141,16 +136,20 @@ p.single_line_text{
 }
 
 .description_box{
-  width:95%;
+  width:85%;
   height: auto;
-  float: left;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   font-style: normal;
   font-size: 11px;
   padding:10px;
-  background-color: #efefef;
   box-shadow: 0 5px 10px rgba(0,0,0,.25);
-  margin:10px auto; 
+  margin:10px auto;
+  float: left;
+  background-color: #efefef;
+}
+
+#description_assignment {
+  position: absolute;
 }
 
 .description_title{

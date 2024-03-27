@@ -1,3 +1,17 @@
+// Assignment description box
+function move_popup(e) {
+  var div = document.getElementById('description_assignment');
+  var y = e.clientY + window.scrollY;
+  var windowHeight = window.innerHeight;
+  var bottomThreshold = 160; 
+  if (windowHeight - e.clientY < bottomThreshold) {
+      // If mouse is near the bottom of the page, show div above the mouse position
+      div.style.top = (y - div.offsetHeight - 25) + 'px';
+  } else {
+      // Otherwise, show div below the mouse position
+      div.style.top = y + 15 + 'px';
+  }
+}
 
   //Function to show pop up
   function show_popup_assignment(popup, msg1, msg2){
@@ -17,28 +31,25 @@
   }
    
     //Function to show pop up
-    function show_popup_member(popup, msg1, msg2){
-      var reasons = document.getElementById(popup);
-      reasons.style.display = "block"; 
-      var url = document.getElementById("url_member");
-      var text = document.getElementById("details_member");
-      url.innerHTML = msg1;
-      text.innerHTML = msg2;
-    }
-  
-    //Function to  hide pop up
-    function hide_popup_member(popup){
-      var reasons = document.getElementById(popup);
-      reasons.style.display = "none";
-    }
+  function show_popup_member(popup, msg1, msg2){
+    var reasons = document.getElementById(popup);
+    reasons.style.display = "block"; 
+    var url = document.getElementById("url_member");
+    var text = document.getElementById("details_member");
+    url.innerHTML = msg1;
+    text.innerHTML = msg2;
+  }
 
-
+  //Function to  hide pop up
+  function hide_popup_member(popup){
+    var reasons = document.getElementById(popup);
+    reasons.style.display = "none";
+  }
 
 function set_url(id, url){ //base array has member info and tab array has all tab info for that member
     var url_text = document.getElementById("url_"+ id);
       url_text.innerHTML = url;
   }
-
 
 //Function to update the tab name and image when another element is selected from drop down menu  
 function update_tab(id, tab_name, tab_image){

@@ -100,28 +100,26 @@
                         {% for assignment in assignments %}
                             <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id user_type class_id|safe class_name|safe assignment.0|safe assignment.1|safe %}" onsubmit="loading_spinner('features')">
                                 <tr class="classlist">
-                                    <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.1|unslash}}" onmouseover = "show_popup_assignment('description_assignment','{{assignment.6}}', '{{assignment.7}}')" onmouseleave = "hide_popup_assignment('description_assignment')"></th>
+                                    <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.1|unslash}}" onmouseover = "show_popup_assignment('description_assignment','{{assignment.6}}', '{{assignment.7|escapejs}}')" onmouseleave = "hide_popup_assignment('description_assignment')"></th>
                                     <th><input class = "row_selector status_column_34 set_to_left_in_table small_font_td" type="submit" value="{{assignment.2}}" title="{{assignment.2}}"></th>
                                     <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.3}}" title="{{assignment.3}}"></th>
                                     <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.5}}" title="{{assignment.5}}"></th>
                                     <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.4}}" title="{{assignment.4}}"></th>
-                                    
-
                                 </tr>
                             </form>
                         {% endfor %}
                     </table>
                 </div>
+                <script>document.addEventListener('mousemove', move_popup);</script>
             {% else %}
                 <p> No assignements were detected for this class. </p>
             {% endif %}
-            <div hidden class = "description_box" id = "description_assignment">
-                <span class = "description_title">Published date: </span><div id = "date"> </div>
-                <span class = "description_title">Description: </span> <div id = "description_text"> </div>
-                </div>
-            </div> <!-- Place to show the description of assignment on hover-->
+            <div hidden class="description_box" id="description_assignment">
+                <span class="description_title">Published date: </span><div id="date"> </div>
+                <span class="description_title">Description: </span> <div id="description_text"> </div>
+            </div>
+            <!-- Place to show the description of assignment on hover-->
         {% endif %}
-
 
         {% if page == "submissions" %}
             <!-- Navigation buttons-->
@@ -153,7 +151,7 @@
                             <th class = "set_to_left_in_table bigger_font_th single_line_text">Student name</th>
                             <th class = "set_to_left_in_table bigger_font_th single_line_text">Document name</th>
                             <th class = "set_to_left_in_table bigger_font_th single_line_text">Tab name</th>
-                            <!-- <th class = "bigger_font_th">Thumbnail</th> -->
+                            <th class = "bigger_font_th">Thumbnail</th>
                         </tr>
                         <!--
                         # element 0 - student id 
@@ -173,7 +171,7 @@
                                 <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
                                 <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
                                 <td class = "set_to_left_in_table small_font_td"> {{studentwork.5.0.1 }}</td>
-                                <!-- <td> <img id="preview_image_{{studentwork.0}}" src = "{{studentwork.5.0.2 }}" alt = "" /></td> -->
+                                <td><img id="preview_image_{{studentwork.0}}" src = "{{studentwork.5.0.2 }}" alt = "" /></td>
                             </tr>  
                         {% endfor %}   
                     </table>

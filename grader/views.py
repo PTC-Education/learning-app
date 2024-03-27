@@ -470,9 +470,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class
     offset = 0
     next_assignments = ""
     try:
-        print("assignment loop")
         while next_assignments != None:
-            print("getting assignments")
             assignment_list = get_assignment_list(curr_user.os_domain, class_id, offset, auth_token = curr_user.access_token)
             items = assignment_list["items"]
             next_assignments = assignment_list['next']
@@ -484,6 +482,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class
                 submitted = item["numberOfSubmissionsSubmitted"]
                 not_submitted = item["numberOfSubmissionsNotStarted"]
                 description = item["description"]
+                description = (description[:400] + '...') if len(description) > 400 else description
                 published_date = item["publishedDate"]
                 assignments.append([assignment_id, assignment_name, status, submitted, not_submitted, in_progress, published_date, description,])
             offset += 20
@@ -585,10 +584,8 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                         if( tab_type == type_dict[curr_user.etype]):
                             require_user_action = False  #dont require action from user
                             tab_name = tab_info[0]["name"]
-                            # let's not get thumbnails for now
-                            # tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
-                            tab_names_and_ids.append([url, tab_name])  # bundle the  url ,  name and image each tab
-                            # tab_names_and_ids.append([url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
+                            tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, tab_id, curr_user.etype, auth_token=curr_user.access_token) 
+                            tab_names_and_ids.append([url, tab_name, tab_image])  # bundle the  url ,  name and image each tab
                             submitted_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
                         else:
                             require_user_action = True #require action from user
@@ -625,7 +622,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                     url = submission["documents"][0]["viewRef"]
                     
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
-        print(submitted_student_works)
+        # print(submitted_student_works)
     except:
          error_message = "We encountered an issue. Please check your internet connection. "
     context={
