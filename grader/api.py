@@ -165,9 +165,6 @@ def get_feature_list(
     else: 
         return None
 
-
-
-
 def get_doc_info(
     domain: str, did: str, auth_token: str
 ) -> Any: 

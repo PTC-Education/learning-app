@@ -113,6 +113,13 @@ tr,th,td {
   text-overflow: ellipsis;
 }
 
+.valign_top {
+  vertical-align: top;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 tr.classlist:hover, .row_selector:hover {
   background-color: #90cef1;
   cursor: pointer;
@@ -163,7 +170,7 @@ p.single_line_text{
 }
 
 /* Loader */
-.loader {
+.loader .smaller_loader {
   position: relative;
 }
 
@@ -179,6 +186,13 @@ p.single_line_text{
   height: 80px;
   -webkit-animation: spin 2s linear infinite; /* Safari */
   animation: spin 2s linear infinite;
+}
+
+.smaller_loader:after {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  width: 30px;
+  height: 30px;
 }
 
 /* Loader in Safari */

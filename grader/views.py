@@ -503,6 +503,27 @@ def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class
         context=context
     )
 
+def assignment_doc_info(request: HttpRequest, os_user_id: str): 
+    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+
+    # Refresh token if needed 
+    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
+        curr_user.refresh_oauth_token() 
+
+    # doc_info = get_doc_info(curr_user.os_domain, did, auth_token=curr_user.access_token)
+    wv = "v"
+    did = request.GET.get('did')
+    wvid = request.GET.get('vid')
+    eid = request.GET.get('eid')
+    # wvid = doc_info["defaultWorkspace"]["id"]
+    # tab_id = splitted_url[4].split("?")[0]
+    tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
+    # tab_type = tab_info[0]["elementType"]
+    tab_name = tab_info[0]["name"]
+    tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
+
+    return JsonResponse({'tab_name': tab_name, 'tab_image': tab_image})
+
 def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
     """ 
    This function will get the list of classes created by the user.
@@ -560,7 +581,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                 # did = splitted_url[0]
                 
                 # if(len(splitted_url)==1): # url has a document id only
-                #     doc_info = get_doc_info(curr_user.os_domain, did,  auth_token=curr_user.access_token)
+                #     doc_info = get_doc_info(curr_user.os_domain, did, auth_token=curr_user.access_token)
                 #     wv = "w"
                 #     wvid = doc_info["defaultWorkspace"]["id"]
                 # else:
