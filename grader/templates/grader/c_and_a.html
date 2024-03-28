@@ -137,6 +137,8 @@
                 <p class="quick_link" id="assignment_name">{{assignment_name}}</p>
             </div>
 
+            <div class="submissions">Loading submission 0 of {{ submitted_student_works|length }}</div>
+
             <p id="submission_error">&nbsp;</p>
 
             <div class="classes_assignments_box" id="submitted_box">
@@ -164,14 +166,13 @@
                             # subelement 1 - element name
                             # subelement 2 - element thumbnail
                         -->
-    
                         {% for studentwork in submitted_student_works %}
                             <tr>
                                 <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                                 <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
                                 <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
-                                <td class = "set_to_left_in_table small_font_td"> {{studentwork.5.0.1 }}</td>
-                                <td><img id="preview_image_{{studentwork.0}}" src = "{{studentwork.5.0.2 }}" alt = "" /></td>
+                                <td class = "set_to_left_in_table small_font_td">&nbsp;</td>
+                                <td><img id="preview_image_{{studentwork.0}}" src = "" alt = "" /></td>
                             </tr>  
                         {% endfor %}   
                     </table>
@@ -203,16 +204,18 @@
                                 <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                                 <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
                                 <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
-                                <td> <img id = preview_image_{{studentwork.0}} src = "{{studentwork.5.0.2 }}" alt = "" /></td>
+                                <td> <img id = preview_image_{{studentwork.0}} src = "" alt = "" /></td>
                             </tr>  
                         {% endfor %}   
                     </table>
                 {% endif %}
-
-                
             </div>
+            <!-- TO DO: 
+            - load submissions via AJAX
+            - if there is no content, hide submitted table and report in submission_error element
+            - add back the action_required logic -->
 
-            <script>check_submitted_content();</script> <!-- hide submitted table if there is no content-->
+            <script>// some AJAX magic</script>
 
             {% if action_required_student_works %}
                 <div class="classes_assignments_box" id="action_required_box">
