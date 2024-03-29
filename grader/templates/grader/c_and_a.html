@@ -47,8 +47,10 @@
                         } 
                     } else {
                         var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
+                        
+                        $('#submitted_work tr:eq(' + (i+1-action_required.length) + ')').remove();
+                        console.log("remove row " + (i+1-action_required.length));
                         action_required.push(arr);
-                        $('#submitted_work tr:eq(' + (i+1) + ')').remove();
                         $('#action_required_box').css('display', 'block');
                         // make new table row
                         var newRowStr = "<tr><td>" + submitted_student_works[i][1] + "</td><td><a href='#'>" + submitted_student_works[i][3] + "</a></td>";
