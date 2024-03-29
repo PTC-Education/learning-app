@@ -6,6 +6,7 @@
     <script src="{% static 'grader/jquery-3.7.1.js' %}" type="text/javascript"></script>
     <script>
         function load_submissions(i, n) {
+            var user_type = "{{ user_type }}";
             $('#submission_counter').html("Loading submission " + (i+1) + " of " + n);
             var url = $('#url_'+i).html();
             var splitted_url = url.split("/documents/")[1].split("/");
@@ -17,7 +18,11 @@
                 eid = eid.substring(0,index)
             }
             var url = "{% url 'grader:assignment_doc_info' user.os_user_id %}";
-            loading_spinner_results('submission_'+i);  
+            if(user_type == 'educator') {
+                loading_spinner_results('submission_'+i);  
+            } else {
+                loading_spinner_results('submission_thumb_'+i);  
+            }
             $('#submission_error').css('display', 'none');
             $.ajax({
                 url: url,
@@ -28,9 +33,11 @@
                     'eid' : eid,
                 },
                 success: function (response) {
-                    $('#submission_'+i).html(response.tab_name);
-                    $('#submission_td_'+i).css('vertical-align', 'bottom');
                     $('#submission_thumb_'+i).html("<img src='" + response.tab_image + "'>");
+                    $('#submission_td_'+i).css('vertical-align', 'bottom');
+                    if(user_type == 'educator') {
+                        $('#submission_'+i).html(response.tab_name);
+                    } 
                     if(i+1 < n) {
                         load_submissions(i+1, n);
                     } else {
@@ -75,7 +82,7 @@
                 <p>Click on the assignment's name to view submission list and grade.</p>
             {% endif %}
             {% if page == "submissions" %}
-                <p>Click on grade to grade the submitted assignments.</p>
+                <p>Click the Grade button to grade the submitted assignments.</p>
             {% endif %}
         </div>
 
@@ -244,10 +251,14 @@
 
                         {% for studentwork in submitted_student_works %}
                             <tr>
-                                <td class = "set_to_left_in_table small_font_td">{{studentwork.1}}</td>
-                                <td class = "set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
-                                <td name = "doc_url" hidden id = url_{{studentwork.0}}>{{studentwork.4}}</td> <!-- to save url-->
-                                <td> <img id = preview_image_{{studentwork.0}} src = "" alt = "" /></td>
+                                <td class="set_to_left_in_table small_font_td">{{studentwork.1}}</td>
+                                <td class="set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
+                                <td name="doc_url" hidden id="url_{{ forloop.counter0 }}">{{studentwork.4}}</td> <!-- to save url-->
+                                <td id="submission_td_{{ forloop.counter0 }}" class="small_font_td valign_top">
+                                    <div>
+                                        <div class="scioly_thumb" id="submission_thumb_{{ forloop.counter0 }}"></div>
+                                    </div>
+                                </td>
                             </tr>  
                         {% endfor %}   
                     </table>

@@ -633,7 +633,6 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                 #     else:
                 #         action_required_student_works.append([member_id, member_name, number_of_attempts, doc_name, url, tab_names_and_ids])
 
-                           
             #If the document is in progress
             else:
                 doc_name = "Not included"
@@ -657,7 +656,6 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
             "class_id": class_id,
             "assignment_name": assignment_name,
             "error_message" : error_message
-
         }
     return render(
         request, "grader/c_and_a.html", 
