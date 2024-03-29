@@ -33,6 +33,7 @@
                     'eid' : eid,
                 },
                 success: function (response) {
+                    console.log(response.tab_type);
                     $('#submission_thumb_'+i).html("<img src='" + response.tab_image + "'>");
                     $('#submission_td_'+i).css('vertical-align', 'bottom');
                     if(user_type == 'educator') {

@@ -518,11 +518,11 @@ def assignment_doc_info(request: HttpRequest, os_user_id: str):
     # wvid = doc_info["defaultWorkspace"]["id"]
     # tab_id = splitted_url[4].split("?")[0]
     tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
-    # tab_type = tab_info[0]["elementType"]
+    tab_type = tab_info[0]["elementType"]
     tab_name = tab_info[0]["name"]
     tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
 
-    return JsonResponse({'tab_name': tab_name, 'tab_image': tab_image})
+    return JsonResponse({'tab_name': tab_name, 'tab_image': tab_image, 'tab_type': tab_type})
 
 def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
     """ 
