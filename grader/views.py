@@ -520,8 +520,7 @@ def assignment_doc_info(request: HttpRequest, os_user_id: str):
     tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
     tab_type = tab_info[0]["elementType"]
     tab_name = tab_info[0]["name"]
-    tab_image   = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
-
+    tab_image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
     return JsonResponse({'tab_name': tab_name, 'tab_image': tab_image, 'tab_type': tab_type})
 
 def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
@@ -568,7 +567,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
             member_name = submission["memberName"]
             state_name = submission["stateName"]
 
-            require_user_action = True 
+            # require_user_action = True 
             number_of_attempts = 0
             # tab_names_and_ids =[]  
             
@@ -648,6 +647,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
     context={
             "user": curr_user, 
             "user_type": user_type,
+            "etype": type_dict[curr_user.etype],
             "page": "submissions",
             "submitted_student_works": submitted_student_works,
             # "action_required_student_works": action_required_student_works,
