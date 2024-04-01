@@ -12,16 +12,20 @@
         var etype = "{{ etype }}";
 
         function load_submissions(i, n) { 
-            console.log([i,n]); 
             $('#submission_counter').html("Loading submission " + (i+1) + " of " + n);
             var url = $('#url_'+i).html();
             var splitted_url = url.split("/documents/")[1].split("/");
             var did = splitted_url[0];
             var vid = splitted_url[2];
-            var eid = splitted_url[4];
-            index = eid.indexOf("?");
-            if (index != -1) {
-                eid = eid.substring(0,index)
+            // if there is an EID, get it
+            if (splitted_url.length > 3) {
+                var eid = splitted_url[4];
+                index = eid.indexOf("?");
+                if (index != -1) {
+                    eid = eid.substring(0,index)
+                }
+            } else {
+                eid = "";
             }
             var url = "{% url 'grader:assignment_doc_info' user.os_user_id %}";
             if(user_type == 'educator') {
@@ -47,7 +51,6 @@
                         } 
                     } else {
                         var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
-                        
                         $('#submitted_work tr:eq(' + (i+1-action_required.length) + ')').remove();
                         console.log("remove row " + (i+1-action_required.length));
                         action_required.push(arr);

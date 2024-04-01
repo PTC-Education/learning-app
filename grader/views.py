@@ -505,6 +505,7 @@ def list_assignments(request: HttpRequest, os_user_id: str, user_type:str, class
 
 def assignment_doc_info(request: HttpRequest, os_user_id: str): 
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
+    type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
 
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
@@ -518,6 +519,14 @@ def assignment_doc_info(request: HttpRequest, os_user_id: str):
     # wvid = doc_info["defaultWorkspace"]["id"]
     # tab_id = splitted_url[4].split("?")[0]
     tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
+    # if no EID, get the elements of the current element type and if there is just one, that's it
+    if eid == "":
+        eids = []
+        for element in tab_info:
+            if element['elementType'] == type_dict[curr_user.etype]:
+                eids.append(element['id'])
+        if len(eids) == 1:
+            eid = eids[0]
     tab_type = tab_info[0]["elementType"]
     tab_name = tab_info[0]["name"]
     tab_image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
