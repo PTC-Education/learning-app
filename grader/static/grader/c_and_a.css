@@ -269,7 +269,7 @@ p.quick_link{
 }
 
 .dropbtn {
-  background-color: #4CAF50;
+  background-color: #90cef1;
   color: white;
   border: none;
   cursor: pointer;
@@ -315,7 +315,7 @@ p.quick_link{
 }
 
 .dropdown:hover .dropbtn {
-  background-color: #3e8e41;
+  background-color: #badbf3;
 }
 
 .dropdown_tab_and_image{
@@ -373,7 +373,7 @@ input.gradeButton[type=submit]:hover {
 .add_to_grade_button{
   font-size: 9px;
   padding: 5px;
-  background-color: #4CAF50;
+  background-color: #badbf3;
   color: white;
   border-radius: 4px;
   border: none;

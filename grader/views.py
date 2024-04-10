@@ -540,12 +540,11 @@ def assignment_doc_info(request: HttpRequest, os_user_id: str):
         tab_type = e[0]
         tab_name = e[1]
         eid = e[2]
-        tab_image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
-        tab = {'tab_name': tab_name, 'tab_image': tab_image, 'tab_type': tab_type}
+        tab_image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token)
+        tab_url = curr_user.os_domain + "/documents/" + did + "/" + wv + "/" + wvid + "/e/" + eid
+        tab = {'tab_name': tab_name, 'tab_image': tab_image, 'tab_type': tab_type, 'tab_url': tab_url}
         tabs.append(tab)
 
-    for tab in element_info:
-        print(tab['name'])
     # if no EID, get the elements of the current element type and if there is just one, that's it
     # if eid == "":
     #     eids = []

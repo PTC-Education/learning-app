@@ -14,7 +14,9 @@
 
         function load_submissions(i, n) { 
             $('#submission_counter').html("Loading submission " + (i+1) + " of " + n);
-            var url = $('#url_'+i).html();
+            var member_id = submitted_student_works[i][0];
+            //var url = $('#url_'+i).html();
+            var url = $('#url_'+member_id).html();
             var splitted_url = url.split("/documents/")[1].split("/");
             var did = splitted_url[0];
             var vid = splitted_url[2];
@@ -60,16 +62,18 @@
                         // make new table row
                         var tabs = response['tabs']
                         var newRowStr = "<tr><td>" + submitted_student_works[i][1] + "</td><td><a href='" + submitted_student_works[i][4] + "' target='_blank'>" + submitted_student_works[i][3] + "</a></td>";
+                        newRowStr += "<td name='doc_url' hidden id='url_" + submitted_student_works[i][0] + "'>" + submitted_student_works[i][4] + "</td>"
+                        //var member_id = submitted_student_works[i][0];
                         newRowStr += "<td><div class='dropdown'>";
                         newRowStr += "<button  class='dropbtn single_line_text'>";
-                        newRowStr += "<img id='preview_image_0' src='" + tabs[0]['tab_image'] + "' alt = '' />";
+                        newRowStr += "<img id='preview_image_" + member_id + "' src='" + tabs[0]['tab_image'] + "' alt = '' />";
                         // these elements need unique ids, like the student ids.  so, e.g., button_name_63eeaf27315a2c3864943b2d
-                        newRowStr += "<p id='button_name_0' class='single_line_text left_spaced_text'>" + tabs[0]['tab_name'] + "</p>";
+                        newRowStr += "<p id='button_name_" + member_id + "' class='single_line_text left_spaced_text'>" + tabs[0]['tab_name'] + "</p>";
                         newRowStr += "</button>";
-                        newRowStr += "<div class='dropdown-content' id='dropdown_0'>";
+                        newRowStr += "<div class='dropdown-content' id='dropdown_" + member_id + "'>";
                         
                         $.each(tabs, function(index, tab) {
-                            newRowStr += "<button class='dropdown_tab_and_image' onclick=\"set_url('studentwork_0','tab_0'), update_tab('studentwork_0', 'tab_1','tab_2')\">";
+                            newRowStr += "<button class='dropdown_tab_and_image' onclick=\"set_url('" + member_id + "','" + tab['tab_url'] + "'), update_tab('" + member_id + "', '" + tab['tab_name'] + "','" + tab['tab_image'] + "')\">";
                             newRowStr += "<img class='preview_thumbnail' src='" + tab['tab_image'] + "' alt = ''/>";
                             newRowStr += "<p class = 'single_line_text left_spaced_text'>" + tab['tab_name'] + "</p>";
                             newRowStr += "</button>";
@@ -263,7 +267,7 @@
                             <tr>
                                 <td class="set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                                 <td class="set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
-                                <td name="doc_url" hidden id="url_{{ forloop.counter0 }}">{{studentwork.4}}</td> <!-- to save url-->
+                                <td name="doc_url" hidden id="url_{{ studentwork.0 }}">{{studentwork.4}}</td> <!-- to save url-->
                                 <td id="submission_td_{{ forloop.counter0 }}" class="small_font_td valign_top">
                                     <div>
                                         <div id="submission_{{ forloop.counter0 }}"></div>
