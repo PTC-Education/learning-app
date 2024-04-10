@@ -58,30 +58,24 @@
                         action_required.push(arr);
                         $('#action_required_box').css('display', 'block');
                         // make new table row
+                        var tabs = response['tabs']
                         var newRowStr = "<tr><td>" + submitted_student_works[i][1] + "</td><td><a href='" + submitted_student_works[i][4] + "' target='_blank'>" + submitted_student_works[i][3] + "</a></td>";
-                        newRowStr += "<td><div class='dropdown'><button  class='dropbtn single_line_text'>";
-                        newRowStr += "<img id='preview_image_0' src='' alt = '' /><p id='button_name_0' class='single_line_text left_spaced_text'></p>";
+                        newRowStr += "<td><div class='dropdown'>";
+                        newRowStr += "<button  class='dropbtn single_line_text'>";
+                        newRowStr += "<img id='preview_image_0' src='" + tabs[0]['tab_image'] + "' alt = '' />";
+                        // these elements need unique ids, like the student ids.  so, e.g., button_name_63eeaf27315a2c3864943b2d
+                        newRowStr += "<p id='button_name_0' class='single_line_text left_spaced_text'>" + tabs[0]['tab_name'] + "</p>";
                         newRowStr += "</button>";
                         newRowStr += "<div class='dropdown-content' id='dropdown_0'>";
                         
-                        newRowStr += "</div>";
-                        var tabs = response['tabs']
                         $.each(tabs, function(index, tab) {
-                            newRowStr += "<button class='dropdown_tab_and_image'>";
+                            newRowStr += "<button class='dropdown_tab_and_image' onclick=\"set_url('studentwork_0','tab_0'), update_tab('studentwork_0', 'tab_1','tab_2')\">";
                             newRowStr += "<img class='preview_thumbnail' src='" + tab['tab_image'] + "' alt = ''/>";
-                            newRowStr += "<p class = 'single_line_text left_spaced_text'>{{tab.1}}</p>";
+                            newRowStr += "<p class = 'single_line_text left_spaced_text'>" + tab['tab_name'] + "</p>";
                             newRowStr += "</button>";
-                            console.log(index, tab);
                         });
                         
-                        //                  {% for tab in studentwork.5 %} 
-                        //                     <button class="dropdown_tab_and_image " onclick="set_url('studentwork_0','tab_0'), update_tab('studentwork_0', 'tab_1','tab_2')">
-                        //                         <img class="preview_thumbnail" src="" alt = ""/>
-                        //                         <p class = "single_line_text left_spaced_text">{{tab.1}}</p>   
-                        //                     </button>
-                        //                 {% endfor %} 
-                        
-                        
+                        newRowStr += "</div>";
                         newRowStr += "</div></td>";
                         newRowStr += "<td></td></tr>";
                         var newRow = $(newRowStr);
