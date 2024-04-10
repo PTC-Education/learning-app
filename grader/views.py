@@ -512,25 +512,59 @@ def assignment_doc_info(request: HttpRequest, os_user_id: str):
         curr_user.refresh_oauth_token() 
 
     # doc_info = get_doc_info(curr_user.os_domain, did, auth_token=curr_user.access_token)
+    tabs = []
     wv = "v"
     did = request.GET.get('did')
     wvid = request.GET.get('vid')
     eid = request.GET.get('eid')
     # wvid = doc_info["defaultWorkspace"]["id"]
     # tab_id = splitted_url[4].split("?")[0]
-    tab_info = get_element_info(curr_user.os_domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
+
+    # get tab info for ALL of the tabs
+    element_info = get_element_info(curr_user.os_domain, did, wv, wvid, "", auth_token=curr_user.access_token)
+
+    correct_etypes = []
+
+    for element in element_info:
+        if element['elementType'] == type_dict[curr_user.etype]:
+            correct_etypes.append([element['elementType'],element['name'],element['id']])
+            # if submission has an element and it is of the correct type, we can assume that's the correct submission element
+            # if element['id'] == eid:
+            #     tab_type = element["elementType"]
+            #     tab_name = element["name"]
+            #     tab_image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
+
+    # if submission is of the wrong element type but the document has exactly one of the correct type, we assume that's it
+    
+    for e in correct_etypes:
+        tab_type = e[0]
+        tab_name = e[1]
+        eid = e[2]
+        tab_image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
+        tab = {'tab_name': tab_name, 'tab_image': tab_image, 'tab_type': tab_type}
+        tabs.append(tab)
+
+    for tab in element_info:
+        print(tab['name'])
     # if no EID, get the elements of the current element type and if there is just one, that's it
-    if eid == "":
-        eids = []
-        for element in tab_info:
-            if element['elementType'] == type_dict[curr_user.etype]:
-                eids.append(element['id'])
-        if len(eids) == 1:
-            eid = eids[0]
-    tab_type = tab_info[0]["elementType"]
-    tab_name = tab_info[0]["name"]
-    tab_image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
-    return JsonResponse({'tab_name': tab_name, 'tab_image': tab_image, 'tab_type': tab_type})
+    # if eid == "":
+    #     eids = []
+    #     for element in tab_info:
+    #         if element['elementType'] == type_dict[curr_user.etype]:
+    #             eids.append(element['id'])
+    #     if len(eids) == 1:
+    #         eid = eids[0]
+    
+    # if wrong etype, but there is one element of the correct etype, use that one
+    # eid = tab_info[0]["id"]
+    # tab_type = tab_info[0]["elementType"]
+    # tab_name = tab_info[0]["name"]
+
+    # tab_image = get_shaded_views(curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token) 
+    # tab = {'tab_name': tab_name, 'tab_image': tab_image, 'tab_type': tab_type}
+    # tabs.append(tab)
+    # return JsonResponse({'tab_name': tab_name, 'tab_image': tab_image, 'tab_type': tab_type})
+    return JsonResponse({'tabs': tabs})
 
 def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id:str, class_name:str, assignment_id:str, assignment_name:str):
     """ 

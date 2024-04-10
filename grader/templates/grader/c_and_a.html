@@ -8,6 +8,7 @@
         var action_required = [];
         var s = "{{ submitted_student_works|escapejs }}";
         var submitted_student_works = JSON.parse(s.replace(/'/g, "\""));
+        // submitted_student_works is an array -> [member_id, member_name, number_of_attempts, doc_name, url]
         var user_type = "{{ user_type }}";
         var etype = "{{ etype }}";
 
@@ -43,24 +44,50 @@
                     'eid' : eid,
                 },
                 success: function (response) {
-                    if(response.tab_type == etype) {
+                    if (response['tabs'].length == 1) {
+                        response = response['tabs'][0]
                         $('#submission_thumb_'+i).html("<img src='" + response.tab_image + "'>");
                         $('#submission_td_'+i).css('vertical-align', 'bottom');
                         if(user_type == 'educator') {
                             $('#submission_'+i).html(response.tab_name);
                         } 
                     } else {
+                        // if wrong element type, remove from table and throw to action required box
                         var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
                         $('#submitted_work tr:eq(' + (i+1-action_required.length) + ')').remove();
-                        console.log("remove row " + (i+1-action_required.length));
                         action_required.push(arr);
                         $('#action_required_box').css('display', 'block');
                         // make new table row
-                        var newRowStr = "<tr><td>" + submitted_student_works[i][1] + "</td><td><a href='#'>" + submitted_student_works[i][3] + "</a></td>";
-                        newRowStr += "<td></td><td></td></tr>";
+                        var newRowStr = "<tr><td>" + submitted_student_works[i][1] + "</td><td><a href='" + submitted_student_works[i][4] + "' target='_blank'>" + submitted_student_works[i][3] + "</a></td>";
+                        newRowStr += "<td><div class='dropdown'><button  class='dropbtn single_line_text'>";
+                        newRowStr += "<img id='preview_image_0' src='' alt = '' /><p id='button_name_0' class='single_line_text left_spaced_text'></p>";
+                        newRowStr += "</button>";
+                        newRowStr += "<div class='dropdown-content' id='dropdown_0'>";
+                        
+                        newRowStr += "</div>";
+                        var tabs = response['tabs']
+                        $.each(tabs, function(index, tab) {
+                            newRowStr += "<button class='dropdown_tab_and_image'>";
+                            newRowStr += "<img class='preview_thumbnail' src='" + tab['tab_image'] + "' alt = ''/>";
+                            newRowStr += "<p class = 'single_line_text left_spaced_text'>{{tab.1}}</p>";
+                            newRowStr += "</button>";
+                            console.log(index, tab);
+                        });
+                        
+                        //                  {% for tab in studentwork.5 %} 
+                        //                     <button class="dropdown_tab_and_image " onclick="set_url('studentwork_0','tab_0'), update_tab('studentwork_0', 'tab_1','tab_2')">
+                        //                         <img class="preview_thumbnail" src="" alt = ""/>
+                        //                         <p class = "single_line_text left_spaced_text">{{tab.1}}</p>   
+                        //                     </button>
+                        //                 {% endfor %} 
+                        
+                        
+                        newRowStr += "</div></td>";
+                        newRowStr += "<td></td></tr>";
                         var newRow = $(newRowStr);
                         $("#action_required_body").append(newRow);
                     }
+                    // loop through all dubmissions
                     if(i < n-1) {
                         load_submissions(i+1, n);
                     } else {
