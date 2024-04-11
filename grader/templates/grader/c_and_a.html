@@ -15,7 +15,6 @@
         function load_submissions(i, n) { 
             $('#submission_counter').html("Loading submission " + (i+1) + " of " + n);
             var member_id = submitted_student_works[i][0];
-            //var url = $('#url_'+i).html();
             var url = $('#url_'+member_id).html();
             var splitted_url = url.split("/documents/")[1].split("/");
             var did = splitted_url[0];
@@ -47,6 +46,7 @@
                 },
                 success: function (response) {
                     if (response['tabs'].length == 1) {
+                        // if assignment_doc_info comes back with exactly one element of the correct type, we assume that's it.
                         response = response['tabs'][0]
                         $('#submission_thumb_'+i).html("<img src='" + response.tab_image + "'>");
                         $('#submission_td_'+i).css('vertical-align', 'bottom');
@@ -54,24 +54,22 @@
                             $('#submission_'+i).html(response.tab_name);
                         } 
                     } else {
-                        // if wrong element type, remove from table and throw to action required box
+                        // otherwise remove from table and throw to action required box
                         var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
                         $('#submitted_work tr:eq(' + (i+1-action_required.length) + ')').remove();
                         action_required.push(arr);
                         $('#action_required_box').css('display', 'block');
                         // make new table row
                         var tabs = response['tabs']
-                        var newRowStr = "<tr><td>" + submitted_student_works[i][1] + "</td><td><a href='" + submitted_student_works[i][4] + "' target='_blank'>" + submitted_student_works[i][3] + "</a></td>";
+                        var newRowStr = "<tr id='tab_" + member_id + "'><td>" + submitted_student_works[i][1] + "</td><td><a href='" + submitted_student_works[i][4] + "' target='_blank'>" + submitted_student_works[i][3] + "</a></td>";
                         newRowStr += "<td name='doc_url' hidden id='url_" + submitted_student_works[i][0] + "'>" + submitted_student_works[i][4] + "</td>"
-                        //var member_id = submitted_student_works[i][0];
                         newRowStr += "<td><div class='dropdown'>";
                         newRowStr += "<button  class='dropbtn single_line_text'>";
                         newRowStr += "<img id='preview_image_" + member_id + "' src='" + tabs[0]['tab_image'] + "' alt = '' />";
-                        // these elements need unique ids, like the student ids.  so, e.g., button_name_63eeaf27315a2c3864943b2d
                         newRowStr += "<p id='button_name_" + member_id + "' class='single_line_text left_spaced_text'>" + tabs[0]['tab_name'] + "</p>";
                         newRowStr += "</button>";
                         newRowStr += "<div class='dropdown-content' id='dropdown_" + member_id + "'>";
-                        
+                        // make the dropdown
                         $.each(tabs, function(index, tab) {
                             newRowStr += "<button class='dropdown_tab_and_image' onclick=\"set_url('" + member_id + "','" + tab['tab_url'] + "'), update_tab('" + member_id + "', '" + tab['tab_name'] + "','" + tab['tab_image'] + "')\">";
                             newRowStr += "<img class='preview_thumbnail' src='" + tab['tab_image'] + "' alt = ''/>";
@@ -81,18 +79,15 @@
                         
                         newRowStr += "</div>";
                         newRowStr += "</div></td>";
-                        newRowStr += "<td></td></tr>";
+                        newRowStr += "<td><input class='add_to_grade_button' type='button' value='Add' onclick=\"add_to_grade_list('" + member_id + "')\"></td></tr>";
                         var newRow = $(newRowStr);
                         $("#action_required_body").append(newRow);
                     }
-                    // loop through all dubmissions
+                    // loop through all submissions
                     if(i < n-1) {
                         load_submissions(i+1, n);
                     } else {
                         $('#submission_counter').html('Ready to grade!');
-                        if(action_required.length > 0) {
-                            // fill in the tabs and stuff
-                        }
                     }
                 },
                 error: function (error) {
@@ -315,16 +310,12 @@
                     </table>
                 {% endif %}
             </div>
-            <!-- TO DO: 
-            - load submissions via AJAX
-            - if there is no content, hide submitted table and report in submission_error element
-            - add back the action_required logic -->
 
             <script>load_submissions(0, '{{ submitted_student_works|length }}');</script>
 
             <!-- Action Required-->
             <div hidden class="classes_assignments_box" id="action_required_box">
-                <p class = "table_header">Action required: </p>
+                <p class = "table_header">Action required:</p>
                 <p class = "table_sub_header">Multiple elements were detected in some submitted documents. Select element from the table below and click add to add to the Grading list.</p>
                 <table id="action_required_work">
                     <thead>
@@ -337,40 +328,7 @@
                     </thead>
                     <tbody id="action_required_body">
 
-                    </tbody>
-                    <!--
-                    # element 0 - student id 
-                    # element 1 - student name
-                    # element 2 - number of submission attempts
-                    # element 3 - submitted document name
-                    # element 4 - submitted document url
-                    # element 5 - array of tabs with 3 elements
-                        # subelement 0 - element url
-                        # subelement 1 - element name
-                        # subelement 2 - element thumbnail
-                    -->
-                       <!-- <tr id="tab_0">
-                            <td class="set_to_left_in_table small_font_td "><div id="action_required_name_0"></div></td>
-                            <td class="set_to_left_in_table small_font_td "><a href="" target="_blank"><div id="action_required_url_0"></div></a></td>
-                            <td name="doc_url" hidden id="studentwork_0"></td>  to save url-->
-                            <!-- <td>   
-                                <div class="dropdown">
-                                    <button  class="dropbtn single_line_text"> 
-                                        <img id="preview_image_0" src="" alt = "" />
-                                        <p id="button_name_0" class="single_line_text left_spaced_text"></p>                           
-                                    </button>    
-                                    <div class="dropdown-content" id="dropdown_0">
-                                         {% for tab in studentwork.5 %} 
-                                            <button class="dropdown_tab_and_image " onclick="set_url('studentwork_0','tab_0'), update_tab('studentwork_0', 'tab_1','tab_2')">
-                                                <img class="preview_thumbnail" src="" alt = ""/>
-                                                <p class = "single_line_text left_spaced_text">{{tab.1}}</p>   
-                                            </button>
-                                        {% endfor %} 
-                                    </div>  
-                                </div>           
-                            </td>
-                            <td> <input class="add_to_grade_button" type="button" value="Add" onclick= "add_to_grade_list('studentwork_0')"></td>
-                        </tr> -->
+                    </tbody>     
                 </table>
             </div>
 

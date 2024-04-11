@@ -13,43 +13,43 @@ function move_popup(e) {
   }
 }
 
-  //Function to show pop up
-  function show_popup_assignment(popup, msg1, msg2){
-    var reasons = document.getElementById(popup);
-    reasons.style.display = "block"; 
-    var date = document.getElementById("date");
-    var text = document.getElementById("description_text");
-    var localDateTime = new Date(msg1);
-    date.innerHTML = localDateTime;
-    text.innerHTML = msg2;
-  }
+//Function to show pop up
+function show_popup_assignment(popup, msg1, msg2){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "block"; 
+  var date = document.getElementById("date");
+  var text = document.getElementById("description_text");
+  var localDateTime = new Date(msg1);
+  date.innerHTML = localDateTime;
+  text.innerHTML = msg2;
+}
 
-  //Function to  hide pop up
-  function hide_popup_assignment(popup){
-    var reasons = document.getElementById(popup);
-    reasons.style.display = "none";
-  }
+//Function to  hide pop up
+function hide_popup_assignment(popup){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "none";
+}
    
-    //Function to show pop up
-  function show_popup_member(popup, msg1, msg2){
-    var reasons = document.getElementById(popup);
-    reasons.style.display = "block"; 
-    var url = document.getElementById("url_member");
-    var text = document.getElementById("details_member");
-    url.innerHTML = msg1;
-    text.innerHTML = msg2;
-  }
+//Function to show pop up
+function show_popup_member(popup, msg1, msg2){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "block"; 
+  var url = document.getElementById("url_member");
+  var text = document.getElementById("details_member");
+  url.innerHTML = msg1;
+  text.innerHTML = msg2;
+}
 
-  //Function to  hide pop up
-  function hide_popup_member(popup){
-    var reasons = document.getElementById(popup);
-    reasons.style.display = "none";
-  }
+//Function to  hide pop up
+function hide_popup_member(popup){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "none";
+}
 
 function set_url(id, url){ //base array has member info and tab array has all tab info for that member
     var url_text = document.getElementById("url_"+ id);
-      url_text.innerHTML = url;
-  }
+    url_text.innerHTML = url;
+}
 
 //Function to update the tab name and image when another element is selected from drop down menu  
 function update_tab(id, tab_name, tab_image){
@@ -77,7 +77,6 @@ function form_ref_url_array(){
 //if there is assignment to check
 function check_assignments(assignment_count){
  if (assignment_count == 0){
-
   return false;
  }
  else{
@@ -87,7 +86,6 @@ function check_assignments(assignment_count){
 
 
 function add_to_grade_list(id){
-
   //get data from required action table
   const sourceRow = document.getElementById("tab_" + id);
   let source_user = sourceRow.cells[0].innerHTML;
@@ -132,13 +130,16 @@ function add_to_grade_list(id){
   img.id = "preview_image_" + id;
   thumbnail_cell.appendChild(img);
 
+  // if there are no more action required docs, hide the box
+  if (document.getElementById("action_required_work").rows.length <= 1) {
+    document.getElementById("action_required_box").style.display = "none";
+  }
 
   //function to check the content of submitted table to show 
   check_submitted_content();
   //function to check the content of required action to hide if blank
   check_required_action_content();
 }
-
 
 function check_required_action_content(){
   required_action_table = document.getElementById("action_required_work");
@@ -164,5 +165,4 @@ function check_submitted_content(){
     console.log("no submission error");
     error_text.style.display = "none";
   }
-
 }
