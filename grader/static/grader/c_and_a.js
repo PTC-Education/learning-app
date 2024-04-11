@@ -65,12 +65,26 @@ function form_ref_url_array(){
   var url_array = [];
   var urls = document.getElementsByName('doc_url'); // grab the part information within all parts
 			for (let i = 0; i < urls.length ; i++){
-        url_array.push(urls[i].innerHTML);
+        var url = urls[i].innerHTML;
+        if(get_table_name(urls[i]) == "submitted_work") {
+          url_array.push(urls[i].innerHTML);
+        }
       }
   url_array = url_array.join(",");
   url_box = document.getElementById("ref_url_edu");
   url_box.value = url_array;
-  return true; //return true
+  return true; 
+}
+
+function get_table_name(element) {
+  while (element && element.tagName !== 'TABLE') {
+    element = element.parentNode;
+  }
+  if (element) {
+      return element.getAttribute('name') || element.getAttribute('id');
+  } else {
+      return null;
+  }
 }
 
 //Function to check if the number of assignment is greater than 0, only submit to get asignment details 
@@ -83,7 +97,6 @@ function check_assignments(assignment_count){
   return true;
  }
 }
-
 
 function add_to_grade_list(id){
   //get data from required action table
