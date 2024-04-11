@@ -45,14 +45,14 @@
                     'eid' : eid,
                 },
                 success: function (response) {
-                    if (response['tabs'].length == 1) {
+                    if (response['tabs'].length == 1 || user_type == 'scioly') {
                         // if assignment_doc_info comes back with exactly one element of the correct type, we assume that's it.
                         response = response['tabs'][0]
                         $('#submission_thumb_'+i).html("<img src='" + response.tab_image + "'>");
                         $('#submission_td_'+i).css('vertical-align', 'bottom');
                         if(user_type == 'educator') {
                             $('#submission_'+i).html(response.tab_name);
-                        } 
+                        }
                     } else {
                         // otherwise remove from table and throw to action required box
                         var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
@@ -247,17 +247,6 @@
                             <th class = "set_to_left_in_table bigger_font_th single_line_text">Tab name</th>
                             <th class = "bigger_font_th">Thumbnail</th>
                         </tr>
-                        <!--
-                        # element 0 - student id 
-                        # element 1 - student name
-                        # element 2 - number of submission attempts
-                        # element 3 - submitted document name
-                        # element 4 - submitted document url
-                        # element 5 - array of tabs with 3 elements
-                            # subelement 0 - element url
-                            # subelement 1 - element name
-                            # subelement 2 - element thumbnail
-                        -->
                         {% for studentwork in submitted_student_works %}
                             <tr>
                                 <td class="set_to_left_in_table small_font_td">{{studentwork.1}}</td>
@@ -283,23 +272,11 @@
                             <th class = "set_to_left_in_table bigger_font_th single_line_text">Document name</th>
                             <th class = "bigger_font_th">Thumbnail</th>
                         </tr>
-                        <!--
-                        # element 0 - student id 
-                        # element 1 - student name
-                        # element 2 - number of submission attempts
-                        # element 3 - submitted document name
-                        # element 4 - submitted document url
-                        # element 5 - array of tabs with 3 elements
-                            # subelement 0 - element url
-                            # subelement 1 - element name
-                            # subelement 2 - element thumbnail
-                        -->
-
                         {% for studentwork in submitted_student_works %}
                             <tr>
                                 <td class="set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                                 <td class="set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
-                                <td name="doc_url" hidden id="url_{{ forloop.counter0 }}">{{studentwork.4}}</td> <!-- to save url-->
+                                <td name="doc_url" hidden id="url_{{ studentwork.0 }}">{{studentwork.4}}</td> <!-- to save url-->
                                 <td id="submission_td_{{ forloop.counter0 }}" class="small_font_td valign_top">
                                     <div>
                                         <div class="scioly_thumb" id="submission_thumb_{{ forloop.counter0 }}"></div>
