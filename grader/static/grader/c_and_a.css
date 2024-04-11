@@ -281,6 +281,7 @@ p.quick_link{
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
+  border-radius: 3px;
 }
 
 .thin {
