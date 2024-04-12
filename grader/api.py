@@ -165,9 +165,6 @@ def get_feature_list(
     else: 
         return None
 
-
-
-
 def get_doc_info(
     domain: str, did: str, auth_token: str
 ) -> Any: 
@@ -212,7 +209,7 @@ def get_class_list(
     """ Get the list of classes for the user
     """
     response = requests.get(
-        os.path.join(domain, "api/globaltreenodes/magic/15"), 
+        os.path.join(domain, "api/globaltreenodes/magic/15?limit=50"), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
@@ -226,13 +223,13 @@ def get_class_list(
 
 
 def get_assignment_list(
-    domain: str, classid: str, auth_token: str
+    domain: str, classid: str, offset: str, auth_token: str
 ) -> Any: 
 
     response = requests.get(
         os.path.join(
             domain, 
-            "api/classrooms/{}/assignments".format(classid)
+            "api/classrooms/{}/assignments?offset={}&limit=20".format(classid, offset)
         ), 
         headers={
             "Content-Type": "application/json", 

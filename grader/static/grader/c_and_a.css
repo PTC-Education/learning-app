@@ -1,13 +1,13 @@
 /* Main font and color style */
 body {
-    color: #333;
-    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    padding-left: 5%;
-    padding-right: 5%;
+  color: #333;
+  font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+  padding-left: 5%;
+  padding-right: 5%;
 }
     
 h3 {
-    margin-bottom: 0px;
+  margin-bottom: 0px;
 }
 
 .instructions{
@@ -24,6 +24,10 @@ h3 {
 
 .instructions p {
   margin: 2px 0px;
+}
+
+.submissions {
+  font-size: 12px;
 }
 
 input.go_home[type=submit] {
@@ -51,17 +55,13 @@ input.go_home[type=submit]:hover {
   margin:10px auto;  
 }
 
-
 table {
   table-layout: fixed;
   width: 100%;
   font-size: 11px;
   border: 0px;
   border-spacing: 0px;
-
-
 }
-
 
 th.small_15{
   width: 15%;
@@ -73,7 +73,6 @@ th.status_column_34{
   width: 34%;
    vertical-align: bottom;
 }
-
 
 tr,th,td {
   width: 100%;
@@ -97,7 +96,8 @@ tr,th,td {
 
 .add_button{
   width: 5%;
-  }
+}
+
 .small_font_td{
   font-size: 11px;
 }
@@ -111,6 +111,17 @@ tr,th,td {
   vertical-align: bottom;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.valign_top {
+  vertical-align: top;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scioly_thumb {
+  text-align: center;
 }
 
 tr.classlist:hover, .row_selector:hover {
@@ -141,16 +152,20 @@ p.single_line_text{
 }
 
 .description_box{
-  width:95%;
+  width:85%;
   height: auto;
-  float: left;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   font-style: normal;
   font-size: 11px;
   padding:10px;
-  background-color: #efefef;
   box-shadow: 0 5px 10px rgba(0,0,0,.25);
-  margin:10px auto; 
+  margin:10px auto;
+  float: left;
+  background-color: #efefef;
+}
+
+#description_assignment {
+  position: absolute;
 }
 
 .description_title{
@@ -159,9 +174,10 @@ p.single_line_text{
 }
 
 /* Loader */
-.loader {
+.loader .smaller_loader {
   position: relative;
 }
+
 .loader:after {
   content: " ";
   z-index: 10;
@@ -175,6 +191,14 @@ p.single_line_text{
   -webkit-animation: spin 2s linear infinite; /* Safari */
   animation: spin 2s linear infinite;
 }
+
+.smaller_loader:after {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  width: 30px;
+  height: 30px;
+}
+
 /* Loader in Safari */
 @-webkit-keyframes spin {
   0% { -webkit-transform: rotate(0deg); }
@@ -208,6 +232,7 @@ p.single_line_text{
 .docinfo form {
   margin-bottom: 2px;
 }
+
 .breadcrumbs {
   font-weight: bold;
   font-size: 14px;
@@ -229,6 +254,7 @@ input.quick_link[type=submit]{
   background-color: transparent;
   color: #333; 
 }
+
 input.quick_link[type=submit]:hover{
   cursor: pointer;
   text-decoration: underline;
@@ -243,7 +269,7 @@ p.quick_link{
 }
 
 .dropbtn {
-  background-color: #4CAF50;
+  background-color: #90cef1;
   color: white;
   border: none;
   cursor: pointer;
@@ -255,6 +281,7 @@ p.quick_link{
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
+  border-radius: 3px;
 }
 
 .thin {
@@ -281,11 +308,7 @@ p.quick_link{
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
   margin:auto;
-
-
 }
-
-
 
 .dropdown:hover .dropdown-content {
   font-size: 11px;
@@ -293,7 +316,7 @@ p.quick_link{
 }
 
 .dropdown:hover .dropbtn {
-  background-color: #3e8e41;
+  background-color: #badbf3;
 }
 
 .dropdown_tab_and_image{
@@ -309,10 +332,9 @@ p.quick_link{
   align-items: center;
 }
 
-
 .dropdown_tab_and_image:hover{
-cursor: pointer;
-background-color: #90cef1;
+  cursor: pointer;
+  background-color: #90cef1;
 }
 
 /* Style the submit button of forms  - for Grade button specific*/ 
@@ -337,8 +359,8 @@ input.gradeButton[type=submit] {
 }
 
 input.gradeButton[type=submit]:hover {
-background-color: #769fcc;
-cursor:pointer;
+  background-color: #769fcc;
+  cursor:pointer;
 }
 
 .class_assignment_name{
@@ -349,15 +371,13 @@ cursor:pointer;
   margin:0
 }
 
-
 .add_to_grade_button{
   font-size: 9px;
   padding: 5px;
-  background-color: #4CAF50;
+  background-color: #2850aa;
   color: white;
   border-radius: 4px;
   border: none;
-
 }
 
 .add_to_grade_button:hover{
@@ -365,10 +385,12 @@ cursor:pointer;
 }
 
 .table_header{
+  font-weight: bold;
   float:left;
   font-size: 14px;
-  margin: 2px ;
+  margin: 2px;
 }
+
 .table_sub_header{
   float:left;
   font-size: 11px;
