@@ -225,7 +225,7 @@
                 <div class="breadcrumbs">&gt;</div>
                 <!-- Return to assignments page -->
                 <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id user_type class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
-                    <td><input class="quick_link" type="submit" value="{{class_name}}"></td>
+                    <td><input class="quick_link" type="submit" value="{{class_name|unslash}}"></td>
                 </form>
                 <div class="breadcrumbs">&gt;</div>
                 <p class="quick_link" id="assignment_name">{{assignment_name}}</p>
