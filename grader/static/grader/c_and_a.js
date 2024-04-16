@@ -66,9 +66,10 @@ function form_ref_url_array(){
   var urls = document.getElementsByName('doc_url'); // grab the part information within all parts
 			for (let i = 0; i < urls.length ; i++){
         var url = urls[i].innerHTML;
-        if(get_table_name(urls[i]) == "submitted_work") {
+        // I was pretty proud of the get_table_name() function... but commenting out for now :)
+        //if(get_table_name(urls[i]) == "submitted_work") {
           url_array.push(urls[i].innerHTML);
-        }
+        //}
       }
   url_array = url_array.join(",");
   url_box = document.getElementById("ref_url_edu");

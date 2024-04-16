@@ -225,7 +225,7 @@
                 <div class="breadcrumbs">&gt;</div>
                 <!-- Return to assignments page -->
                 <form id="classlist" action="{% url 'grader:list_assignments' user.os_user_id user_type class_id|safe class_name|safe%}" onsubmit="loading_spinner('features')">
-                    <td><input class="quick_link" type="submit" value="{{class_name}}"></td>
+                    <td><input class="quick_link" type="submit" value="{{class_name|unslash}}"></td>
                 </form>
                 <div class="breadcrumbs">&gt;</div>
                 <p class="quick_link" id="assignment_name">{{assignment_name}}</p>
@@ -294,8 +294,8 @@
 
             <!-- Action Required-->
             <div hidden class="classes_assignments_box" id="action_required_box">
-                <p class = "table_header">Action required:</p>
-                <p class = "table_sub_header">Multiple elements were detected in some submitted documents. Select element from the table below and click add to add to the Grading list.</p>
+                <p class = "table_header">Multiple Elements:</p>
+                <p class = "table_sub_header">Multiple elements were detected in some submitted documents. Select element from the table below and click "Add" to add to the grading list.</p>
                 <table id="action_required_work">
                     <thead>
                     <tr>
