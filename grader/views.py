@@ -1,6 +1,7 @@
 import os 
 import requests
 from datetime import timedelta, datetime
+from math import floor, log10
 from typing import Union 
 import json
 import re
@@ -1042,14 +1043,14 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                 if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
                     return HttpResponse("The Answer Key's Part Studio(s) are empty or do not have a material assigned. Please check the current document and regrade.")
                 else:
-                    elem_mass_prop = round(mass_props["bodies"]["-all-"]["mass"][0], 4) #round to 4 decimal places
+                    elem_mass_prop = sig_figs(mass_props["bodies"]["-all-"]["mass"][0], 3)
                     #key_answers.append(elem_mass_prop)
                     key_answers[elem['name']] = elem_mass_prop
             else: #elem["elementType"] == "ASSEMBLY"
                 if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
                     return HttpResponse("The Answer Key's Assembly is empty or does not have a materials assigned. Please check the current document and regrade.")
                 else:
-                    elem_mass_prop = ['%.4f' % val for val in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz.  round to 4 decimal places
+                    elem_mass_prop = [str(sig_figs(val, 3)) for val in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz.  round to 4 decimal places
                     if "%g" % float(elem_mass_prop[0]) == '0' or "%g" % float(elem_mass_prop[1]) == '0' or "%g" % float(elem_mass_prop[2]) == '0': #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
                         return HttpResponse("The Answer Key's Assembly Center of Mass has a zero in it. Please check the current document and regrade.")
                     #key_answers.append(elem_mass_prop)
@@ -1140,8 +1141,8 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                     if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
                         elem_mass_prop = 0
                     else:
-                        elem_mass_prop = round(mass_props["bodies"]["-all-"]["mass"][0], 4) #round to 4 decimal places
-                    ans = key_answers[elem['name']]
+                        elem_mass_prop = sig_figs(mass_props["bodies"]["-all-"]["mass"][0], 3) #round to 4 decimal places
+                    ans = sig_figs(key_answers[elem['name']], 3)
                     points = 20 - 100*abs((elem_mass_prop - ans)/ans)
                     #points = 20 - 100*abs((elem_mass_prop - answerArray[elemcount-1])/answerArray[elemcount-1])
                     if points < 0:
@@ -1150,14 +1151,13 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                     #elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
                     
                 else: #elem["elementType"] == "ASSEMBLY"
-                    print(elem['name'])
                     if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
                         elem_mass_prop = [0,0,0]
                     else:
-                        elem_mass_array = [round(float(string),4) for string in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz.  round to 4 decimal places
+                        elem_mass_array = [sig_figs(float(string),3) for string in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz. 
                         elem_mass_prop = ', '.join(map(str, elem_mass_array))
-                        print(elem_mass_array)
                     ans = key_answers[elem['name']]
+                    ans = [sig_figs(i, 3) for i in ans]
                     points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - ans[0])/ans[0])) + ((1/3)*abs((elem_mass_array[1] - ans[1])/ans[1])) + ((1/3)*abs((elem_mass_array[2] - ans[2])/ans[2])))
                     #points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - answerArray[elemcount-1][0])/answerArray[elemcount-1][0])) + ((1/3)*abs((elem_mass_array[1] - answerArray[elemcount-1][1])/answerArray[elemcount-1][1])) + ((1/3)*abs((elem_mass_array[2] - answerArray[elemcount-1][2])/answerArray[elemcount-1][2])))
                     if points < 0:
@@ -1197,6 +1197,9 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
     )
 
 #################### Other helper functions ####################
+def sig_figs(x, precision):
+    x = float(x)
+    return round(x, -int(floor(log10(abs(x)))) + (precision - 1))
 
 def elapsed_time(start_time: str, stop_time: str):
     createdAt = datetime.strptime(start_time.replace("T"," ").split("+")[0],'%Y-%m-%d %H:%M:%S.%f')
