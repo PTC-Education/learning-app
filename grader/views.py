@@ -2,6 +2,7 @@ import os
 import requests
 from datetime import timedelta, datetime
 from math import floor, log10
+from html import unescape
 from typing import Union 
 import json
 import re
@@ -17,6 +18,7 @@ from django.template.defaultfilters import register
 from .models import * 
 from .api import *
 
+import traceback
 
 # Create your views here.
 
@@ -657,7 +659,6 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                     url = submission["documents"][0]["viewRef"]
                     
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
-        # print(submitted_student_works)
     except:
          error_message = "We encountered an issue. Please check your internet connection. "
     context={
@@ -994,8 +995,6 @@ def update_html(request: HttpRequest, os_user_id: str, wm: str, wmid: str):
     s += "</table>"
     updated_html = s
     usernames_json = json.dumps(usernames)
-    print(oldest_microversion)
-    print(newest_microversion)
     # Return the updated HTML
     return JsonResponse({'updated_html': updated_html, 'next_microversion': next_microversion, 'oldest_microversion': oldest_microversion, 'newest_microversion': newest_microversion, 'usernames_json' : usernames_json})
 
@@ -1122,6 +1121,10 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         for elem in ref_elems:
             ref_names.append(elem['name'])
         # First, we chek that the student has all of the necessary elements
+        toGradeArray = [unescape(elem) for elem in toGradeArray]
+        key_answers = {unescape(key): value for key, value in key_answers.items()}
+        print(ref_names)
+
         for name in toGradeArray:
             if name not in ref_names:
                 raise Exception("Missing element")
@@ -1144,11 +1147,9 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                         elem_mass_prop = sig_figs(mass_props["bodies"]["-all-"]["mass"][0], 3) #round to 4 decimal places
                     ans = sig_figs(key_answers[elem['name']], 3)
                     points = 20 - 100*abs((elem_mass_prop - ans)/ans)
-                    #points = 20 - 100*abs((elem_mass_prop - answerArray[elemcount-1])/answerArray[elemcount-1])
                     if points < 0:
                         points = 0
                     points = round(points, 2)
-                    #elem_mass_prop = '{:.2e}'.format(elem_mass_prop)
                     
                 else: #elem["elementType"] == "ASSEMBLY"
                     if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
@@ -1159,7 +1160,6 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                     ans = key_answers[elem['name']]
                     ans = [sig_figs(i, 3) for i in ans]
                     points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - ans[0])/ans[0])) + ((1/3)*abs((elem_mass_array[1] - ans[1])/ans[1])) + ((1/3)*abs((elem_mass_array[2] - ans[2])/ans[2])))
-                    #points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - answerArray[elemcount-1][0])/answerArray[elemcount-1][0])) + ((1/3)*abs((elem_mass_array[1] - answerArray[elemcount-1][1])/answerArray[elemcount-1][1])) + ((1/3)*abs((elem_mass_array[2] - answerArray[elemcount-1][2])/answerArray[elemcount-1][2])))
                     if points < 0:
                         points = 0
                     points = round(points, 2)
@@ -1171,7 +1171,6 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
 
         # Get all additional info from the reference document
         totalpoints = round(totalpoints, 2)
-        #image = get_shaded_views(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], ref_url['eid'], curr_user.etype, auth_token=curr_user.access_token)
         image = get_document_thumbnail(curr_user.os_domain, ref_url['did'], '300x300', auth_token=curr_user.access_token)
         element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token)
         element_name = element_info[0]["name"]
@@ -1182,8 +1181,9 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         # Insert first element of array 
         ref_props.insert(0,[doc_name,user_name, element_name, doc_time, image, url, totalpoints])
     except Exception as error:
-        print(error)
         # If anything above failed, add url to the fairled URL list
+        print(f"Error: {error}")
+        traceback.print_exc()
         failed_url = ref_url
             
     context={
