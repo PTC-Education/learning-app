@@ -1123,7 +1123,6 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         # First, we chek that the student has all of the necessary elements
         toGradeArray = [unescape(elem) for elem in toGradeArray]
         key_answers = {unescape(key): value for key, value in key_answers.items()}
-        print(ref_names)
 
         for name in toGradeArray:
             if name not in ref_names:
