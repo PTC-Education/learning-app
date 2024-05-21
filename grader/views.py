@@ -1120,22 +1120,21 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
         ref_names=[]
         for elem in ref_elems:
             ref_names.append(elem['name'])
+
         # First, we chek that the student has all of the necessary elements
-        toGradeArray = [unescape(elem).replace("\"", "") for elem in toGradeArray]
+        toGradeArray = [unescape(elem).replace("\"", "").replace("'", "") for elem in toGradeArray]
         key_answers = {unescape(key).replace("\"", "").replace("'", ""): value for key, value in key_answers.items()}
         ref_names = [elem.replace("\"", "").replace("'", "") for elem in ref_names]
-
-        print(toGradeArray)
-        print(ref_names)
         for name in toGradeArray:
             if name not in ref_names:
-                print(name)
-                raise Exception("Missing element")
+                raise Exception("Missing element")     
         elemcount = 1
         totalpoints = 0
+
         # Next, we grade only those elements
         for elem in ref_elems:
-            if (elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY") and elem['name'].replace("\"", "").replace("'", "") in toGradeArray:
+            elem_name = elem['name'].replace("\"", "").replace("'", "")
+            if (elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY") and elem_name in toGradeArray:
                 mass_props = get_mass_props(
                         curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
                         massAsGroup=True, auth_token=curr_user.access_token
@@ -1148,7 +1147,7 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                         elem_mass_prop = 0
                     else:
                         elem_mass_prop = sig_figs(mass_props["bodies"]["-all-"]["mass"][0], 3) #round to 4 decimal places
-                    ans = sig_figs(key_answers[elem['name'].replace("\"", "").replace("'", "")], 3)
+                    ans = sig_figs(key_answers[elem_name], 3)
                     points = 20 - 100*abs((elem_mass_prop - ans)/ans)
                     if points < 0:
                         points = 0
@@ -1160,7 +1159,7 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                     else:
                         elem_mass_array = [sig_figs(float(string),3) for string in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz. 
                         elem_mass_prop = ', '.join(map(str, elem_mass_array))
-                    ans = key_answers[elem['name'].replace("\"", "").replace("'", "")]
+                    ans = key_answers[elem_name]
                     ans = [sig_figs(i, 3) for i in ans]
                     points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - ans[0])/ans[0])) + ((1/3)*abs((elem_mass_array[1] - ans[1])/ans[1])) + ((1/3)*abs((elem_mass_array[2] - ans[2])/ans[2])))
                     if points < 0:
