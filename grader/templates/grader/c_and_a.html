@@ -15,7 +15,7 @@
         function load_submissions(i, n) { 
             $('#submission_counter').html("Loading submission " + (i+1) + " of " + n);
             var member_id = submitted_student_works[i][0];
-            var url = $('#url_'+member_id).html();
+            var url = $('#url_'+i).html();
             var splitted_url = url.split("/documents/")[1].split("/");
             var did = splitted_url[0];
             var vid = splitted_url[2];
@@ -45,9 +45,13 @@
                     'eid' : eid,
                 },
                 success: function (response) {
+                    // if assignment_doc_info comes back with exactly one element of the correct type, we assume that's it.
                     if (response['tabs'].length == 1 || user_type == 'scioly') {
-                        // if assignment_doc_info comes back with exactly one element of the correct type, we assume that's it.
-                        response = response['tabs'][0]
+                        response = response['tabs'][0];
+                        // if no element ID, get it from the response
+                        if (!$('#url_'+i).html().includes('/e/')) {
+                            $('#url_'+i).html(response.tab_url);
+                        }
                         $('#submission_thumb_'+i).html("<img src='" + response.tab_image + "'>");
                         $('#submission_td_'+i).css('vertical-align', 'bottom');
                         if(user_type == 'educator') {
@@ -252,8 +256,8 @@
                         {% for studentwork in submitted_student_works %}
                             <tr>
                                 <td class="set_to_left_in_table small_font_td">{{studentwork.1}}</td>
-                                <td class="set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
-                                <td name="doc_url" hidden id="url_{{ studentwork.0 }}">{{studentwork.4}}</td> <!-- to save url-->
+                                <td id="submission_link_{{ forloop.counter0 }}" class="set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
+                                <td name="doc_url" hidden id="url_{{ forloop.counter0 }}">{{studentwork.4}}</td> <!-- to save url-->
                                 <td id="submission_td_{{ forloop.counter0 }}" class="small_font_td valign_top">
                                     <div>
                                         <div id="submission_{{ forloop.counter0 }}"></div>
