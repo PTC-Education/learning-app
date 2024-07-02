@@ -281,6 +281,24 @@ def get_element_info(
     else:   
         return None
 
+def get_versions(
+    domain: str, did: str, auth_token: str
+) -> Any: 
+    """ Get versions
+    """
+    response = requests.get(
+        os.path.join(domain, "api/documents/d/{}/versions".format(did)), 
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json() 
+    else:   
+        return None
+    
 def get_microversions(
     domain: str, did: str, wm: str, wmid: str, auth_token: str
 ) -> Any: 
