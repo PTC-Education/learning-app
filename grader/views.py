@@ -519,6 +519,10 @@ def assignment_doc_info(request: HttpRequest, os_user_id: str):
     did = request.GET.get('did')
     wvid = request.GET.get('vid')
     eid = request.GET.get('eid')
+    
+    if wvid == None or eid == None:
+        versions = get_versions(curr_user.os_domain, did, auth_token=curr_user.access_token)
+        wvid = versions[len(versions)-1]['id']
 
     # get tab info for ALL of the tabs
     element_info = get_element_info(curr_user.os_domain, did, wv, wvid, "", auth_token=curr_user.access_token)
