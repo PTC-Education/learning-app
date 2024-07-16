@@ -43,7 +43,9 @@ def login(request: HttpRequest):
         try:
             user.refresh_oauth_token() 
         except:
-            pass
+            return HttpResponse(
+                "User authentication failed!\nError refreshing OAuth token."
+            )
     except ObjectDoesNotExist: 
         # Create a new user 
         user = AuthUser(os_user_id=user_id)
