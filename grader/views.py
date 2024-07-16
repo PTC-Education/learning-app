@@ -39,12 +39,13 @@ def login(request: HttpRequest):
     user_id = request.GET.get('userId')
     try: 
         user = AuthUser.objects.get(os_user_id=user_id)
-        # Refresh token if needed 
-        if user.expires_at < timezone.now() + timedelta(hours=1): 
-            try:
-                user.refresh_oauth_token() 
-            except:
-                pass
+        # Refresh token
+        try:
+            user.refresh_oauth_token() 
+        except:
+            return HttpResponse(
+                "User authentication failed!\nError refreshing OAuth token."
+            )
     except ObjectDoesNotExist: 
         # Create a new user 
         user = AuthUser(os_user_id=user_id)
@@ -87,17 +88,22 @@ def authorize(request: HttpRequest):
         )
     
     # Use the authorization code to get access token and refresh token 
-    token_response = requests.post(
-        os.path.join(
-            os.environ['OAUTH_URL'], 
-            "oauth/token"
-        ) + "?grant_type=authorization_code&code={}&client_id={}&client_secret={}".format(
-            auth_code.replace('=', '%3D'), 
-            os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
-            os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
-        ), 
-        headers={'Content-Type': "application/x-www-form-urlencoded"}
-    ).json() 
+    try:
+        token_response = requests.post(
+            os.path.join(
+                os.environ['OAUTH_URL'], 
+                "oauth/token"
+            ) + "?grant_type=authorization_code&code={}&client_id={}&client_secret={}".format(
+                auth_code.replace('=', '%3D'), 
+                os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
+                os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
+            ), 
+            headers={'Content-Type': "application/x-www-form-urlencoded"}
+        ).json() 
+    except:
+        return HttpResponse(
+            "User authentication failed!\nError getting access token for user."
+        )
     
     # Use the sessioninfo API request to get the user's info 
     # for backend data storage 
