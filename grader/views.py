@@ -86,17 +86,22 @@ def authorize(request: HttpRequest):
         )
     
     # Use the authorization code to get access token and refresh token 
-    token_response = requests.post(
-        os.path.join(
-            os.environ['OAUTH_URL'], 
-            "oauth/token"
-        ) + "?grant_type=authorization_code&code={}&client_id={}&client_secret={}".format(
-            auth_code.replace('=', '%3D'), 
-            os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
-            os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
-        ), 
-        headers={'Content-Type': "application/x-www-form-urlencoded"}
-    ).json() 
+    try:
+        token_response = requests.post(
+            os.path.join(
+                os.environ['OAUTH_URL'], 
+                "oauth/token"
+            ) + "?grant_type=authorization_code&code={}&client_id={}&client_secret={}".format(
+                auth_code.replace('=', '%3D'), 
+                os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
+                os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
+            ), 
+            headers={'Content-Type': "application/x-www-form-urlencoded"}
+        ).json() 
+    except:
+        return HttpResponse(
+            "User authentication failed!\nError getting access token for user."
+        )
     
     # Use the sessioninfo API request to get the user's info 
     # for backend data storage 
