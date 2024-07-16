@@ -10,215 +10,203 @@
 
 <body id = "whole">
 <!-- Return to the home page -->
-<br>
 
-<button type = "button" disabled id = "download_report_button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
-<form action = "{% url 'grader:index' user.os_user_id %}">
-    <input type = "submit" value= "&lt; Home">
-</form>
+    <button type = "button" disabled id = "download_report_button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
+    <form action = "{% url 'grader:index' user.os_user_id %}">
+        <input type = "submit" value= "&lt; Home">
+    </form>
 
-<div>
-    {% if error_message %}
-    <p id = "err_msg"><strong>{{ error_message }}</strong></p>
-    {% endif %}
-</div>
+    <div>
+        {% if error_message %}
+        <p id = "err_msg"><strong>{{ error_message }}</strong></p>
+        {% endif %}
+    </div>
 
-
-<script>
-    $(document).ready(function () {
-        var url = "{% url 'grader:user_data_on_result_page' user.os_user_id %}";
-        loading_spinner('features_user'); 
-        $.ajax({
-            url: url,
-            type: "GET",
-            data:{},
-            success: function (response) {
-                build_user(response);
-                get_results();
-                $('#features_user').html(" ");
-
-            },
-            error: function (error) {
-        }
-        });
-    });
-    function get_results(){
-        var successful_returns = 0;
-        '{% for url in ref_urls %}' 
-
-            $(document).ready(function () {
-            $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table  
-            loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
-            $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //show result loading status
-
-            var domain = "{{url.domain}}";
-            var did =   "{{url.did}}";
-            var wv =     "{{url.wv}}";
-            var wvid =   "{{url.wvid}}";
-            var eid =    "{{url.eid}}";
-            var url = "{% url 'grader:update_result_page' user.os_user_id %}";
-
+    <script>
+        $(document).ready(function () {
+            var url = "{% url 'grader:user_data_on_result_page' user.os_user_id %}";
+            loading_spinner('features_user'); 
             $.ajax({
                 url: url,
                 type: "GET",
-                data:{
-                    'domain': domain,
-                    'did' : did,
-                    'wv' : wv,
-                    'wvid' : wvid,
-                    'eid' : eid,
-                },
+                data:{},
                 success: function (response) {
-                build_results(response, "{{forloop.counter0}}");
-                $('#features_{{forloop.counter0}}').html(" ");
-                successful_returns +=1;
-                $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //update result loading status
-                enable_slider(successful_returns);
+                    build_user(response);
+                    get_results();
+                    $('#features_user').html(" ");
+
                 },
                 error: function (error) {
-                }
+            }
             });
         });
-        '{% endfor %}'
-       
-    }
+        function get_results(){
+            var successful_returns = 0;
+            '{% for url in ref_urls %}' 
 
-    function enable_slider(successful_returns){
-        if(successful_returns == '{{ref_urls|length}}'){
-            $('#adjust_container').css('display', 'block');  //turn on display for slider and checkboxes
-            $('#result_status_container').css('display', 'none'); //turn off result status container
-            $('#download_report_button').prop('disabled', false); //turn off result status container
+                $(document).ready(function () {
+                $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table  
+                loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
+                $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //show result loading status
 
-                           
+                var domain = "{{url.domain}}";
+                var did =   "{{url.did}}";
+                var wv =     "{{url.wv}}";
+                var wvid =   "{{url.wvid}}";
+                var eid =    "{{url.eid}}";
+                var url = "{% url 'grader:update_result_page' user.os_user_id %}";
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    data:{
+                        'domain': domain,
+                        'did' : did,
+                        'wv' : wv,
+                        'wvid' : wvid,
+                        'eid' : eid,
+                    },
+                    success: function (response) {
+                    build_results(response, "{{forloop.counter0}}");
+                    $('#features_{{forloop.counter0}}').html(" ");
+                    successful_returns +=1;
+                    $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //update result loading status
+                    enable_slider(successful_returns);
+                    },
+                    error: function (error) {
+                    }
+                });
+            });
+            '{% endfor %}'
+        
         }
-    }
-</script>
 
-<div id="user_props">
-    <p class = "resulttile">Reference properties</p>
-    <div class = "property_box">
+        function enable_slider(successful_returns){
+            if(successful_returns == '{{ref_urls|length}}'){
+                $('#adjust_container').css('display', 'block');  //turn on display for slider and checkboxes
+                $('#result_status_container').css('display', 'none'); //turn off result status container
+                $('#download_report_button').prop('disabled', false); //turn off result status container               
+            }
+        }
+    </script>
 
-        <div class="spinner-container">
-            <div id="features_user">
-                <!--This is where the spinner will load-->
-            </div>
-        </div>
+    <div id="user_props">
+        <p class = "resulttile">Reference properties</p>
+        <div class = "property_box">
 
-        <div class = "docinfo">
-            <p class = "docname" id = "usr_docname"></p>
-            <p class = "username" id = "usr_username"></p>
-            <p  hidden id = "usr_url"></p>
-        </div>
-
-        <div>
-            <div class = "display_table">
-                <table id = "reference" class = "results">
-                    <input type = 'hidden' id = 'user_data_loaded' value = "false"> 
-                    <col class = "col_1">
-                    <col class = "col_2">
-                    <col class = "col_3">
-                    <col class = "col_4">
-                    <tr id = "user_table_header">
-                        <th>Mass <span class = unit>(kg)</span></th>
-                        <th>Volume <span class = unit>(m<sup>3</sup>)</span></th>
-                        <th>Surface area <span class = unit>(m<sup>2</sup>)</span></th>
-                        <th>Principal MOI</th>
-                    </tr>
-
-                </table>
+            <div class="spinner-container">
+                <div id="features_user">
+                    <!--This is where the spinner will load-->
+                </div>
             </div>
 
-        </div>
-    </div>
-</div>
-
-
-
-
-
-
-<div id = "result_status_container" class = "adjust-container">
-    <div id="result_status" class = "slidecontainer">    
-    </div>
-</div>
-
-
-<div hidden id = "adjust_container" class = "adjust-container">
-
-    <p class = "resulttile">Results</p>
-    <div class = "slidecontainer">
-        <p>Tolerance: <span id = "slider_value"></span> %</p>
-        <input type = "range" min = "0" max = "100" value = "1" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
-    </div>
-    <div class = "propselector" onchange= "reform_result('{{ref_urls|length}}')" >
-        <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1"  checked = "True" /> Mass</label>
-        <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_2"  checked = "True"/>Volume</label>
-        <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_3"  checked = "True"/>Surface Area</label>
-        <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_4" checked = "True"/>Principal MOI</label>
-    </div>
-</div>
-
-{% for url in ref_urls %} 
-    <div hidden id = "property_box_{{forloop.counter0}}" class = "property_box">
-        <div class="spinner-container">
-            <div id="features_{{forloop.counter0}}">
-                <!--This is where the spinner will load-->
+            <div class = "docinfo">
+                <p class = "docname" id = "usr_docname"></p>
+                <p class = "username" id = "usr_username"></p>
+                <p  hidden id = "usr_url"></p>
             </div>
-        </div>
 
-        <div class = "display_thumbnail">
-            <a id = "name_{{forloop.counter0}}" href = "{{ref_props.0.5|safe}}" target = "_blank">{{ref_props.0.2}}</a> 
-            <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
-            <p hidden id = "elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
-            <img id = "thumbnail_{{forloop.counter0}}" src = "{{ref_props.0.4}}" alt = "" />
-            <div id = "ref_score_{{forloop.counter0}}" class = "score" ></div>
-        </div>
-        <div class = "docinfo">
-            <p class = "docname" id = "ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
-            <p class = "username" id = "ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
-        </div>
-        <div class = "table_error_message" id = "error_message_{{forloop.counter0}}"></div>
             <div>
                 <div class = "display_table">
-                    <table id = "table_{{forloop.counter0}}" class = "results">
+                    <table id = "reference" class = "results">
+                        <input type = 'hidden' id = 'user_data_loaded' value = "false"> 
                         <col class = "col_1">
                         <col class = "col_2">
                         <col class = "col_3">
                         <col class = "col_4">
-                        <tr id = "ref_table_header_{{forloop.counter0}}" >
+                        <tr id = "user_table_header">
                             <th>Mass <span class = unit>(kg)</span></th>
                             <th>Volume <span class = unit>(m<sup>3</sup>)</span></th>
                             <th>Surface area <span class = unit>(m<sup>2</sup>)</span></th>
                             <th>Principal MOI</th>
                         </tr>
+
                     </table>
                 </div>
+
             </div>
-        </div>            
-    </div>    
+        </div>
+    </div>
 
-{% endfor %} 
+    <div id = "result_status_container" class = "adjust-container">
+        <div id="result_status" class = "slidecontainer">    
+        </div>
+    </div>
 
-<div id = "failed_url_box" class = "failed_url_box">
-    The following URLs failed to return a result.    
-    <div class = "failed_url_reasons" id = "failed_url_reasons" >
-        <br>
-        Here are some reasons the CAD Checker may have failed to grade the document.
-        <ul>
-            <li>You may not have permission to access the document - make sure the document owner has shared it with you.</li>
-            <li>The url may be a different element type than you currently have open - make sure you are comparing a Part Studio with a Part Studio or an Assembly with an Assembly.</li>
-            
+    <div hidden id = "adjust_container" class = "adjust-container">
+
+        <p class = "resulttile">Results</p>
+        <div class = "slidecontainer">
+            <p>Tolerance: <span id = "slider_value"></span> %</p>
+            <input type = "range" min = "0" max = "100" value = "1" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
+        </div>
+        <div class = "propselector" onchange= "reform_result('{{ref_urls|length}}')" >
+            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1"  checked = "True" /> Mass</label>
+            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_2"  checked = "True"/>Volume</label>
+            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_3"  checked = "True"/>Surface Area</label>
+            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_4" checked = "True"/>Principal MOI</label>
+        </div>
+    </div>
+
+    {% for url in ref_urls %} 
+        <div hidden id = "property_box_{{forloop.counter0}}" class = "property_box">
+            <div class="spinner-container">
+                <div id="features_{{forloop.counter0}}">
+                    <!--This is where the spinner will load-->
+                </div>
+            </div>
+
+            <div class = "display_thumbnail">
+                <a id = "name_{{forloop.counter0}}" href = "{{ref_props.0.5|safe}}" target = "_blank">{{ref_props.0.2}}</a> 
+                <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
+                <p hidden id = "elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
+                <img id = "thumbnail_{{forloop.counter0}}" src = "{{ref_props.0.4}}" alt = "" />
+                <div id = "ref_score_{{forloop.counter0}}" class = "score" ></div>
+            </div>
+            <div class = "docinfo">
+                <p class = "docname" id = "ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
+                <p class = "username" id = "ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
+            </div>
+            <div class = "table_error_message" id = "error_message_{{forloop.counter0}}"></div>
+                <div>
+                    <div class = "display_table">
+                        <table id = "table_{{forloop.counter0}}" class = "results">
+                            <col class = "col_1">
+                            <col class = "col_2">
+                            <col class = "col_3">
+                            <col class = "col_4">
+                            <tr id = "ref_table_header_{{forloop.counter0}}" >
+                                <th>Mass <span class = unit>(kg)</span></th>
+                                <th>Volume <span class = unit>(m<sup>3</sup>)</span></th>
+                                <th>Surface area <span class = unit>(m<sup>2</sup>)</span></th>
+                                <th>Principal MOI</th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>            
+        </div>    
+
+    {% endfor %} 
+
+    <div id = "failed_url_box" class = "failed_url_box">
+        The following URLs failed to return a result.    
+        <div class = "failed_url_reasons" id = "failed_url_reasons" >
+            <br>
+            Here are some reasons the CAD Checker may have failed to grade the document.
+            <ul>
+                <li>You may not have permission to access the document - make sure the document owner has shared it with you.</li>
+                <li>The url may be a different element type than you currently have open - make sure you are comparing a Part Studio with a Part Studio or an Assembly with an Assembly.</li>
+                
+            </ul>
+        </div>                 
+        <label for = "failed_url_help" class = "helper" onmouseover = "show_popup('failed_url_reasons')" onmouseleave = "hide_popup('failed_url_reasons')">
+            <img id = "helper_image" src= "{% static 'grader/images/help.png' %}"/>
+        </label>
+        <script>hide_popup('failed_url_reasons')</script>
+        <ul class = "failed_url_list" id = "failed_url_list">
         </ul>
-    </div>                 
-    <label for = "failed_url_help" class = "helper" onmouseover = "show_popup('failed_url_reasons')" onmouseleave = "hide_popup('failed_url_reasons')">
-        <img id = "helper_image" src= "{% static 'grader/images/help.png' %}"/>
-    </label>
-    <script>hide_popup('failed_url_reasons')</script>
-    <ul class = "failed_url_list" id = "failed_url_list">
-    </ul>
-</div>
-<script> document.getElementById("failed_url_box").style.display = "none" </script>
-
-
+    </div>
+    <script> document.getElementById("failed_url_box").style.display = "none" </script>
 
 </body>

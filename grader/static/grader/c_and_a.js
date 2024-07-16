@@ -1,44 +1,55 @@
-
-  //Function to show pop up
-  function show_popup_assignment(popup, msg1, msg2){
-    var reasons = document.getElementById(popup);
-    reasons.style.display = "block"; 
-    var date = document.getElementById("date");
-    var text = document.getElementById("description_text");
-    var localDateTime = new Date(msg1);
-    date.innerHTML = localDateTime;
-    text.innerHTML = msg2;
+// Assignment description box
+function move_popup(e) {
+  var div = document.getElementById('description_assignment');
+  var y = e.clientY + window.scrollY;
+  var windowHeight = window.innerHeight;
+  var bottomThreshold = 160; 
+  if (windowHeight - e.clientY < bottomThreshold) {
+      // If mouse is near the bottom of the page, show div above the mouse position
+      div.style.top = (y - div.offsetHeight - 25) + 'px';
+  } else {
+      // Otherwise, show div below the mouse position
+      div.style.top = y + 15 + 'px';
   }
+}
 
-  //Function to  hide pop up
-  function hide_popup_assignment(popup){
-    var reasons = document.getElementById(popup);
-    reasons.style.display = "none";
-  }
+//Function to show pop up
+function show_popup_assignment(popup, msg1, msg2){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "block"; 
+  var date = document.getElementById("date");
+  var text = document.getElementById("description_text");
+  var localDateTime = new Date(msg1);
+  date.innerHTML = localDateTime;
+  text.innerHTML = msg2;
+}
+
+//Function to  hide pop up
+function hide_popup_assignment(popup){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "none";
+}
    
-    //Function to show pop up
-    function show_popup_member(popup, msg1, msg2){
-      var reasons = document.getElementById(popup);
-      reasons.style.display = "block"; 
-      var url = document.getElementById("url_member");
-      var text = document.getElementById("details_member");
-      url.innerHTML = msg1;
-      text.innerHTML = msg2;
-    }
-  
-    //Function to  hide pop up
-    function hide_popup_member(popup){
-      var reasons = document.getElementById(popup);
-      reasons.style.display = "none";
-    }
+//Function to show pop up
+function show_popup_member(popup, msg1, msg2){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "block"; 
+  var url = document.getElementById("url_member");
+  var text = document.getElementById("details_member");
+  url.innerHTML = msg1;
+  text.innerHTML = msg2;
+}
 
-
+//Function to  hide pop up
+function hide_popup_member(popup){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "none";
+}
 
 function set_url(id, url){ //base array has member info and tab array has all tab info for that member
     var url_text = document.getElementById("url_"+ id);
-      url_text.innerHTML = url;
-  }
-
+    url_text.innerHTML = url;
+}
 
 //Function to update the tab name and image when another element is selected from drop down menu  
 function update_tab(id, tab_name, tab_image){
@@ -54,19 +65,33 @@ function form_ref_url_array(){
   var url_array = [];
   var urls = document.getElementsByName('doc_url'); // grab the part information within all parts
 			for (let i = 0; i < urls.length ; i++){
-        url_array.push(urls[i].innerHTML);
+        var url = urls[i].innerHTML;
+        // I was pretty proud of the get_table_name() function... but commenting out for now :)
+        //if(get_table_name(urls[i]) == "submitted_work") {
+          url_array.push(urls[i].innerHTML);
+        //}
       }
   url_array = url_array.join(",");
   url_box = document.getElementById("ref_url_edu");
   url_box.value = url_array;
-  return true; //return true
+  return true; 
+}
+
+function get_table_name(element) {
+  while (element && element.tagName !== 'TABLE') {
+    element = element.parentNode;
+  }
+  if (element) {
+      return element.getAttribute('name') || element.getAttribute('id');
+  } else {
+      return null;
+  }
 }
 
 //Function to check if the number of assignment is greater than 0, only submit to get asignment details 
 //if there is assignment to check
 function check_assignments(assignment_count){
  if (assignment_count == 0){
-
   return false;
  }
  else{
@@ -74,9 +99,7 @@ function check_assignments(assignment_count){
  }
 }
 
-
 function add_to_grade_list(id){
-
   //get data from required action table
   const sourceRow = document.getElementById("tab_" + id);
   let source_user = sourceRow.cells[0].innerHTML;
@@ -121,13 +144,16 @@ function add_to_grade_list(id){
   img.id = "preview_image_" + id;
   thumbnail_cell.appendChild(img);
 
+  // if there are no more action required docs, hide the box
+  if (document.getElementById("action_required_work").rows.length <= 1) {
+    document.getElementById("action_required_box").style.display = "none";
+  }
 
   //function to check the content of submitted table to show 
   check_submitted_content();
   //function to check the content of required action to hide if blank
   check_required_action_content();
 }
-
 
 function check_required_action_content(){
   required_action_table = document.getElementById("action_required_work");
@@ -153,5 +179,4 @@ function check_submitted_content(){
     console.log("no submission error");
     error_text.style.display = "none";
   }
-
 }

@@ -20,6 +20,7 @@ urlpatterns = [
     path('list_classes/<str:os_user_id>/<str:user_type>/', views.list_classes, name="list_classes"),
     path('list_assignments/<str:os_user_id>/<str:user_type>/<str:class_id>/<str:class_name>', views.list_assignments, name="list_assignments"),
     path('list_members/<str:os_user_id>/<str:user_type>/<str:class_id>/<str:class_name>/<str:assignment_id>/<str:assignment_name>', views.list_members, name="list_members"),
+    path('assignment_doc_info/<str:os_user_id>', views.assignment_doc_info, name="assignment_doc_info"),
     path('doc_info_checker/<str:os_user_id>/', views.doc_info_checker, name="doc_info_checker"),
     path('update_result_page/<str:os_user_id>', views.update_result_page, name='update_result_page'),
     path('user_data_on_result_page/<str:os_user_id>', views.user_data_on_result_page, name='user_data_on_result_page'),

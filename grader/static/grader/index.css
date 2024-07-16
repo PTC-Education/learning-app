@@ -425,8 +425,8 @@ input.check_model:hover {
 /* Loader */
 .loader .smaller_loader {
     position: relative;
-
 }
+
 .loader:after {
     content: " ";
     z-index: 10;
@@ -446,7 +446,6 @@ input.check_model:hover {
   border-top: 6px solid #3498db;
   width: 30px;
   height: 30px;
-
 }
 
 .button-container {
