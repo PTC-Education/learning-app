@@ -40,14 +40,14 @@ def login(request: HttpRequest):
     try: 
         user = AuthUser.objects.get(os_user_id=user_id)
         # Refresh token
-        try:
-            user.refresh_oauth_token() 
-        except:
-            return HttpResponse(
-                "User authentication failed!\nError refreshing OAuth token."
-            )
+        user.refresh_oauth_token() 
+            
     except ObjectDoesNotExist: 
         # Create a new user 
+        try:
+            user = AuthUser.objects.get(os_user_id=user_id).delete()
+        except:
+            pass
         user = AuthUser(os_user_id=user_id)
     
     try:

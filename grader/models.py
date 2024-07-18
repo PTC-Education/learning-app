@@ -65,23 +65,26 @@ class AuthUser(models.Model):
         """
         When a user's ``access_token`` is expired or about to expire, tracked by the user's ``expires_at``, this function can be called to use the ``refresh_token`` to exchange for a new ``access_token``.  
         """
-        response = requests.post(
-            os.path.join(
-                os.environ['OAUTH_URL'], 
-                "oauth/token"
-            ) + "?grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}".format(
-                self.refresh_token.replace('=', '%3D'), 
-                os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
-                os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
-            ), 
-            headers={'Content-Type': "application/x-www-form-urlencoded"}
-        )
-        response = response.json() 
+        try:
+            response = requests.post(
+                os.path.join(
+                    os.environ['OAUTH_URL'], 
+                    "oauth/token"
+                ) + "?grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}".format(
+                    self.refresh_token.replace('=', '%3D'), 
+                    os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
+                    os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
+                ), 
+                headers={'Content-Type': "application/x-www-form-urlencoded"}
+            )
+            response = response.json() 
 
-        self.access_token = response['access_token']
-        self.refresh_token = response['refresh_token']
-        self.expires_at = timezone.now() + timedelta(seconds=response['expires_in'])
-        self.save() 
+            self.access_token = response['access_token']
+            self.refresh_token = response['refresh_token']
+            self.expires_at = timezone.now() + timedelta(seconds=response['expires_in'])
+            self.save() 
+        except:
+            pass
         return None 
 
     def __str__(self) -> str:
