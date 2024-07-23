@@ -144,6 +144,13 @@ function build_page(response){
 
       c0.innerText = response.sketch_details["sketches"][i]["name"];
       c1.innerText = response.sketch_details["sketches"][i]["sketchSolveStatus"];
+      if (c1.innerText == "UNDERDEFINED") {
+        c1.style.color = "#0000ff"; 
+      } else if (c1.innerText == "OVERDEFINED") {
+        c1.style.color = "#ff0000"; 
+      } else {
+        c1.style.color = "#000000"; 
+      }
       
       row.appendChild(c0);
       row.appendChild(c1);
