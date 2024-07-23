@@ -128,6 +128,30 @@ function build_page(response){
       tbody.appendChild(row);
     }   
     features_table.appendChild(tbody);  
+
+    var  sketch_details_div =  document.getElementById("sketch_details_div"); //div containing the table
+    sketch_details_div.style.display = "block";
+    var  sketch_details_table =  document.getElementById("sketch_details_table");
+    var old_tbody = sketch_details_table.getElementsByTagName("tbody")[0];
+    sketch_details_table.removeChild(old_tbody);
+    //create new tbody
+    console.log("hello")
+    console.log(response.sketch_details["sketches"])
+    var sketchbody = document.createElement("tbody");
+    for (let i = 0; i< response.sketch_details["sketches"].length ; i++){
+      var row = document.createElement("tr"); //create a new row
+      let c0 = document.createElement("td"); //name
+      let c1 = document.createElement("td"); //Constrained Status
+
+      c0.innerText = response.sketch_details["sketches"][i]["name"];
+      c1.innerText = response.sketch_details["sketches"][i]["sketchSolveStatus"];
+      
+      row.appendChild(c0);
+      row.appendChild(c1);
+      sketchbody.appendChild(row);
+    } 
+    sketch_details_table.appendChild(sketchbody)
+
     //make parts  div visible                                                               
     document.getElementById("parts_div").style.display = "block";  
     document.getElementById("part_count").innerHTML = response.count_summary["part_count"];          // number of parts
@@ -137,6 +161,7 @@ function build_page(response){
     show_table('features_summary_table', 'rotate0');
     show_table('features_details_table', 'rotate1');
     show_table('part_checking_table', 'rotate2');
+    show_table('sketch_details_table', 'rotate8');
   }
 
   else if(response.etype == "assemblies"){

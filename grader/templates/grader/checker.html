@@ -85,7 +85,23 @@
                     </table>
                 </div>
 
+                <div id="sketch_details_div">
+                    <div class="arrow_and_title" onclick="show_hide_table('sketch_details_table', 'rotate8')">
+                        <div class="arrow_icon" id="rotate8">
+                            <img src="{% static 'grader/images/menu_arrow.svg' %}" width="12px">
+                        </div>
+                        <div class="menu_title">Sketch details</div>
+                    </div>
+                        
+                    <table  id="sketch_details_table" class="item_summary hidden">
+                        <thead><tr><th>Name</th><th>Constrained Status</th></tr></thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
+
             <div id = "parts_div">
                 <div class="arrow_and_title" onclick="show_hide_table('part_checking_table', 'rotate2')">
                     <div class="arrow_icon" id="rotate2">

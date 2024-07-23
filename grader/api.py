@@ -165,6 +165,24 @@ def get_feature_list(
     else: 
         return None
 
+def get_sketch_info(
+    domain: str, did: str, wmv: str, wid: str, eid: str, auth_token: str
+) -> Any: 
+    """ Get the feature list from both part studios and assemblies
+    """
+    response = requests.get(
+        os.path.join(domain, "api/v8/partstudios/d/{}/{}/{}/e/{}/sketches".format(did, wmv, wid, eid)),   
+        headers={
+            "Content-Type": "application/json", 
+            "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
+            "Authorization" : "Bearer " + auth_token
+        }
+    )
+    if response.ok: 
+        return response.json()
+    else: 
+        return None
+
 def get_doc_info(
     domain: str, did: str, auth_token: str
 ) -> Any: 

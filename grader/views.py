@@ -321,6 +321,11 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
 
             count_summary = part_list_helper(part_list)
 
+            sketch_info = get_sketch_info(
+                curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+            )
+
+
         elif etype == "assemblies":
             assembly_def = get_assembly_definition(
                     curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
@@ -383,12 +388,13 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
     #        offsets
     #        renamed (boolean)
 
-          
+    print(sketch_info)
     context={
         "etype" : etype,
         "error_message": error_message,
         "count_summary": count_summary, 
         "features_details": features_details,
+        "sketch_details": sketch_info,
         "mates_summary": mates_summary,
         "mate_details": mate_details,
     }
@@ -1527,7 +1533,6 @@ def part_list_helper(part_list):
             surface_count += 1
 
     return {"title": "Part Checking", "part_count": part_count, "part_rename_count": part_rename_count, "part_material_count":part_material_count, "part_surface_count": surface_count}
-
 
 # Extract useful information about instances for assemblies
 def instance_list_helper(assembly_def):
