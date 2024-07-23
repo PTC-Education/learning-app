@@ -143,12 +143,14 @@ function build_page(response){
       let c1 = document.createElement("td"); //Constrained Status
 
       c0.innerText = response.sketch_details["sketches"][i]["name"];
-      c1.innerText = response.sketch_details["sketches"][i]["sketchSolveStatus"];
-      if (c1.innerText == "UNDERDEFINED") {
+      if (response.sketch_details["sketches"][i]["sketchSolveStatus"] == "UNDERDEFINED") {
+        c1.innerText = "Under-defined";
         c1.style.color = "#0000ff"; 
-      } else if (c1.innerText == "OVERDEFINED") {
-        c1.style.color = "#ff0000"; 
+      } else if (response.sketch_details["sketches"][i]["sketchSolveStatus"] == "OVERDEFINED") {
+        c1.innerText = "Over-defined";
+        c1.style.color = "#ca0f10"; 
       } else {
+        c1.innerText = "Well-defined";
         c1.style.color = "#000000"; 
       }
       
