@@ -135,8 +135,7 @@ function build_page(response){
     var old_tbody = sketch_details_table.getElementsByTagName("tbody")[0];
     sketch_details_table.removeChild(old_tbody);
     //create new tbody
-    console.log("hello")
-    console.log(response.sketch_details["sketches"])
+
     var sketchbody = document.createElement("tbody");
     for (let i = 0; i< response.sketch_details["sketches"].length ; i++){
       var row = document.createElement("tr"); //create a new row

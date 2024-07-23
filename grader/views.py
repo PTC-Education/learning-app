@@ -388,7 +388,6 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
     #        offsets
     #        renamed (boolean)
 
-    print(sketch_info)
     context={
         "etype" : etype,
         "error_message": error_message,
