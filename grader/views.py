@@ -334,6 +334,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
                 error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 A ERROR) ."
 
             count_summary = instance_list_helper(assembly_def)
+            sketch_info = None
 
     ## count_summary contents depends on etype - 
     #   For part studios the summary contains information about parts
