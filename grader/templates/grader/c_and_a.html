@@ -242,7 +242,7 @@
             <div class="classes_assignments_box" id="submitted_box">
 
                 {% if user_type == 'educator' %}
-                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()">
+                    <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()" method="post">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
                         <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
                     </form>
@@ -268,7 +268,7 @@
                         {% endfor %}   
                     </table>
                 {% elif user_type == 'scioly' %}
-                    <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return form_ref_url_array()">
+                    <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return form_ref_url_array()" method="post">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
                         <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('features')"/>
                     </form>
