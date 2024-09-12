@@ -711,7 +711,7 @@ def grade_model(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
     #grab reference urls , possibly in a csv format, from the generic_grader.html
-    cs_ref_urls = request.GET.getlist('ref_url')
+    cs_ref_urls = request.POST.getlist('ref_url')
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
     
