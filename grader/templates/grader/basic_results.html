@@ -48,7 +48,7 @@
                 $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table  
                 loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
                 $('#result_status').html('<p>'+ successful_returns +'/{{ref_urls|length}} results loaded </p>') //show result loading status
-
+                console.log("{{url}}")
                 var domain = "{{url.domain}}";
                 var did =   "{{url.did}}";
                 var wv =     "{{url.wv}}";
