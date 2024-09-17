@@ -94,6 +94,7 @@
                         load_submissions(i+1, n);
                     } else {
                         $('#submission_counter').html('Ready to grade!');
+                        $('#gradeButton').prop('disabled', false);
                     }
                 },
                 error: function (error) {
@@ -244,7 +245,7 @@
                 {% if user_type == 'educator' %}
                     <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()" method="post">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
-                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
+                        <input disabled id="gradeButton" class="gradeButton disabled" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
                     </form>
                     <table id="submitted_work">
                         <tr>
@@ -270,7 +271,7 @@
                 {% elif user_type == 'scioly' %}
                     <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return form_ref_url_array()" method="post">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
-                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('features')"/>
+                        <input disabled id="gradeButton" class="gradeButton disabled" type="submit" value="Grade model(s)" onclick="loading_spinner('features')"/>
                     </form>
                     <table id="submitted_work">
                         <tr>
