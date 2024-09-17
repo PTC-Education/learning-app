@@ -67,7 +67,7 @@
                         var tabs = response['tabs']
                         tabs.reverse();
                         var newRowStr = "<tr id='tab_" + member_id + "'><td>" + submitted_student_works[i][1] + "</td><td><a href='" + submitted_student_works[i][4] + "' target='_blank'>" + submitted_student_works[i][3] + "</a></td>";
-                        newRowStr += "<td name='doc_url' hidden id='url_" + submitted_student_works[i][0] + "'>" + submitted_student_works[i][4] + "</td>";
+                        newRowStr += "<td name='doc_url' hidden id='url_" + submitted_student_works[i][0] + "'>" + tabs[0]['tab_url'] + "</td>";
                         newRowStr += "<td><div class='dropdown'>";
                         newRowStr += "<button  class='dropbtn single_line_text'>";
                         newRowStr += "<img id='preview_image_" + member_id + "' src='" + tabs[0]['tab_image'] + "' alt = '' />";
