@@ -1248,10 +1248,13 @@ def get_ref_url_ids(ref_url: str):
         ref['eid'] = ref_url.split("/e/")[1].split("?")[0]
         return ref
     except:
-        ref = dict()
-        ref['domain'] = ref_url.split("/documents/")[0]
-        ref['did'] = ref_url.split("documents/")[1].split("/")[0]
-        return ref
+        try:
+            ref = dict()
+            ref['domain'] = ref_url.split("/documents/")[0]
+            ref['did'] = ref_url.split("documents/")[1].split("/")[0]
+            return ref
+        except:
+            return None
     
 def get_scioly_ref_url_ids(ref_url: str):
     try:
