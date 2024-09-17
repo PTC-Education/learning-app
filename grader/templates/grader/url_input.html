@@ -163,7 +163,7 @@
                         </div>
                     </div>
                     <div id="urlfield">
-                        <form  name="studenturl" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return validateForm()" required>
+                        <form  name="studenturl" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return validateForm()" required method="post">
                             <div class="twoButtonsonEdge">
                                 <input class="urlfield-INPUT" type="text" name="ref_url" id="referenceModel" placeholder="Onshape URL of the reference document.">  
                             </div>
