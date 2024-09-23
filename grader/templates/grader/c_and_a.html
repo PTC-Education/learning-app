@@ -57,7 +57,12 @@
                         if(user_type == 'educator') {
                             $('#submission_'+i).html(response.tab_name);
                         }
-                    } else {
+                    } else if (response['tabs'].length == 0) {
+                        // if grader doesn't have API access to a document
+                        var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
+                        $('#submitted_work tr:eq(' + (i+1-action_required.length) + ')').remove();
+                    }
+                    else {
                         // otherwise remove from table and throw to action required box
                         var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
                         $('#submitted_work tr:eq(' + (i+1-action_required.length) + ')').remove();

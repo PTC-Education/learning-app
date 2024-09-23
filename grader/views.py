@@ -539,6 +539,9 @@ def assignment_doc_info(request: HttpRequest, os_user_id: str):
     # get tab info for ALL of the tabs
     element_info = get_element_info(curr_user.os_domain, did, wv, wvid, "", auth_token=curr_user.access_token)
 
+    if element_info == None:
+        return JsonResponse({'tabs': tabs})
+
     correct_etypes = []
 
     for element in element_info:
