@@ -136,13 +136,14 @@
     <div hidden id = "adjust_container" class = "adjust-container">
 
         <p class = "resulttile">Results</p>
-        <div class = "precisioncontainer">
-            <!-- <p>Precision: </p> -->
+        <!-- <div class = "precisioncontainer">
             <label for="precision_input">Sig Figs:</label>
             <input type = "number" min = "2" max = "6" value = "4" id = "precision_input" onchange = "re_round_tables('{{ref_urls|length}}')">
-        </div>
+        </div> -->
         <div class = "slidecontainer">
-            <p>Tolerance: <span id = "slider_value"></span> %</p>
+            <label for="precision_input">Sig Figs:</label>
+            <input type = "number" min = "2" max = "6" value = "4" id = "precision_input" onchange = "re_round_tables('{{ref_urls|length}}')">
+            <p>&nbsp;&nbsp;&nbsp;Tolerance: <span id = "slider_value"></span> %</p>
             <input type = "range" min = "0" max = "25" value = "1" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
         </div>
         <div class = "propselector" onchange= "reform_result('{{ref_urls|length}}')" >
