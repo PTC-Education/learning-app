@@ -39,7 +39,7 @@ function build_user(response){
 
                 //create a cell for part name (td)
                 c0.setAttribute('id','usr_0_'+ index);
-                c0h.setAttribute('id','usr_0_'+ index);
+                c0h.setAttribute('id','husr_0_'+ index);
 
                 //create a div for tooltip
                 let tooltip = document.createElement("div");
@@ -75,21 +75,21 @@ function build_user(response){
         c2.innerText = user_props[index][1];
         row.appendChild(c2);
         c2h.setAttribute('id','husr_2_'+ index);
-        c2h.innerText = user_props[index][0];
+        c2h.innerText = user_props[index][1];
         hidden_row.appendChild(c2h);
 
         c3.setAttribute('id','usr_3_'+ index);
         c3.innerText = user_props[index][2];
         row.appendChild(c3);
         c3h.setAttribute('id','husr_3_'+ index);
-        c3h.innerText = user_props[index][0];
+        c3h.innerText = user_props[index][2];
         hidden_row.appendChild(c3h);
 
         c4.setAttribute('id','usr_4_'+ index);
         c4.innerText = user_props[index][3];
         row.appendChild(c4);
         c4h.setAttribute('id','husr_4_'+ index);
-        c4h.innerText = user_props[index][0];
+        c4h.innerText = user_props[index][3];
         hidden_row.appendChild(c4h);
 
         // Append row to table body
@@ -124,17 +124,23 @@ function build_results(response, url_num){
     }
     for (let index = 1; index < ref_props.length; index++){
       var row = document.createElement("tr"); //create a new row
+      var hidden_row = document.createElement("tr"); //create a new row
       // Create cells
       let c0 = document.createElement("td");
       let c1 = document.createElement("td");
       let c2 = document.createElement("td");
       let c3 = document.createElement("td");
       let c4 = document.createElement("td");
+      let c0h = document.createElement("td");
+      let c1h = document.createElement("td");
+      let c2h = document.createElement("td");
+      let c3h = document.createElement("td");
+      let c4h = document.createElement("td");
       if (response.etype == 'partstudios'){
-
 
                   //create a cell for part name (td)
                   c0.setAttribute('id', 'ref_0_'+ url_num + '_' + index);
+                  c0h.setAttribute('id','href_0_'+ url_num + '_' + index);
 
                   //create a div for tooltip
                   let tooltip = document.createElement("div");
@@ -158,26 +164,41 @@ function build_results(response, url_num){
         
                   //append the td to row
                   row.appendChild(c0);
+                  hidden_row.appendChild(c0h);
       }
 
       c1.setAttribute('id','ref_1_'+ url_num + '_' + index);
       c1.innerText = ref_props[index][0];
       row.appendChild(c1);
+      c1h.setAttribute('id','href_1_'+ url_num + '_' + index);
+      c1h.innerText = ref_props[index][0];
+      hidden_row.appendChild(c1h);
 
       c2.setAttribute('id','ref_2_'+ url_num + '_' + index);
       c2.innerText = ref_props[index][1];
       row.appendChild(c2);
+      c2h.setAttribute('id','href_2_'+ url_num + '_' + index);
+      c2h.innerText = ref_props[index][1];
+      hidden_row.appendChild(c2h);
 
       c3.setAttribute('id','ref_3_'+ url_num + '_' + index);
       c3.innerText = ref_props[index][2];
       row.appendChild(c3);
+      c3h.setAttribute('id','href_3_'+ url_num + '_' + index);
+      c3h.innerText = ref_props[index][2];
+      hidden_row.appendChild(c3h);
 
       c4.setAttribute('id','ref_4_'+ url_num + '_' + index);
       c4.innerText = ref_props[index][3];
       row.appendChild(c4);
+      c4h.setAttribute('id','href_4_'+ url_num + '_' + index);
+      c4h.innerText = ref_props[index][3];
+      hidden_row.appendChild(c4h);
 
       // Append row to table body
       results_table.appendChild(row);
+      hidden_row.style.display = 'none'
+      results_table.appendChild(hidden_row);
     }
     
     round_off_results_table(url_num);
@@ -232,30 +253,52 @@ function reform_result(num_of_urls){
 
 
 function round_off_reference_table(num_of_parts){
-  var precison = 4 ; //set the precison 
+  var precision_input = document.getElementById("precision_input");
+  var precison = Number(precision_input.value - 1) ; //set the precison 
   for (let part = 1; part < num_of_parts; part++){
     //round off data for each part in the user document 
     for (let p = 1; p < 5; p++){
-      var data = document.getElementById("usr_" + p + "_" + part).innerHTML;
-      document.getElementById("usr_" + p + "_" + part).innerHTML = Number(data).toExponential(precison);
+      var data = document.getElementById("husr_" + p + "_" + part).innerHTML;
+      if(9 < data || data < 1){
+        document.getElementById("usr_" + p + "_" + part).innerHTML = Number(data).toExponential(precison);
+      }
+      else{
+        document.getElementById("usr_" + p + "_" + part).innerHTML = Number(data).toFixed(precison);
+      }
     }
   }
 }
 
-function round_off_results_table(url_num){
-  var precison = 4 ; //set the precison 
+function round_off_results_table(url_num, precison = 3){
+  var precision_input = document.getElementById("precision_input");
+  var precison = Number(precision_input.value - 1) ; //set the precison 
   //find url data from table using table id . table id are autogenerated with format "table_[count]" 
   var ref_table = document.getElementById("table_" + url_num); 
-  var ref_number_of_parts = ref_table.getElementsByTagName("tr").length;
+  var ref_number_of_parts = ref_table.getElementsByTagName("tr").length/2;
   //for each part 
   for (let part = 1; part < ref_number_of_parts; part++){
     //for each column
     for (let p = 1; p < 5; p++){
-      var data = document.getElementById("ref_" + p + "_" + url_num + "_" + part).innerHTML;
-      document.getElementById("ref_" + p + "_" + url_num + "_" + part).innerHTML = Number(data).toExponential(precison);
+      var data = document.getElementById("href_" + p + "_" + url_num + "_" + part).innerHTML;
+      if(9 < data || data < 1){
+        document.getElementById("ref_" + p + "_" + url_num + "_" + part).innerHTML = Number(data).toExponential(precison);
+      }
+      else{
+        document.getElementById("ref_" + p + "_" + url_num + "_" + part).innerHTML = Number(data).toFixed(precison);
+      }
     }
   }
 
+}
+
+function re_round_tables(num_of_urls){
+  var ref_table = document.getElementById("reference"); 
+  var ref_number_of_parts = ref_table.getElementsByTagName("tr").length/2;
+  round_off_reference_table(ref_number_of_parts)
+  for (let url = 0; url < num_of_urls; url++ ){ //for property in each url 
+    //find url data from table using table id . table id are autogenerated with format "table_[count]" 
+    round_off_results_table(url);
+  }
 }
 
 
@@ -286,7 +329,7 @@ function calculate_error_for_url(url){
 
   //grab reference data from reference table
   var usr_table = document.getElementById("reference");
-  var usr_number_of_parts = usr_table.getElementsByTagName("tr").length; //number of parts 
+  var usr_number_of_parts = usr_table.getElementsByTagName("tr").length/2; //number of parts 
 
 
   //grab  user selected acceptable error rate
@@ -295,7 +338,7 @@ function calculate_error_for_url(url){
   error=Number(slider.value);
 
   var ref_table = document.getElementById("table_" + url); 
-    var ref_number_of_parts = ref_table.getElementsByTagName("tr").length; //number of parts
+    var ref_number_of_parts = ref_table.getElementsByTagName("tr").length/2; //number of parts
 
     var score = 0;
     for (let part = 1; part < Math.min(usr_number_of_parts, ref_number_of_parts) ; part++){
