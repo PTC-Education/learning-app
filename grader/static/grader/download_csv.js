@@ -34,23 +34,26 @@ function tableToCSV(num_of_urls) {
 	//Document property information of the user
 	var all_parts = refTable.querySelectorAll('tr');
 	for (let r = 1; r < all_parts.length ; r++){ //excluding the first row
-		csvrow = ["","","","","",""]; //first six blank cells 
-		var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
-		for (let i = 0; i < part.length ; i++){
-			if(column_info[i].className == "col_0") { 
-				csvrow.push(part[i].querySelectorAll('div')[0].getAttribute('value')); // add part name to the list if part name column exist
-				csvrow.push(part[i].querySelectorAll('span')[0].innerHTML); // add material name to the list if part name column exist
+		if (r % 2 !== 0) {
+			csvrow = ["","","","","",""]; //first six blank cells 
+			var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
+			for (let i = 0; i < part.length ; i++){
+				if(column_info[i].className == "col_0") { 
+					csvrow.push(part[i].querySelectorAll('div')[0].getAttribute('value')); // add part name to the list if part name column exist
+					csvrow.push(part[i].querySelectorAll('span')[0].innerHTML); // add material name to the list if part name column exist
+				}
+				else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
+					csvrow.push(""); 
+				}
+				else if(column_info[i].style.visibility != "collapse"){
+					csvrow.push(part[i].innerHTML);
+				}
+				
 			}
-			else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
-				csvrow.push(""); 
-			}
-			else if(column_info[i].style.visibility != "collapse"){
-				csvrow.push(part[i].innerHTML);
-			}
+			csv_data.push(csvrow.join(",")); //Next row with properties
 		}
-		csv_data.push(csvrow.join(",")); //Next row with properties
-		
 	}
+	
 
 	//Document name and owner information of the document from the urls
 	for (let u = 0; u< num_of_urls; u++){
@@ -73,21 +76,23 @@ function tableToCSV(num_of_urls) {
 			var refTable = document.getElementById('table_' + u);
 			var all_parts = refTable.querySelectorAll('tr');
 			for (let r = 1; r < all_parts.length ; r++){ //excluding the first row
-				csvrow = ["","","","","",""]; //blank row
-				var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
-				for (let i = 0; i < part.length ; i++){
-					if(column_info[i].className == "col_0") {
-						csvrow.push(part[i].querySelectorAll('div')[0].getAttribute('value')); // add part name to the list if part name column exist
-						csvrow.push(part[i].querySelectorAll('span')[0].innerHTML); // add material name to the list if part name column exist
+				if (r % 2 !== 0) {
+					csvrow = ["","","","","",""]; //blank row
+					var part = all_parts[r].querySelectorAll('td'); // grab the part information within all parts
+					for (let i = 0; i < part.length ; i++){
+						if(column_info[i].className == "col_0") {
+							csvrow.push(part[i].querySelectorAll('div')[0].getAttribute('value')); // add part name to the list if part name column exist
+							csvrow.push(part[i].querySelectorAll('span')[0].innerHTML); // add material name to the list if part name column exist
+						}
+						else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
+							csvrow.push(""); 
+						}
+						else if(column_info[i].style.visibility != "collapse"){
+							csvrow.push(part[i].innerHTML); 
+						}
 					}
-					else if(column_info[i].style.visibility == "collapse"){ //add blank cell to the collapsed column
-						csvrow.push(""); 
-					}
-					else if(column_info[i].style.visibility != "collapse"){
-						csvrow.push(part[i].innerHTML); 
-					}
+					csv_data.push(csvrow.join(",")); //Next row with properties
 				}
-			csv_data.push(csvrow.join(",")); //Next row with properties
 			}
 		}
 	}
