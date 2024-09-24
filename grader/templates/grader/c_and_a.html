@@ -288,7 +288,7 @@
                             <tr>
                                 <td class="set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                                 <td class="set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
-                                <td name="doc_url" hidden id="url_{{ studentwork.0 }}">{{studentwork.4}}</td> <!-- to save url-->
+                                <td name="doc_url" hidden id="url_{{ forloop.counter0 }}">{{studentwork.4}}</td> <!-- to save url-->
                                 <td id="submission_td_{{ forloop.counter0 }}" class="small_font_td valign_top">
                                     <div>
                                         <div class="scioly_thumb" id="submission_thumb_{{ forloop.counter0 }}"></div>
