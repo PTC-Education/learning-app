@@ -539,6 +539,9 @@ def assignment_doc_info(request: HttpRequest, os_user_id: str):
     # get tab info for ALL of the tabs
     element_info = get_element_info(curr_user.os_domain, did, wv, wvid, "", auth_token=curr_user.access_token)
 
+    if element_info == None:
+        return JsonResponse({'tabs': tabs})
+
     correct_etypes = []
 
     for element in element_info:
@@ -598,7 +601,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
         type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
         for submission in submissions:
             member_id = submission["memberId"]
-            member_name = submission["memberName"]
+            member_name = submission["memberName"].replace("'", "").replace('"', '')
             state_name = submission["stateName"]
 
             # require_user_action = True 
@@ -607,7 +610,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
             
             #If the document is submitted
             if (state_name == "Submitted"):
-                doc_name = submission["documents"][0]["metadata"]["dn"]
+                doc_name = submission["documents"][0]["metadata"]["dn"].replace("'", "").replace('"', '')
                 url = submission["documents"][0]["viewRef"]
                 number_of_attempts = submission["numberOfAttempts"]
                 # splitted_url = url.split("/documents/")[1].split("/")
@@ -671,7 +674,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                 doc_name = "Not included"
                 url = ""
                 if submission["documents"]: # if the user has started a document
-                    doc_name = submission["documents"][0]["metadata"]["dn"]
+                    doc_name = submission["documents"][0]["metadata"]["dn"].replace("'", "").replace('"', '')
                     url = submission["documents"][0]["viewRef"]
                     
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
@@ -837,6 +840,14 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     wvid = request.GET.get('wvid')
     eid = request.GET.get('eid')
     url = domain + "/documents/" + did + "/"+ wv + "/" + wvid + "/e/" + eid
+
+    if eid == '':
+        url = domain + "/documents/" + did
+        error_msg = "Couldn't access the document. Make sure it is shared with you."
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': error_msg}),
+            content_type="application/json"
+            )
 
     props = [] 
     failed_url = "None"
@@ -1030,7 +1041,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
 
     #grab reference urls , possibly in a csv format, from the generic_grader.html
-    cs_ref_urls = request.GET.getlist('ref_url')
+    cs_ref_urls = request.POST.getlist('ref_url')
     #parse the csv file into array of urls
     ref_urls = convert_cs_to_array(cs_ref_urls) 
 
@@ -1240,7 +1251,13 @@ def get_ref_url_ids(ref_url: str):
         ref['eid'] = ref_url.split("/e/")[1].split("?")[0]
         return ref
     except:
-        return None
+        try:
+            ref = dict()
+            ref['domain'] = ref_url.split("/documents/")[0]
+            ref['did'] = ref_url.split("documents/")[1].split("/")[0]
+            return ref
+        except:
+            return None
     
 def get_scioly_ref_url_ids(ref_url: str):
     try:

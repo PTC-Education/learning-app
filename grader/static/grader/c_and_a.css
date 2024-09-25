@@ -344,7 +344,6 @@ input.gradeButton[type=submit] {
   margin-left: 10px;
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   color: var(--zakim, #FFF);
-  background: var(--charles, #1651B0);
   text-align: center;
   font-size: 14px;
   font-style: normal;
@@ -358,9 +357,21 @@ input.gradeButton[type=submit] {
   margin: 20px;
 }
 
+input.gradeButton[type=submit] {
+  background: var(--charles, #1651B0);
+}
+
+input.gradeButton[type=submit]:disabled {
+  background-color: #769fcc;
+}
+
 input.gradeButton[type=submit]:hover {
   background-color: #769fcc;
   cursor:pointer;
+}
+
+input.gradeButton[type=submit]:disabled:hover {
+  cursor: default;
 }
 
 .class_assignment_name{

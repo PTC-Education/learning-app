@@ -57,7 +57,12 @@
                         if(user_type == 'educator') {
                             $('#submission_'+i).html(response.tab_name);
                         }
-                    } else {
+                    } else if (response['tabs'].length == 0) {
+                        // if grader doesn't have API access to a document
+                        var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
+                        $('#submitted_work tr:eq(' + (i+1-action_required.length) + ')').remove();
+                    }
+                    else {
                         // otherwise remove from table and throw to action required box
                         var arr = [submitted_student_works[i][1], submitted_student_works[i][3]];
                         $('#submitted_work tr:eq(' + (i+1-action_required.length) + ')').remove();
@@ -67,7 +72,7 @@
                         var tabs = response['tabs']
                         tabs.reverse();
                         var newRowStr = "<tr id='tab_" + member_id + "'><td>" + submitted_student_works[i][1] + "</td><td><a href='" + submitted_student_works[i][4] + "' target='_blank'>" + submitted_student_works[i][3] + "</a></td>";
-                        newRowStr += "<td name='doc_url' hidden id='url_" + submitted_student_works[i][0] + "'>" + submitted_student_works[i][4] + "</td>";
+                        newRowStr += "<td name='doc_url' hidden id='url_" + submitted_student_works[i][0] + "'>" + tabs[0]['tab_url'] + "</td>";
                         newRowStr += "<td><div class='dropdown'>";
                         newRowStr += "<button  class='dropbtn single_line_text'>";
                         newRowStr += "<img id='preview_image_" + member_id + "' src='" + tabs[0]['tab_image'] + "' alt = '' />";
@@ -94,6 +99,7 @@
                         load_submissions(i+1, n);
                     } else {
                         $('#submission_counter').html('Ready to grade!');
+                        $('#gradeButton').prop('disabled', false);
                     }
                 },
                 error: function (error) {
@@ -244,7 +250,7 @@
                 {% if user_type == 'educator' %}
                     <form id="url_field_form" action="{% url 'grader:grade' user.os_user_id %}" onsubmit="return form_ref_url_array()" method="post">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
-                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
+                        <input disabled id="gradeButton" class="gradeButton disabled" type="submit" value="Grade" onclick="loading_spinner('features')"/>             
                     </form>
                     <table id="submitted_work">
                         <tr>
@@ -270,7 +276,7 @@
                 {% elif user_type == 'scioly' %}
                     <form id="url_field_form" action="{% url 'grader:scioly' user.os_user_id %}" onsubmit="return form_ref_url_array()" method="post">
                         <input id="ref_url_edu" hidden name="ref_url" type="text">
-                        <input id="gradeButton" class="gradeButton" type="submit" value="Grade model(s)" onclick="loading_spinner('features')"/>
+                        <input disabled id="gradeButton" class="gradeButton disabled" type="submit" value="Grade model(s)" onclick="loading_spinner('features')"/>
                     </form>
                     <table id="submitted_work">
                         <tr>
@@ -282,7 +288,7 @@
                             <tr>
                                 <td class="set_to_left_in_table small_font_td">{{studentwork.1}}</td>
                                 <td class="set_to_left_in_table small_font_td"><a href = {{studentwork.4}} target="_blank">{{studentwork.3}}</a></td>
-                                <td name="doc_url" hidden id="url_{{ studentwork.0 }}">{{studentwork.4}}</td> <!-- to save url-->
+                                <td name="doc_url" hidden id="url_{{ forloop.counter0 }}">{{studentwork.4}}</td> <!-- to save url-->
                                 <td id="submission_td_{{ forloop.counter0 }}" class="small_font_td valign_top">
                                     <div>
                                         <div class="scioly_thumb" id="submission_thumb_{{ forloop.counter0 }}"></div>
