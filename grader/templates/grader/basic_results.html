@@ -31,6 +31,10 @@
                 type: "GET",
                 data:{},
                 success: function (response) {
+                    if(response['error_msg'] == "Something went wrong."){
+                        prop_box = document.getElementById("user_props")
+                        prop_box.innerHTML = "Something went wrong when trying to get the mass properties of your model. CAD Checker is intended to compare models, but none were found in this tab. Please re-open the app in the tab you'd like to compare models to."
+                    }
                     build_user(response);
                     get_results();
                     $('#features_user').html(" ");
