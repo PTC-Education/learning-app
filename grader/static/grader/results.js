@@ -333,8 +333,7 @@ function calculate_error_for_url(url){
 
 
   //grab  user selected acceptable error rate
-  var slider = document.getElementById("tolerance_slider");
-  document.getElementById('slider_value').innerHTML=slider.value;
+  var slider = document.getElementById("tolerance_input");
   error=Number(slider.value);
 
   var ref_table = document.getElementById("table_" + url); 
