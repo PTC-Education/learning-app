@@ -140,12 +140,15 @@
     <div hidden id = "adjust_container" class = "adjust-container">
 
         <p class = "resulttile">Results</p>
+        <!-- <div class = "precisioncontainer">
+            <label for="precision_input">Sig Figs:</label>
+            <input type = "number" min = "2" max = "6" value = "4" id = "precision_input" onchange = "re_round_tables('{{ref_urls|length}}')">
+        </div> -->
         <div class = "slidecontainer">
             <label for="precision_input">Sig Figs:</label>
             <input type = "number" min = "2" max = "6" value = "4" id = "precision_input" onchange = "re_round_tables('{{ref_urls|length}}')">
-            <label for="precision_input">&nbsp;&nbsp;&nbsp;Tolerance: </label>
-            <input type = "number" min = "0" max = "99" value = "1.0" step="0.1" id = "tolerance_input" onchange = "compute_error('{{ref_urls|length}}')">
-            <label>%</label>
+            <p>&nbsp;&nbsp;&nbsp;Tolerance: <span id = "slider_value"></span> %</p>
+            <input type = "range" min = "0" max = "25" value = "1" class = "slider" id = "tolerance_slider" onchange = "compute_error('{{ref_urls|length}}')">
         </div>
         <div class = "propselector" onchange= "reform_result('{{ref_urls|length}}')" >
             <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1"  checked = "True" /> Mass</label>
