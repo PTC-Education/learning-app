@@ -11,7 +11,8 @@
             //get results for elememt 
             $(document).ready(function () {                
                     var url = "{% url 'grader:doc_info_checker_results_update' user.os_user_id %}";
-                    var doc_wid = '{{user.wvid}}';
+                    var doc_wvid = '{{user.wvid}}';
+                    var doc_wv = '{{user.wv}}';
                     var elements = '{{user.etype}}' + " " +'{{user.eid}}';
                     loading_spinner('features');
                     $("#error_message").html("");
@@ -19,10 +20,10 @@
                         url: url,
                         type: "GET",
                         data:{
-                            doc_wid : doc_wid,
+                            doc_wvid : doc_wvid,
+                            doc_wv : doc_wv,
                             elements : elements,
                         },
-                    
                         success: function (response) {
                             build_page(response);
                             $('#features').html(" ");
