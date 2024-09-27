@@ -148,6 +148,12 @@ font-size: 10px;
 
 }
 
+.blue{
+  background-color: #9DCFED;
+  color:white;
+
+}
+
 td.symbols{
     font-size: 50px;
 }

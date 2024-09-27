@@ -337,75 +337,74 @@ function calculate_error_for_url(url){
   error=Number(slider.value);
 
   var ref_table = document.getElementById("table_" + url); 
-    var ref_number_of_parts = ref_table.getElementsByTagName("tr").length/2; //number of parts
+  var ref_number_of_parts = ref_table.getElementsByTagName("tr").length/2; //number of parts
 
-    var score = 0;
-    for (let part = 1; part < Math.min(usr_number_of_parts, ref_number_of_parts) ; part++){
-      //get material data for user doc
-      if (document.getElementById("usr_0_" + part)){
-        user_material = document.getElementById("usr_0_span" + part).innerHTML;
-        ref_material = document.getElementById("ref_0_span" + url + "_" + part).innerHTML;
+  var score = 0;
+  for (let part = 1; part < ref_number_of_parts ; part++){
+    //get material data for user doc
+    if (document.getElementById("usr_0_" + part)){
+      user_material = document.getElementById("usr_0_span" + part).innerHTML;
+      //if too few parts, set null ref material
+      try{ref_material = document.getElementById("ref_0_span" + url + "_" + part).innerHTML;}
+      catch{ref_material = "none";}
 
-        if(user_material == ref_material){
-          document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #009400";
+      if(user_material == ref_material){
+        document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #009400";
+      }
+      else{
+        document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #BD3039";
+      }
+    }
+    //change color to blue if number of parts don't match
+    if(usr_number_of_parts != ref_number_of_parts){
+      document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #9DCFED";
+    }
+
+  //calculate error
+
+    for (let p = 1; p < 5; p++){
+      //get data for usr doc, set to "0" if more ref parts than usr parts
+      try{var usrdata = document.getElementById("usr_" + p + "_" + part).innerHTML;}
+      catch{var usrdata = "0"}
+        //get data for url docs
+      var refdata = document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML;
+      //calculate error
+      var errdata = Math.abs(refdata - usrdata) * 100 / usrdata;
+      
+      if(checkboxstatus[p]){ //calculate error only if the correspnding checkbox is clicked
+        if (errdata > error){
+          document.getElementById("ref_" + p + "_" + url + "_" + part).className = "red";
+          score = score + 1;    
         }
         else{
-          document.getElementById("ref_0_" + url + "_" + part).style.border = "1px solid #BD3039";
+          document.getElementById("ref_" + p + "_" + url + "_" + part).className = "green";
         }
-      }
-
-    //calculate error
-
-      for (let p = 1; p < 5; p++){
-        //get data for usr doc
-        var usrdata = document.getElementById("usr_" + p + "_" + part).innerHTML;
-          //get data for url docs
-        var refdata = document.getElementById("ref_" + p + "_" + url + "_" + part).innerHTML;
-        //calculate error
-        var errdata = Math.abs(refdata - usrdata) * 100 / usrdata;
-        
-        if(checkboxstatus[p]){ //calculate error only if the correspnding checkbox is clicked
-          if (errdata > error){
-            document.getElementById("ref_" + p + "_" + url + "_" + part).className = "red";
-            score = score + 1;    
-          }
-          else{
-            document.getElementById("ref_" + p + "_" + url + "_" + part).className = "green";
-          }
-        }   
-      }
-    }
-
-    if(score > 0){
-      document.getElementById("ref_score_"+ url).innerHTML = "<img src=\"/static/grader/images/red-x.png\" width='14px'>";
-    }
-    else{
-      document.getElementById("ref_score_"+ url).innerHTML = "<img src=\"/static/grader/images/green-check.svg\" width='18px'>";
-    }
-
-    
-    if(usr_number_of_parts != ref_number_of_parts){
-        var text=document.getElementById("error_message_" + url);
-        if(usr_number_of_parts > ref_number_of_parts){
-          text.innerHTML="Some parts are missing.";
+        //set to blue if num of parts don't match
+        if(usr_number_of_parts != ref_number_of_parts){
+          document.getElementById("ref_" + p + "_" + url + "_" + part).className = "blue";
         }
-        else {
-          text.innerHTML="Extra parts were detected.";
-        }
-        ref_table.style.display="none";
-        document.getElementById("ref_score_"+ url).innerHTML =  "<img src=\"/static/grader/images/red-x.png\" width='14px'>";
+      }   
     }
   }
 
-  //Function to show pop up
-  function show_popup(popup){
-    var reasons = document.getElementById(popup);
-    reasons.style.display = "block"; 
+  if(score > 0){
+    document.getElementById("ref_score_"+ url).innerHTML = "<img src=\"/static/grader/images/red-x.png\" width='14px'>";
+  }
+  else{
+    document.getElementById("ref_score_"+ url).innerHTML = "<img src=\"/static/grader/images/green-check.svg\" width='18px'>";
   }
 
-  //Function to  hide pop up
-  function hide_popup(popup){
-    var reasons = document.getElementById(popup);
-    reasons.style.display = "none";
-  }
-   
+}
+
+//Function to show pop up
+function show_popup(popup){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "block"; 
+}
+
+//Function to  hide pop up
+function hide_popup(popup){
+  var reasons = document.getElementById(popup);
+  reasons.style.display = "none";
+}
+  
