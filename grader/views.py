@@ -219,7 +219,7 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
     :template:`grader/doc_info_checker.html`
     """
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-    # Get info and workspace for current document selected
+    # Get info and workspace/version for current document selected
     doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
     doc_wid = doc_info['defaultWorkspace']['id']
 
@@ -240,7 +240,6 @@ def doc_info_checker(request: HttpRequest, os_user_id: str):
         "user": curr_user, 
         "doc_wid": doc_wid,
         "element_list":element_list,
-       
     }
 
     return render(request, "grader/doc_info_checker.html", context=context)
@@ -279,7 +278,8 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token()
 
-    doc_wid = request.GET.get("doc_wid")
+    doc_wv = request.GET.get("doc_wv")
+    doc_wvid = request.GET.get("doc_wvid")
     element = request.GET.get('elements')
 
     try:
@@ -297,7 +297,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
     if element:
         # Get feature list of model the user currently has opened
         feature_list = get_feature_list(
-                curr_user.os_domain, etype, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+                curr_user.os_domain, etype, curr_user.did, doc_wv, doc_wvid, eid, auth_token=curr_user.access_token
             )
         if not feature_list: # API error 
             error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT0 ERROR)."
@@ -314,7 +314,7 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
         # Get parts list of model the user currently has opened
         if etype == "partstudios":
             part_list = get_part_list(
-                    curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+                    curr_user.os_domain, curr_user.did, doc_wv, doc_wvid, eid, auth_token=curr_user.access_token
                 )
             if not part_list: # API error 
                 error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 P ERROR)."
@@ -322,13 +322,13 @@ def doc_info_checker_results_update(request: HttpRequest, os_user_id: str):
             count_summary = part_list_helper(part_list)
 
             sketch_info = get_sketch_info(
-                curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+                curr_user.os_domain, curr_user.did, doc_wv, doc_wvid, eid, auth_token=curr_user.access_token
             )
 
 
         elif etype == "assemblies":
             assembly_def = get_assembly_definition(
-                    curr_user.os_domain, curr_user.did, "w", doc_wid, eid, auth_token=curr_user.access_token
+                    curr_user.os_domain, curr_user.did, doc_wv, doc_wvid, eid, auth_token=curr_user.access_token
                 )
             if not assembly_def: # API error 
                 error_message = "An unexpected error has occurred. Please check internet connection and try relaunching the app (CT1 A ERROR) ."
