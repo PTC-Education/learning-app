@@ -69,6 +69,12 @@ th.small_15{
   text-overflow: ellipsis;
 }
 
+th.medium_20{
+  width: 20%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 th.status_column_34{
   width: 34%;
    vertical-align: bottom;
