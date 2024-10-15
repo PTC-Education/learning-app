@@ -196,19 +196,15 @@
                     <table>
                         <tr>
                             <th class = "set_to_left_in_table bigger_font_th single_line_text">Assignment name</th>
-                            <th class = "status_column_34 set_to_left_in_table bigger_font_th">Status</th>
-                            <th class = "status_column_34 set_to_left_in_table bigger_font_th">Submitted</th>
-                            <th class = "status_column_34 set_to_left_in_table bigger_font_th">In progress</th>
-                            <th class = "status_column_34 set_to_left_in_table bigger_font_th single_line_text">Not started</th>
+                            <th class = "set_to_left_in_table medium_20 bigger_font_th">Status</th>
+                            <th class = "set_to_left_in_table bigger_font_th">Student Activity</th>
                         </tr>
                         {% for assignment in assignments %}
                             <form id = "assignmentlist" action = "{% url 'grader:list_members' user.os_user_id user_type class_id|safe class_name|safe assignment.0|safe assignment.1|safe %}" onsubmit="loading_spinner('features')">
                                 <tr class="classlist">
-                                    <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.1|unslash}}" onmouseover = "show_popup_assignment('description_assignment','{{assignment.6}}', '{{assignment.7|escapejs}}')" onmouseleave = "hide_popup_assignment('description_assignment')"></th>
-                                    <th><input class = "row_selector status_column_34 set_to_left_in_table small_font_td" type="submit" value="{{assignment.2}}" title="{{assignment.2}}"></th>
-                                    <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.3}}" title="{{assignment.3}}"></th>
-                                    <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.5}}" title="{{assignment.5}}"></th>
-                                    <th><input class = "row_selector small_font_td" type="submit" value="{{assignment.4}}" title="{{assignment.4}}"></th>
+                                    <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.1|unslash}}" onmouseover = "show_popup_assignment('description_assignment','{{assignment.4}}', '{{assignment.5|escapejs}}')" onmouseleave = "hide_popup_assignment('description_assignment')"></th>
+                                    <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.2}}" title="{{assignment.2}}"></th>
+                                    <th><input class = "row_selector set_to_left_in_table small_font_td" type="submit" value="{{assignment.3}}" title="{{assignment.3}}"></th>
                                 </tr>
                             </form>
                         {% endfor %}
