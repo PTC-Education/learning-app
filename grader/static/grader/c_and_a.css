@@ -69,10 +69,17 @@ th.small_15{
   text-overflow: ellipsis;
 }
 
-th.medium_20{
-  width: 20%;
+th.medium_20, th.medium_33 {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+th.medium_20{
+  width: 20%;
+}
+
+th.medium_33{
+  width: 33%;
 }
 
 th.status_column_34{
@@ -91,6 +98,7 @@ tr,th,td {
   border: none;
   width: 100%;
   height:auto;
+  padding: 0px 1px;
 }
 
 .student_name{
