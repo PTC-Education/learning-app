@@ -613,7 +613,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
             # tab_names_and_ids =[]  
             
             #If the document is submitted
-            if (state_name != "In progress"):
+            if (state_name != "In progress" and state_name != "Needs revision"):
                 doc_name = submission["documents"][0]["metadata"]["dn"].replace("'", "").replace('"', '')
                 url = submission["documents"][0]["viewRef"]
                 number_of_attempts = submission["numberOfAttempts"]
