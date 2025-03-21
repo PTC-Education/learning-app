@@ -1035,7 +1035,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
                     key_answers[elem['name']] = elem_mass_prop
                     elem_mass_prop = ', '.join(elem_mass_prop)
                     
-            elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 20.00] # last item in array is the full points for that part/assembly.
+            elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 100.00] # last item in array is the full points for that part/assembly.
             user_props.append(elem_props)
             
     # Get info about the document the user currently has opened
@@ -1127,7 +1127,7 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                     else:
                         elem_mass_prop = sig_figs(mass_props["bodies"]["-all-"]["mass"][0], 3) #round to 4 decimal places
                     ans = sig_figs(key_answers[elem_name], 3)
-                    points = 20 - 100*abs((elem_mass_prop - ans)/ans)
+                    points = 100*(1 - abs((elem_mass_prop - ans)/ans))
                     if points < 0:
                         points = 0
                     points = round(points, 2)
@@ -1140,7 +1140,7 @@ def grade_scioly_results(request: HttpRequest, os_user_id: str):
                         elem_mass_prop = ', '.join(map(str, elem_mass_array))
                     ans = key_answers[elem_name]
                     ans = [sig_figs(i, 3) for i in ans]
-                    points = 20 - 100*(((1/3)*abs((elem_mass_array[0] - ans[0])/ans[0])) + ((1/3)*abs((elem_mass_array[1] - ans[1])/ans[1])) + ((1/3)*abs((elem_mass_array[2] - ans[2])/ans[2])))
+                    points = 100*(1 - ((1/3)*abs((elem_mass_array[0] - ans[0])/ans[0])) - ((1/3)*abs((elem_mass_array[1] - ans[1])/ans[1])) - ((1/3)*abs((elem_mass_array[2] - ans[2])/ans[2])))
                     if points < 0:
                         points = 0
                     points = round(points, 2)
