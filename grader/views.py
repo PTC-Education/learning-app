@@ -1043,7 +1043,7 @@ def grade_scioly(request: HttpRequest, os_user_id: str):
     user_doc_name = user_doc_info['name']
     user_user_name = user_doc_info["createdBy"]["name"]
     user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
-    totalpoints = 20.00 * float((len(user_props))) # This will be the max score, since its the total points of the answer key
+    totalpoints = 100.00 * float((len(user_props))) # This will be the max score, since its the total points of the answer key
 
     user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
 
