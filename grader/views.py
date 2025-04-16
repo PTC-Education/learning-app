@@ -867,7 +867,9 @@ def update_result_page(request: HttpRequest, os_user_id: str):
 
             # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
             props = make_props(mass_props, partId_to_name)
-
+            sketch_info = get_sketch_info(
+                curr_user.os_domain, curr_user.did, wv, wvid, eid, auth_token=curr_user.access_token
+            )
             #if the props returns -1, it means there were no parts in the part studio
             if(props == -1):
                 error_msg = "No parts were detected in the Part Studio."
@@ -890,13 +892,14 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         # If anything above failed, add url to the fairled URL list
         failed_url = url
         error_msg = 'Unknown error has occured. Click the link to investigate the document.'
-    
+    # TODO: get_sketch_info (work from gym 1-3 PM today)
     props.insert(0,[user_name, doc_name, element_name, doc_time, image, url])
     context={ 
         "etype": curr_user.etype,
         "failed_url": failed_url,
         'error_msg': error_msg,
-        "ref_props": props, 
+        "ref_props": props,
+        "sketch_info": sketch_info
     }
 
     return HttpResponse(
