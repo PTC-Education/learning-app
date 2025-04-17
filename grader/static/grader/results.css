@@ -303,3 +303,18 @@ td.symbols{
     visibility: visible;
   }
 
+  .sketch_under, .sketch_well, .sketch_over {
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .sketch_under {
+    color: #1651B0;
+  }
+
+  .sketch_well {
+    color: #777;
+  }
+
+  .sketch_over {
+    color: #ca0f10;
+  }
