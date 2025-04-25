@@ -118,6 +118,7 @@ function build_results(response, url_num){
     }
   }
   sketch_info_div.innerHTML = sketch_info_string;
+  sketch_info_div.style.display = 'none';
   var results_table = document.getElementById("table_" + url_num); //open the results table 
   if(response.failed_url == "None"){
     document.getElementById("ref_docname_"+ url_num).innerHTML = ref_props[0][0];
@@ -214,7 +215,6 @@ function build_results(response, url_num){
       hidden_row.style.display = 'none'
       results_table.appendChild(hidden_row);
     }
-    
     round_off_results_table(url_num);
     calculate_error_for_url(url_num);
   }
@@ -246,7 +246,6 @@ Arguments :   num_of_urls
 
 
 function reform_result(num_of_urls){
-
   //checking the list of properties user wants to compare
   var checkboxstatus = [];
   for( let i = 1; i< 5 ; i++){
@@ -257,9 +256,14 @@ function reform_result(num_of_urls){
       if(!checkboxstatus[i]){
         document.getElementsByClassName('col_' + i)[url].style.visibility='collapse';
       }
-      else{
-      document.getElementsByClassName('col_' + i)[url].style.visibility='visible';
+      else {
+        document.getElementsByClassName('col_' + i)[url].style.visibility='visible';
       }
+    }
+    if(document.getElementById('check_5').checked) {
+      document.getElementById('sketch_info_' + url).style.display = 'block';
+    } else {
+      document.getElementById('sketch_info_' + url).style.display = 'none';
     }
   }
   compute_error(num_of_urls);
