@@ -105,20 +105,22 @@ function build_user(response){
 function build_results(response, url_num){
   var ref_props = response.ref_props;
   var sketch_info = response.sketch_info;
-  var sketch_info_div = document.getElementById("sketch_info_" + url_num);
-  var sketch_info_string = "";
-  for (let i = 0; i < sketch_info['sketches'].length; i++)
-  {
-    if (sketch_info['sketches'][i]["sketchSolveStatus"] == "UNDERDEFINED") {
-      sketch_info_string += "<div class='sketch_under'>" + sketch_info['sketches'][i]['name'] + " Under-defined</div>";
-    } else if (sketch_info['sketches'][i]["sketchSolveStatus"] == "OVERDEFINED") {
-      sketch_info_string += "<div class='sketch_over'>" + sketch_info['sketches'][i]['name'] + " Over-defined</div>";
-    } else {
-      sketch_info_string += "<div class='sketch_well'>" + sketch_info['sketches'][i]['name'] + " Well-defined</div>";
+  if (sketch_info != null) {
+    var sketch_info_div = document.getElementById("sketch_info_" + url_num);
+    var sketch_info_string = "";
+    for (let i = 0; i < sketch_info['sketches'].length; i++)
+    {
+      if (sketch_info['sketches'][i]["sketchSolveStatus"] == "UNDERDEFINED") {
+        sketch_info_string += "<div class='sketch_under'>" + sketch_info['sketches'][i]['name'] + " Under-defined</div>";
+      } else if (sketch_info['sketches'][i]["sketchSolveStatus"] == "OVERDEFINED") {
+        sketch_info_string += "<div class='sketch_over'>" + sketch_info['sketches'][i]['name'] + " Over-defined</div>";
+      } else {
+        sketch_info_string += "<div class='sketch_well'>" + sketch_info['sketches'][i]['name'] + " Well-defined</div>";
+      }
     }
+    sketch_info_div.innerHTML = sketch_info_string;
+    sketch_info_div.style.display = 'none';
   }
-  sketch_info_div.innerHTML = sketch_info_string;
-  sketch_info_div.style.display = 'none';
   var results_table = document.getElementById("table_" + url_num); //open the results table 
   if(response.failed_url == "None"){
     document.getElementById("ref_docname_"+ url_num).innerHTML = ref_props[0][0];

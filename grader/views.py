@@ -881,6 +881,7 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         elif curr_user.etype == "assemblies":
             # assemblies props = [mass, vol, periphery, principalInertia]
             props = make_props(mass_props, None)
+            sketch_info = None
             if(props == -1):
                 error_msg = "No instances were detected in the Assembly."
                 return HttpResponse(
