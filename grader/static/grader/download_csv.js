@@ -5,7 +5,7 @@ function tableToCSV(num_of_urls) {
 
 	// First Row
 	let csvrow = [];
-	csvrow.push("Document Owner", "Pass/Fail", "Document Name", "Element Name");
+	csvrow.push("Owner First", "Owner Last", "Pass/Fail", "Document Name", "Element Name");
 
 	if(column_info[0].className == "col_0") { // if Part Name column exists
 		csvrow.push("Part Name");
@@ -17,10 +17,12 @@ function tableToCSV(num_of_urls) {
 	// Ref Document
 	csvrow = [];
 	var docname = document.getElementById("usr_docname").innerHTML;
+	docname = docname.replace(/,/g, ' ');
 	var username = document.getElementById("usr_username").innerHTML;
+	const [firstName, lastName] = splitUsername(username);
 	var userurl = document.getElementById("usr_url").innerHTML;
 
-	csvrow.push(docname, "", username, ""); //element name and score are left blank
+	csvrow.push(firstName, lastName, "", docname, ""); //element name and score are left blank
 
 	var all_parts = refTable.querySelectorAll('tr');
 	for (let r = 1; r < all_parts.length ; r++){ //excluding the first row
@@ -50,7 +52,9 @@ function tableToCSV(num_of_urls) {
 	for (let u = 0; u< num_of_urls; u++){
 		csvrow = [];
 		var docname = document.getElementById("ref_docname_" + u).innerHTML;
+		docname = docname.replace(/,/g, ' ');
 		var username = document.getElementById("ref_username_" + u).innerHTML;
+		const [firstName, lastName] = splitUsername(username);
 		var elname =   document.getElementById('elname_' + u).innerHTML;
 		var score;
 		if (document.getElementById("ref_score_" + u).innerHTML.includes('red-x')) {
@@ -61,7 +65,7 @@ function tableToCSV(num_of_urls) {
 		var url =   document.getElementById('url_' + u).innerHTML;
 		var error_message = document.getElementById("error_message_" + u).innerHTML;
 	
-		csvrow.push(username, score, docname, elname); 
+		csvrow.push(firstName, lastName, score, docname, elname); 
 		if(error_message == ""){ //Ignore the data if there is any  error message
 			var refTable = document.getElementById('table_' + u);
 			var all_parts = refTable.querySelectorAll('tr');
@@ -117,4 +121,16 @@ function downloadCSVFile(csv_data) {
     // Automatically click the link to trigger download
     temp_link.click();
     document.body.removeChild(temp_link);
+}
+
+function splitUsername(username) {
+  username = username.trim();
+  if (username.includes(" ")) {
+    const parts = username.split(" ");
+    const firstName = parts[0];
+    const lastName = parts.slice(1).join(" ");
+    return [firstName, lastName];
+  } else {
+    return [username, ""];
+  }
 }

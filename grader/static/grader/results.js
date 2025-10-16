@@ -1,13 +1,12 @@
-
 /*AJAX Function to build User properties table*/
 function build_user(response){
-    var user_props = response.user_props;
+    var user_props = response.user_props; // [user_name, doc_name, element_name, doc_time, image, url]
     var reference_table = document.getElementById("reference"); //open the reference table 
     var user_data_loaded = document.getElementById("user_data_loaded");
     if(user_data_loaded.value == "false"){
       user_data_loaded.value = "true"; //to make sure to update the table only once
-      document.getElementById("usr_docname").innerHTML = user_props[0][0];
-      document.getElementById("usr_username").innerHTML = user_props[0][1];
+      document.getElementById("usr_docname").innerHTML = user_props[0][1];
+      document.getElementById("usr_username").innerHTML = user_props[0][0];
       document.getElementById("usr_url").innerHTML = user_props[0][5];
 
       if (response.etype == 'partstudios'){ //if the etype is part studios then add a column called part name for parts
@@ -123,8 +122,8 @@ function build_results(response, url_num){
   }
   var results_table = document.getElementById("table_" + url_num); //open the results table 
   if(response.failed_url == "None"){
-    document.getElementById("ref_docname_"+ url_num).innerHTML = ref_props[0][0];
-    document.getElementById("ref_username_"+ url_num).innerHTML = ref_props[0][1];
+    document.getElementById("ref_docname_"+ url_num).innerHTML = ref_props[0][1];
+    document.getElementById("ref_username_"+ url_num).innerHTML = ref_props[0][0];
     document.getElementById("name_" + url_num).innerHTML = ref_props[0][2]; 
     document.getElementById("elname_" + url_num).innerHTML = ref_props[0][2];
     document.getElementById("thumbnail_" + url_num).src = ref_props[0][4];
