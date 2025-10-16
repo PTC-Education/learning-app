@@ -61,7 +61,7 @@ button.blue_button:disabled:hover{
   color:red;
 }
 
-.docname{
+.username{
     color: var(--boston-terrier, #333);
     font-size: 14px;
     font-weight: 600;
@@ -73,7 +73,7 @@ button.blue_button:disabled:hover{
   margin: 0px;
 }
 
-.username{
+.docname{
     color: var(--boston-terrier, #333);
     line-height: normal;
     margin:0;
@@ -204,7 +204,7 @@ td.symbols{
     display: flex;
   }
 .slider {
-    -webkit-appearance: none;
+    /* -webkit-appearance: none; */
     width: 40%;
     height: 3px;
     border-radius: 3px;
