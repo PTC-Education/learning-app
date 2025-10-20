@@ -421,3 +421,9 @@ input.gradeButton[type=submit]:disabled:hover {
   font-size: 11px;
   margin: 2px;
 }
+
+.note {
+  font-style: italic;
+  margin-top: 10px !important;
+  font-size: 0.8rem !important;
+}
