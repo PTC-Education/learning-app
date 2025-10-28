@@ -420,25 +420,29 @@ def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
 
-    classes=[]          # to store the names of classes
-    assignments=[]      #array to store assisgnments within the classes
+    classes=[]
+    offset = 0
+    next_classes = ''
     error_message=False
 
-    #get information about classrooms created by the user
+    # get the classes
     try:
-        classinfo = get_class_list(curr_user.os_domain,auth_token=curr_user.access_token) 
-        items = classinfo["items"]
-        for item in items:
-            if(item["resourceType"]=="classroom"):
-                class_id = item["id"]
-                class_name = item["name"].replace("/", "%2F")
-                number_of_assignment = item["numberOfAssignments"]
-                number_of_members = item["numberOfMembers"]
-                classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
+        while next_classes != None:
+            classinfo = get_class_list(curr_user.os_domain, offset, auth_token=curr_user.access_token)
+            items = classinfo['items']
+            for item in items:
+                if item['resourceType'] == 'classroom' and item['stateName'] != 'Archived':
+                    class_id = item["id"]
+                    class_name = item["name"].replace("/", "%2F")
+                    number_of_assignment = item["numberOfAssignments"]
+                    number_of_members = item["numberOfMembers"]
+                    classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
+            offset += 20
+            next_classes = classinfo['next']
     except:
        error_message = "We encountered an issue. Please check your internet connection."
     
-    #If no classes were detected
+    # If no classes were detected
     if ( len(classes) == 0): 
         context={
                 "user": curr_user, 
@@ -449,13 +453,13 @@ def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
         context=context
     )
     
-    context={
-            "page": "classes",
-            "user": curr_user, 
-            "user_type": user_type,
-            "classes":classes,
-             "error_message" : error_message
-        }
+    context = {
+        "page": "classes",
+        "user": curr_user, 
+        "user_type": user_type,
+        "classes":classes,
+        "error_message" : error_message
+    }
     return render(
         request, "grader/c_and_a.html", 
         context=context
