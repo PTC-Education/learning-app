@@ -222,12 +222,12 @@ def get_user_doc_list(
         return None
 
 def get_class_list(
-    domain: str,  auth_token: str, massAsGroup=True
+    domain: str,  offset: str, auth_token: str
 ) -> Any: 
     """ Get the list of classes for the user
     """
     response = requests.get(
-        os.path.join(domain, "api/globaltreenodes/magic/15?limit=50"), 
+        os.path.join(domain, "api/globaltreenodes/magic/15?offset={}&limit=20".format(offset)), 
         headers={
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
