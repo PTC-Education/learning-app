@@ -622,9 +622,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                 doc_name = submission["documents"][0]["metadata"]["dn"].replace("'", "").replace('"', '')
                 url = submission["documents"][0]["viewRef"]
                 number_of_attempts = submission["numberOfAttempts"]
-
                 submitted_student_works.append([member_id, member_name, number_of_attempts, doc_name, url])   
-
             #If the document is in progress
             else:
                 doc_name = "Not included"
@@ -634,6 +632,11 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
                     url = submission["documents"][0]["viewRef"]
                     
                 inprogress_student_works.append([member_id, member_name, state_name, doc_name, url])
+        # Sort by last name
+        sorted_student_works = sorted(
+            submitted_student_works,
+            key=lambda x: (x[1].split(" ", 1)[1] if " " in x[1] else x[1])
+        )
     except:
          error_message = "We encountered an issue. Please check your internet connection. "
     context={
@@ -641,7 +644,7 @@ def list_members(request: HttpRequest, os_user_id: str,  user_type:str, class_id
             "user_type": user_type,
             "etype": type_dict[curr_user.etype],
             "page": "submissions",
-            "submitted_student_works": submitted_student_works,
+            "submitted_student_works": sorted_student_works,
             # "action_required_student_works": action_required_student_works,
             "inprogress_student_works": inprogress_student_works,
             "class_name": class_name,
