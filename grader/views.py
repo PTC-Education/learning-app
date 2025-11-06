@@ -438,9 +438,12 @@ def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
                     number_of_members = item["numberOfMembers"]
                     classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
             offset += 20
-            next_classes = classinfo['next']
-    except:
-       error_message = "We encountered an issue. Please check your internet connection."
+            next_classes = classinfo.get('next')
+            if not next_classes:
+                break  # exit loop cleanly
+            
+    except Exception as e:
+       error_message = f"We encountered an issue: {e}"
     
     # If no classes were detected
     if ( len(classes) == 0): 
