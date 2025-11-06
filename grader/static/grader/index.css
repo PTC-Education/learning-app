@@ -2,8 +2,6 @@
 body {
     color: #333;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    padding-left: 5%;
-    padding-right: 5%;
     line-height: normal;
 }
 
@@ -81,15 +79,16 @@ ul.summary {
 .home_arrow_and_title {
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
   color: var(--zakim, #FFF);
-  background: var(--charles, #666);
+  background: var(--charles, #31aae1);
   text-align: center;
-  font-size: 14px;
+  font-size: 1.25em;
   font-style: normal;
   font-weight: 500;
   line-height: normal;
   margin: 0px 10px 5px 10px;
-  padding: 0px 15px 0px 10px;
+  padding: 5px 20px 5px 15px;
   justify-content: center; 
+  border-radius: 8px;
 }
 
 .home_arrow_and_title:hover .home_icon {
@@ -323,24 +322,38 @@ table.item_summary {
 
 .instructions{
     width: 90%;
-    color: #000;
+    color: #333;
     background-color: white;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-size: 14px;
+    font-size: 1em;
     font-style: normal;
     font-weight: 350;
     line-height: normal;
     margin-bottom:20px;
 }
 
+.instructions h4 {
+  margin-bottom: 0px;
+}
+
+.instructions ul {
+  margin-top: 2px;
+}
+
+.instructions a {
+  color: #31aae1;
+}
+
 /* Style the submit button of forms - generic*/ 
 input[type=submit] {
     padding: 10px 10px;
     cursor: pointer;
-    background-color: #CCCCCC;
+    color: #333;
+    background-color: #c8e9fd;
     border: 0 none;
     border-radius: 5px;
     margin-bottom: 5px;
+    font-size: 1em;
 }
 
 input[type=submit]:hover {
@@ -1000,6 +1013,11 @@ button.select{
   margin-top: 0px;
   box-sizing: border-box;
 }
+
+.footer a {
+  color: #31aae1;
+}
+
 .support_container {
   max-width: 1000px;
   margin-left: auto;
