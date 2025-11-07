@@ -2,6 +2,13 @@ body{
   min-width: 520px;
   margin: 0px;
 }
+
+.content_margin {
+    margin-top: 10px;
+    margin-left: 14px;
+    margin-right: 14px;
+}
+
 .property_box{
     width:95%;
     min-width: 510px;
@@ -13,8 +20,39 @@ body{
     margin:10px auto;  
 }
 
+.submissions_divider {
+    font-size: 0.85em;
+    padding: 10px;
+    margin: 10px 0px;
+    background-color: #eeeeee;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.center {
+    text-align: center;
+}
+
 /* Style the submit button of forms - generic*/ 
-input[type=submit] {
+
+input.go_home[type=submit] {
+  padding: 10px 10px;
+  cursor: pointer;
+  background-color: #31aae1;
+  color: #fff;
+  border: 0 none;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+input.go_home[type=submit]:hover {
+  background-color: #4ebaea;
+  cursor:pointer;
+}
+
+/* input[type=submit] {
   padding: 10px 10px;
   cursor: pointer;
   background-color: #CCCCCC;
@@ -26,7 +64,7 @@ input[type=submit] {
 input[type=submit]:hover {
   background-color: #ebebeb;
   cursor:pointer;
-}
+} */
 
 button.blue_button{
   font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;

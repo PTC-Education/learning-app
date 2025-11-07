@@ -422,25 +422,24 @@ def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
 
     classes=[]
     offset = 0
-    next_classes = ''
     error_message=False
 
     # get the classes
     try:
-        while next_classes != None:
+        while True:
             classinfo = get_class_list(curr_user.os_domain, offset, auth_token=curr_user.access_token)
             items = classinfo['items']
+            if len(items) < 1:
+                break
             for item in items:
                 if item['resourceType'] == 'classroom' and item['stateName'] != 'Archived':
                     class_id = item["id"]
                     class_name = item["name"].replace("/", "%2F")
+                    print(class_name)
                     number_of_assignment = item["numberOfAssignments"]
                     number_of_members = item["numberOfMembers"]
                     classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
             offset += 20
-            next_classes = classinfo.get('next')
-            if not next_classes:
-                break  # exit loop cleanly
             
     except Exception as e:
        error_message = f"We encountered an issue: {e}"

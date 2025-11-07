@@ -10,18 +10,18 @@
 
 <body id = "whole">
 <!-- Return to the home page -->
+    <div class="content_margin">
+        <button type = "button" disabled id = "download_report_button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
+        <form action = "{% url 'grader:index' user.os_user_id %}">
+            <input class="go_home" type = "submit" value= "&lt; Home">
+        </form>
 
-    <button type = "button" disabled id = "download_report_button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
-    <form action = "{% url 'grader:index' user.os_user_id %}">
-        <input type = "submit" value= "&lt; Home">
-    </form>
-
-    <div>
-        {% if error_message %}
-        <p id = "err_msg"><strong>{{ error_message }}</strong></p>
-        {% endif %}
+        <div>
+            {% if error_message %}
+            <p id = "err_msg"><strong>{{ error_message }}</strong></p>
+            {% endif %}
+        </div>
     </div>
-
     <script>
         $(document).ready(function () {
             var url = "{% url 'grader:user_data_on_result_page' user.os_user_id %}";
@@ -95,8 +95,8 @@
     </script>
 
     <div id="user_props">
-        <p class = "resulttile">Reference properties</p>
-        <div class = "property_box">
+        <p class = "submissions_divider bold center">Reference properties</p>
+        <!-- <div class = "property_box"> -->
 
             <div class="spinner-container">
                 <div id="features_user">
@@ -111,7 +111,7 @@
             </div>
 
             <div>
-                <div class = "display_table">
+                <!-- <div class = "display_table"> -->
                     <table id = "reference" class = "results">
                         <input type = 'hidden' id = 'user_data_loaded' value = "false"> 
                         <col class = "col_1">
@@ -126,10 +126,10 @@
                         </tr>
 
                     </table>
-                </div>
+                <!-- </div> -->
 
             </div>
-        </div>
+        <!-- </div> -->
     </div>
 
     <div id = "result_status_container" class = "adjust-container">
@@ -139,7 +139,7 @@
 
     <div hidden id = "adjust_container" class = "adjust-container">
 
-        <p class = "resulttile">Results</p>
+        <p class = "submissions_divider bold center">Results</p>
         <div class = "slidecontainer">
             <label for="precision_input">Sig Figs:</label>
             <input type = "number" min = "2" max = "6" value = "4" id = "precision_input" onchange = "re_round_tables('{{ref_urls|length}}')">
