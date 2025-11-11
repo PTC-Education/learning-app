@@ -157,10 +157,6 @@ tr,th,td {
   text-overflow: ellipsis;
 }
 
-.scioly_thumb {
-  text-align: center;
-}
-
 tr.classlist:hover, .row_selector:hover {
   /* background-color: #90cef1; */
   cursor: pointer;

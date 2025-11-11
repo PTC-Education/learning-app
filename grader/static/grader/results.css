@@ -17,7 +17,8 @@ body{
     font-size: 14px;
     float:left;
     padding:10px;
-    margin:10px auto;  
+    margin:10px auto;
+    border-bottom: solid 1px #eee;
 }
 
 .submissions_divider {
@@ -101,7 +102,7 @@ button.blue_button:disabled:hover{
 
 .username{
     color: var(--boston-terrier, #333);
-    font-size: 14px;
+    font-size: 1em;
     font-weight: 600;
     line-height: normal;
     margin:0
@@ -113,6 +114,7 @@ button.blue_button:disabled:hover{
 
 .docname{
     color: var(--boston-terrier, #333);
+    font-size: 1em;
     line-height: normal;
     margin:0;
   }
@@ -121,11 +123,14 @@ button.blue_button:disabled:hover{
   width:77%;
   min-width: 400px;
   float:left;
-  padding-left:5px;
-  padding-right: 5px;;
   color: #777;
   margin-top: 10px;
   margin-bottom: 10px;
+}
+
+.display_table td {
+  padding: 6px 0px;
+  border-radius: 4px;
 }
 
 .display_thumbnail{
@@ -136,7 +141,6 @@ button.blue_button:disabled:hover{
     justify-content: center;
     align-items: center;
     gap: 10px;
-
 }
 
 .results{
@@ -147,29 +151,34 @@ button.blue_button:disabled:hover{
     margin: auto;
 }
 
+.reference td {
+  padding: 6px 0px;
+  border-radius: 4px;
+  background-color: #ffffde;
+}
+
 table {
   width: 100%;
   text-align: center;
 }
 th{
   color: #333;
-  font-size: 12px;
-  padding-bottom: 10px;
+  font-size: 0.85em;
+  padding-bottom: 4px;
   font-weight: 700;
-  vertical-align: top;
+  vertical-align: middle;
 
 }
 td { 
   color: #777;
-  font-size: 11px;
-  line-height: 20px;
+  font-size: 0.85em;
   font-weight: 700;
-  vertical-align: top;
+  vertical-align: middle;
 
 }
 
 .unit{
-font-size: 10px;
+  font-size: 1em;
 }
 
 .green{
@@ -209,7 +218,7 @@ td.symbols{
   justify-content: space-between;
   max-width: 100%;
   margin: 0 auto;
-  padding: 10px 10px;
+  padding: 10px 0px;
 }
 
 .prop_select_check{
@@ -218,7 +227,6 @@ td.symbols{
 .prop_select_check:hover{
   cursor: pointer;
 }
-
 
 .slidecontainer {
   font-size: 12px;

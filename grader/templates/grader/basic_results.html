@@ -11,7 +11,7 @@
 <body id = "whole">
 <!-- Return to the home page -->
     <div class="content_margin">
-        <button type = "button" disabled id = "download_report_button" class = "blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
+        <button type = "button" disabled id = "download_report_button" class="blue_button" onclick = "tableToCSV('{{ref_urls|length}}')">Download report</button>
         <form action = "{% url 'grader:index' user.os_user_id %}">
             <input class="go_home" type = "submit" value= "&lt; Home">
         </form>
@@ -95,8 +95,8 @@
     </script>
 
     <div id="user_props">
-        <p class = "submissions_divider bold center">Reference properties</p>
-        <!-- <div class = "property_box"> -->
+        <p class="submissions_divider bold center">Reference properties</p>
+        <!-- <div class="property_box"> -->
 
             <div class="spinner-container">
                 <div id="features_user">
@@ -104,24 +104,24 @@
                 </div>
             </div>
 
-            <div class = "docinfo">
-                <p class = "username" id = "usr_username"></p>
-                <p class = "docname" id = "usr_docname"></p>
+            <div class="docinfo">
+                <p class="username" id = "usr_username"></p>
+                <p class="docname" id = "usr_docname"></p>
                 <p  hidden id = "usr_url"></p>
             </div>
 
             <div>
-                <!-- <div class = "display_table"> -->
-                    <table id = "reference" class = "results">
+                <!-- <div class="display_table"> -->
+                    <table id="reference" class="results reference">
                         <input type = 'hidden' id = 'user_data_loaded' value = "false"> 
-                        <col class = "col_1">
-                        <col class = "col_2">
-                        <col class = "col_3">
-                        <col class = "col_4">
+                        <col class="col_1">
+                        <col class="col_2">
+                        <col class="col_3">
+                        <col class="col_4">
                         <tr id = "user_table_header">
-                            <th>Mass <span class = unit>(kg)</span></th>
-                            <th>Volume <span class = unit>(m<sup>3</sup>)</span></th>
-                            <th>Surface area <span class = unit>(m<sup>2</sup>)</span></th>
+                            <th>Mass <span class="unit">(kg)</span></th>
+                            <th>Volume <span class="unit">(m<sup>3</sup>)</span></th>
+                            <th>Surface area <span class="unit">(m<sup>2</sup>)</span></th>
                             <th>Principal MOI</th>
                         </tr>
 
@@ -132,61 +132,61 @@
         <!-- </div> -->
     </div>
 
-    <div id = "result_status_container" class = "adjust-container">
-        <div id="result_status" class = "slidecontainer">    
+    <div id = "result_status_container" class="adjust-container">
+        <div id="result_status" class="slidecontainer">    
         </div>
     </div>
 
-    <div hidden id = "adjust_container" class = "adjust-container">
+    <div hidden id = "adjust_container" class="adjust-container">
 
-        <p class = "submissions_divider bold center">Results</p>
-        <div class = "slidecontainer">
+        <p class="submissions_divider bold center">Results</p>
+        <div class="slidecontainer">
             <label for="precision_input">Sig Figs:</label>
             <input type = "number" min = "2" max = "6" value = "4" id = "precision_input" onchange = "re_round_tables('{{ref_urls|length}}')">
             <label for="precision_input">&nbsp;&nbsp;&nbsp;Tolerance: </label>
             <input type = "number" min = "0" max = "99" value = "1.0" step="0.1" id = "tolerance_input" onchange = "compute_error('{{ref_urls|length}}')">
             <label>%</label>
         </div>
-        <div class = "propselector" onchange= "reform_result('{{ref_urls|length}}')" >
-            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_1"  checked = "True" />Mass</label>
-            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_2"  checked = "True"/>Volume</label>
-            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_3"  checked = "True"/>Surface Area</label>
-            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_4" checked = "True"/>Principal MOI</label>
-            <label class = "prop-selector-box-text"><input type = "checkbox" class = "prop_select_check" id = "check_5" />Sketch Status</label>
+        <div class="propselector" onchange= "reform_result('{{ref_urls|length}}')" >
+            <label class="prop-selector-box-text"><input type = "checkbox" class="prop_select_check" id = "check_1"  checked = "True" />Mass</label>
+            <label class="prop-selector-box-text"><input type = "checkbox" class="prop_select_check" id = "check_2"  checked = "True"/>Volume</label>
+            <label class="prop-selector-box-text"><input type = "checkbox" class="prop_select_check" id = "check_3"  checked = "True"/>Surface Area</label>
+            <label class="prop-selector-box-text"><input type = "checkbox" class="prop_select_check" id = "check_4" checked = "True"/>Principal MOI</label>
+            <label class="prop-selector-box-text"><input type = "checkbox" class="prop_select_check" id = "check_5" />Sketch Status</label>
         </div>
     </div>
 
     {% for url in ref_urls %} 
-        <div hidden id = "property_box_{{forloop.counter0}}" class = "property_box">
+        <div hidden id = "property_box_{{forloop.counter0}}" class="property_box">
             <div class="spinner-container">
                 <div id="features_{{forloop.counter0}}">
                     <!--This is where the spinner will load-->
                 </div>
             </div>
 
-            <div class = "display_thumbnail">
+            <div class="display_thumbnail">
                 <a id = "name_{{forloop.counter0}}" href = "{{ref_props.0.5|safe}}" target = "_blank">{{ref_props.0.2}}</a> 
                 <p hidden id = "url_{{forloop.counter0}}">{{ref_props.0.5}}</p>
                 <p hidden id = "elname_{{forloop.counter0}}">{{ref_props.0.2}}</p>
                 <img id = "thumbnail_{{forloop.counter0}}" src = "{{ref_props.0.4}}" alt = "" />
-                <div id = "ref_score_{{forloop.counter0}}" class = "score" ></div>
+                <div id = "ref_score_{{forloop.counter0}}" class="score" ></div>
             </div>
-            <div class = "docinfo">
-                <p class = "username" id = "ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
-                <p class = "docname" id = "ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
+            <div class="docinfo">
+                <p class="username" id = "ref_username_{{forloop.counter0}}">{{ref_props.0.0}}</p>
+                <p class="docname" id = "ref_docname_{{forloop.counter0}}">{{ref_props.0.1}}</p>
             </div>
-            <div class = "table_error_message" id = "error_message_{{forloop.counter0}}"></div>
+            <div class="table_error_message" id = "error_message_{{forloop.counter0}}"></div>
                 <div>
-                    <div class = "display_table">
-                        <table id = "table_{{forloop.counter0}}" class = "results">
-                            <col class = "col_1">
-                            <col class = "col_2">
-                            <col class = "col_3">
-                            <col class = "col_4">
+                    <div class="display_table">
+                        <table id = "table_{{forloop.counter0}}" class="results">
+                            <col class="col_1">
+                            <col class="col_2">
+                            <col class="col_3">
+                            <col class="col_4">
                             <tr id = "ref_table_header_{{forloop.counter0}}" >
-                                <th>Mass <span class = unit>(kg)</span></th>
-                                <th>Volume <span class = unit>(m<sup>3</sup>)</span></th>
-                                <th>Surface area <span class = unit>(m<sup>2</sup>)</span></th>
+                                <th>Mass <span class="unit">(kg)</span></th>
+                                <th>Volume <span class="unit">(m<sup>3</sup>)</span></th>
+                                <th>Surface area <span class="unit">(m<sup>2</sup>)</span></th>
                                 <th>Principal MOI</th>
                             </tr>
                         </table>
@@ -198,9 +198,9 @@
 
     {% endfor %} 
 
-    <div id = "failed_url_box" class = "failed_url_box">
+    <div id = "failed_url_box" class="failed_url_box">
         The following URLs failed to return a result.    
-        <div class = "failed_url_reasons" id = "failed_url_reasons" >
+        <div class="failed_url_reasons" id = "failed_url_reasons" >
             <br>
             Here are some reasons the CAD Checker may have failed to grade the document.
             <ul>
@@ -209,11 +209,11 @@
                 
             </ul>
         </div>                 
-        <label for = "failed_url_help" class = "helper" onmouseover = "show_popup('failed_url_reasons')" onmouseleave = "hide_popup('failed_url_reasons')">
+        <label for = "failed_url_help" class="helper" onmouseover = "show_popup('failed_url_reasons')" onmouseleave = "hide_popup('failed_url_reasons')">
             <img id = "helper_image" src= "{% static 'grader/images/help.png' %}"/>
         </label>
         <script>hide_popup('failed_url_reasons')</script>
-        <ul class = "failed_url_list" id = "failed_url_list">
+        <ul class="failed_url_list" id = "failed_url_list">
         </ul>
     </div>
     <script> document.getElementById("failed_url_box").style.display = "none" </script>

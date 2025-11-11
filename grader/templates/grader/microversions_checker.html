@@ -123,10 +123,10 @@
     </head>
     <body>
         <form action="{% url 'grader:index' user.os_user_id %}">
-            <input type="submit" value="&lt; Home"/>
+            <input type="submit" class="go_home" value="&lt; Home"/>
         </form>
         <div id="logo" class="logo">
-            <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="50%"/>
+            <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="60%"/>
         </div>
         <p class="doc_info_normal">Click the <strong>Document summary</strong> button below to view a count of the edits on this document, summarized by user.</p>
         <hr class="hr_thin">
@@ -138,7 +138,7 @@
             </div>
             <form method="get" id="update_form">
                 <input type="hidden" id="wm" value="w">
-                <input type="submit" value="Document Summary">
+                <input type="submit" value="Document Summary" class="go_home">
             </form>
         </div>
         <div class="spinner-container">
@@ -158,7 +158,7 @@
             <form method="get" id="load_more">
                 <input type="hidden" id="wm" value="m">
                 <input type="hidden" id="wmid" value=" ">
-                <input type="submit" id="load-more" value="Load More">
+                <input type="submit" class="go_home" id="load-more" value="Load More">
             </form>
         </div>
     </body>

@@ -48,7 +48,7 @@
                 },
                 success: function (response) {
                     // if assignment_doc_info comes back with exactly one element of the correct type, we assume that's it.
-                    if (response['tabs'].length == 1 || user_type == 'scioly') {
+                    if (response['tabs'].length == 1) {
                         response = response['tabs'][0];
                         // get URL from the response and update HTML
                         $('#url_'+i).html(response.tab_url);
@@ -124,7 +124,7 @@
     <body>
         <div class="content_margin">
             <form action="{% url 'grader:index' user.os_user_id %}">
-                <input class = "go_home" type="submit" value="&lt; Home">
+                <input class="go_home" type="submit" value="&lt; Home">
             </form>
             <div>
                 {% if error_message %}
