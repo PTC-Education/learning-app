@@ -157,7 +157,7 @@
     </head>
     <body>
         <div id="logo" class="logo">
-            <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="50%"/>
+            <img id="app_logo" src="{% static 'grader/images/logo.svg' %}" alt="app_logo" width="60%"/>
         </div>
         <p class="doc_info_title">Document Info Options</p>
         <p class="doc_info_normal">Click the <strong>Document summary</strong> button below to view a count of the edits on this document, summarized by user.  Or, or select an element from the list below then click <strong>Check element</strong> to view details of the selected part studio or assembly.</p>
@@ -165,7 +165,7 @@
         <div id="summary-start">
             <form method="get" id="load_summary">
                 <input type="hidden" id="wm" value="w">
-                <input type="submit" value="Document summary">
+                <input type="submit" value="Document summary" class="go_home">
             </form>
             <div class="spinner-container">
                 <div id="summary-spinner">
@@ -179,7 +179,7 @@
             <form method="get" id="load_more">
                 <input type="hidden" id="wm" value="m">
                 <input type="hidden" id="wmid" value=" ">
-                <input type="submit" id="load-more" value="Load More">
+                <input type="submit" id="load-more" value="Load More" class="go_home">
             </form>
             <div class="spinner-container">
                 <div id="load-more-spinner">
@@ -213,7 +213,7 @@
             {% endif %}
             <div id="check-options">
                 <input type="hidden" name="elements" id="elements" value="">  
-                <input type="button" class="check_model" id="check_model" value="Check element"/>
+                <input type="button" class="go_home" id="check_model" value="Check element"/>
                 <p class="msg" id="msg">&nbsp;</p>
             </div>
         </form>

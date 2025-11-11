@@ -170,7 +170,7 @@ def url_input_page(request: HttpRequest, os_user_id: str , user_type:str):
     **Arguments:**
         
     - ``os_user_id``: identify the :model:`grader.AuthUser` model with the user's login information.
-    - ``user_type:str``: type of user , options are student, educator, and scioly
+    - ``user_type:str``: type of user , options are student or educator
 
     **Template:**
 
@@ -422,14 +422,15 @@ def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
 
     classes=[]
     offset = 0
-    next_classes = ''
     error_message=False
 
     # get the classes
     try:
-        while next_classes != None:
+        while True:
             classinfo = get_class_list(curr_user.os_domain, offset, auth_token=curr_user.access_token)
             items = classinfo['items']
+            if len(items) < 1:
+                break
             for item in items:
                 if item['resourceType'] == 'classroom' and item['stateName'] != 'Archived':
                     class_id = item["id"]
@@ -438,9 +439,9 @@ def list_classes(request: HttpRequest, os_user_id: str,  user_type:str):
                     number_of_members = item["numberOfMembers"]
                     classes.append([class_id, class_name, number_of_assignment, number_of_members]) # Append all classroom id, name,  number of assignments and number of members
             offset += 20
-            next_classes = classinfo['next']
-    except:
-       error_message = "We encountered an issue. Please check your internet connection."
+            
+    except Exception as e:
+       error_message = f"We encountered an issue: {e}"
     
     # If no classes were detected
     if ( len(classes) == 0): 
@@ -988,206 +989,6 @@ def update_html(request: HttpRequest, os_user_id: str, wm: str, wmid: str):
     # Return the updated HTML
     return JsonResponse({'updated_html': updated_html, 'next_microversion': next_microversion, 'oldest_microversion': oldest_microversion, 'newest_microversion': newest_microversion, 'usernames_json' : usernames_json})
 
-def grade_scioly(request: HttpRequest, os_user_id: str): 
-    """ 
-    When a user submits, urls to compare with the model are collected and returned to the basic results page. 
-    The page renders for the number of urls returned. 
-    
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    
-    **Template:**
-    
-    :template:`grader/basic_results.html`
-    """
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-
-    #grab reference urls , possibly in a csv format, from the generic_grader.html
-    cs_ref_urls = request.POST.getlist('ref_url')
-    #parse the csv file into array of urls
-    ref_urls = convert_cs_to_array(cs_ref_urls) 
-
-    # Get all the relevant elements of the model that the user currently has open (PS and Assemblies)
-    user_elems = get_element_info(curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, "", auth_token=curr_user.access_token)
-    type_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
-    
-    if not user_elems: # API error 
-        return HttpResponse("An unexpected error has occurred. Please check internet connection and try relaunching the app.")
-    
-    user_props = [] # a 3D array that lists all the PS and Assemblies in a document along with their corresponding mass properties
-    # first indexing is an array of the element labels and the corresponding mass property [eType, name, [mass/center of mass]]
-    # second indexing of the mass property is [mass] for part studios or [COM_xaxis, COM_yaxis, COM_zaxis] for assemblies
-    key_answers = {}
-    elems_to_grade = []
-    for elem in user_elems:
-        if (elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY") and "source" not in elem["name"].lower():
-            elems_to_grade.append(elem["name"])
-            mass_props = get_mass_props(
-                    curr_user.os_domain, curr_user.did, curr_user.wv, curr_user.wvid, elem["id"], type_dict[elem["elementType"]], 
-                    massAsGroup=True, auth_token=curr_user.access_token
-                )
-            elem_mass_prop = [] #initialize
-            if elem["elementType"] == "PARTSTUDIO":
-                if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
-                    return HttpResponse("The Answer Key's Part Studio(s) are empty or do not have a material assigned. Please check the current document and regrade.")
-                else:
-                    elem_mass_prop = sig_figs(mass_props["bodies"]["-all-"]["mass"][0], 3)
-                    #key_answers.append(elem_mass_prop)
-                    key_answers[elem['name']] = elem_mass_prop
-            else: #elem["elementType"] == "ASSEMBLY"
-                if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
-                    return HttpResponse("The Answer Key's Assembly is empty or does not have a materials assigned. Please check the current document and regrade.")
-                else:
-                    elem_mass_prop = [str(sig_figs(val, 3)) for val in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz.  round to 4 decimal places
-                    if "%g" % float(elem_mass_prop[0]) == '0' or "%g" % float(elem_mass_prop[1]) == '0' or "%g" % float(elem_mass_prop[2]) == '0': #checks the HIGHLY IMPROBABLE case that the COM of the answer key is 0 on any axis.
-                        return HttpResponse("The Answer Key's Assembly Center of Mass has a zero in it. Please check the current document and regrade.")
-                    #key_answers.append(elem_mass_prop)
-                    key_answers[elem['name']] = elem_mass_prop
-                    elem_mass_prop = ', '.join(elem_mass_prop)
-                    
-            elem_props = [elem["elementType"], elem["name"], elem_mass_prop, 100.00] # last item in array is the full points for that part/assembly.
-            user_props.append(elem_props)
-            
-    # Get info about the document the user currently has opened
-    user_doc_info = get_doc_info(curr_user.os_domain, curr_user.did, auth_token=curr_user.access_token)
-    user_doc_name = user_doc_info['name']
-    user_user_name = user_doc_info["createdBy"]["name"]
-    user_doc_time = elapsed_time(user_doc_info['defaultWorkspace']['createdAt'],user_doc_info['defaultWorkspace']['modifiedAt'])
-    totalpoints = 100.00 * float((len(user_props))) # This will be the max score, since its the total points of the answer key
-
-    user_url = curr_user.os_domain + "/documents/" + curr_user.did + "/"+ curr_user.wv + "/" + curr_user.wvid + "/e/" + curr_user.eid
-
-    # Append user related information along with mass properties
-    user_props.insert(0, [user_doc_name, user_user_name, user_doc_time, user_url, totalpoints])
-    context={
-        "user": curr_user, 
-        "user_props": user_props,
-        "key_answers": key_answers,
-        "ref_urls": ref_urls,
-        "elems_to_grade": elems_to_grade 
-    }
-    return render(
-        request, "grader/scioly_results.html", 
-        context=context
-    )
-
-def grade_scioly_results(request: HttpRequest, os_user_id: str):
-    '''the purpose of this is to grade the science olympiad cases.
-    **Arguments:**
-    
-    - ``os_user_id``: the unique ID linked to the user's :model:`grader.AuthUser` profile
-    - ``ref_urls``: the reference element for the model to be compared to
-    
-    **Template:**
-    
-    :template:`grader/results.html`'''
-    curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
-
-    # Refresh token if needed 
-    if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
-        curr_user.refresh_oauth_token() 
-        
-    url = request.GET.get('ref_url') 
-    key_string = request.GET.get('key_answers').replace('&#x27;','')
-    key_answers = string_to_json(key_string)
-    elems_to_grade = request.GET.get('elems_to_grade').replace('&#x27;','')[1:-1]
-    #answerArray = string_to_array(key_answers)
-    toGradeArray = elems_to_grade.split(', ')
-    ref_url = get_scioly_ref_url_ids(url)
-
-    ## Initialize arrays for ref docs
-    ref_props = [] # 3D array - each 2D array corresponds to one URL
-    # First element of each 2D array is an array of doc info [user_name, doc_name, element_name, doc_time, image, url]
-    # Rest is model props [[mass, vol, periphery, principalInertia, partName],[...]] (without partName for assemblies)
-    failed_url = "None" # Array of all URLs that we failed to get info from
-
-    type_dict = {"PARTSTUDIO":"partstudios", "ASSEMBLY":"assemblies"}
-    # Get info and mass props for ref urls
-    try:
-        ref_elems = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token) # get all the elems from the URL
-        ref_props=[] # initialize empty array of ref props
-        ref_names=[]
-        for elem in ref_elems:
-            ref_names.append(elem['name'])
-
-        # First, we chek that the student has all of the necessary elements
-        toGradeArray = [unescape(elem).replace("\"", "").replace("'", "") for elem in toGradeArray]
-        key_answers = {unescape(key).replace("\"", "").replace("'", ""): value for key, value in key_answers.items()}
-        ref_names = [elem.replace("\"", "").replace("'", "") for elem in ref_names]
-        for name in toGradeArray:
-            if name not in ref_names:
-                raise Exception("Missing element")     
-        elemcount = 1
-        totalpoints = 0
-
-        # Next, we grade only those elements
-        for elem in ref_elems:
-            elem_name = elem['name'].replace("\"", "").replace("'", "")
-            if (elem["elementType"] == "PARTSTUDIO" or elem["elementType"] == "ASSEMBLY") and elem_name in toGradeArray:
-                mass_props = get_mass_props(
-                        curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], elem['id'], type_dict[elem["elementType"]], 
-                        massAsGroup=True, auth_token=curr_user.access_token
-                    )
-                elem_mass_prop = 0 #initialize
-                points = 0
-                if elem["elementType"] == "PARTSTUDIO":
-                    
-                    if mass_props["bodies"] == {} or mass_props["bodies"]["-all-"]["hasMass"] == False: # checks if the PS is empty or material is not assigned
-                        elem_mass_prop = 0
-                    else:
-                        elem_mass_prop = sig_figs(mass_props["bodies"]["-all-"]["mass"][0], 3) #round to 4 decimal places
-                    ans = sig_figs(key_answers[elem_name], 3)
-                    points = 100*(1 - abs((elem_mass_prop - ans)/ans))
-                    if points < 0:
-                        points = 0
-                    points = round(points, 2)
-                    
-                else: #elem["elementType"] == "ASSEMBLY"
-                    if mass_props["hasMass"] == False: #checks if the assembly is empty or if ALL parts do not have material assigned.
-                        elem_mass_prop = [0,0,0]
-                    else:
-                        elem_mass_array = [sig_figs(float(string),3) for string in mass_props["centroid"][0:3]] # this array has 3 values: first three are COM best fit for xyz. 
-                        elem_mass_prop = ', '.join(map(str, elem_mass_array))
-                    ans = key_answers[elem_name]
-                    ans = [sig_figs(i, 3) for i in ans]
-                    points = 100*(1 - ((1/3)*abs((elem_mass_array[0] - ans[0])/ans[0])) - ((1/3)*abs((elem_mass_array[1] - ans[1])/ans[1])) - ((1/3)*abs((elem_mass_array[2] - ans[2])/ans[2])))
-                    if points < 0:
-                        points = 0
-                    points = round(points, 2)
-                    
-                ref_elem_props =  [elem["elementType"], elem["name"], elem_mass_prop, points]
-                ref_props.append(ref_elem_props)
-                totalpoints = totalpoints + points
-                elemcount = elemcount + 1
-
-        # Get all additional info from the reference document
-        totalpoints = round(totalpoints, 2)
-        image = get_document_thumbnail(curr_user.os_domain, ref_url['did'], '300x300', auth_token=curr_user.access_token)
-        element_info = get_element_info(curr_user.os_domain, ref_url['did'], ref_url['wv'], ref_url['wvid'], "", auth_token=curr_user.access_token)
-        element_name = element_info[0]["name"]
-        ref_doc_info = get_doc_info(curr_user.os_domain, ref_url['did'], auth_token=curr_user.access_token)
-        user_name = ref_doc_info["createdBy"]["name"]
-        doc_name = ref_doc_info['name']
-        doc_time = elapsed_time(ref_doc_info['defaultWorkspace']['createdAt'],ref_doc_info['defaultWorkspace']['modifiedAt'])
-        # Insert first element of array 
-        ref_props.insert(0,[doc_name,user_name, element_name, doc_time, image, url, totalpoints])
-    except Exception as error:
-        # If anything above failed, add url to the fairled URL list
-        print(f"Error: {error}")
-        traceback.print_exc()
-        failed_url = ref_url
-            
-    context={
-        "failed_url": failed_url,
-        "ref_props": ref_props
-    }
-    
-    return HttpResponse(
-        json.dumps(context),
-        content_type="application/json"
-    )
-
 #################### Other helper functions ####################
 def sig_figs(x, precision):
     x = float(x)
@@ -1221,17 +1022,6 @@ def get_ref_url_ids(ref_url: str):
             return ref
         except:
             return None
-    
-def get_scioly_ref_url_ids(ref_url: str):
-    try:
-        ref = dict()
-        ref['domain'] = ref_url.split("/documents/")[0]
-        ref['did'] = ref_url.split("documents/")[1].split("/")[0]
-        ref['wv'] = ref_url.split("documents/")[1].split("/")[1].split("/")[0]
-        ref['wvid'] = ref_url.split("/e/")[0].split("/")[-1]
-        return ref
-    except:
-        return None
     
 def convert_cs_to_array(cs_ref_urls: str): 
     
