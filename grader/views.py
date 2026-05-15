@@ -25,49 +25,46 @@ import traceback
 def login(request: HttpRequest): 
     """ 
     When the app extension is first opened, this view should be called. 
-
     **Context:**
-    
     If new user, redirects the user to initiate Onshape's OAuth authorization. Once authenticated, the user will be redirected back to :view:`grader.views.authorize`.  
-    
     - A new :model:`grader.AuthUser` model will be created for the new user with the user's ``os_user_id``. 
-    
     - If the user already exists, new Onshape working environment IDs will be recorded. 
-    
     """
-
+    
     user_id = request.GET.get('userId')
+    
+    # Grant flow from Onshape account settings — no userId present
+    if not user_id:
+        return redirect(
+            os.environ['OAUTH_URL'] + "/oauth/authorize"
+            + "?response_type=code&client_id={}".format(
+                os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
+            )
+        )
+
     try: 
         user = AuthUser.objects.get(os_user_id=user_id)
         # Refresh token
-        user.refresh_oauth_token() 
-            
+        user.refresh_oauth_token()     
     except ObjectDoesNotExist: 
         # Create a new user 
-        try:
-            user = AuthUser.objects.get(os_user_id=user_id).delete()
-        except:
-            pass
         user = AuthUser(os_user_id=user_id)
     
+    user.os_domain = request.GET.get('server')
+    user.did = request.GET.get('did')
+    user.wv = request.GET.get('wvm')
+    user.wvid = request.GET.get('wvmid')
+    user.eid = request.GET.get('eid')
+    user.etype = request.GET.get('etype')
+    
     try:
-        user.os_domain = request.GET.get('server')
-        user.did = request.GET.get('did')
-        user.wv = request.GET.get('wvm')
-        user.wvid = request.GET.get('wvmid')
-        user.eid = request.GET.get('eid')
-        user.etype = request.GET.get('etype')
         user.save() 
-    except:
-        user.etype = "grant"
-        user.save() 
-        pass
+    except Exception as e:
+        return HttpResponse(f"User authentication failed!\nError saving user: {e}", status=500)
     
     return redirect(
-        os.path.join(
-            os.environ['OAUTH_URL'], 
-            "oauth/authorize"
-        ) + "?response_type=code&client_id={}".format(
+        os.environ['OAUTH_URL'] + "/oauth/authorize"
+        + "?response_type=code&client_id={}".format(
             os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
         )
     )
