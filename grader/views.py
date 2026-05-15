@@ -3,6 +3,7 @@ import requests
 from datetime import timedelta, datetime
 from math import floor, log10
 from html import unescape
+from urllib.parse import urlencode
 from typing import Union 
 import json
 import re
@@ -35,12 +36,12 @@ def login(request: HttpRequest):
     
     # Grant flow from Onshape account settings — no userId present
     if not user_id:
-        return redirect(
-            os.environ['OAUTH_URL'] + "/oauth/authorize"
-            + "?response_type=code&client_id={}".format(
-                os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D')
-            )
-        )
+        params = urlencode({
+            "response_type": "code",
+            "client_id": os.environ['OAUTH_CLIENT_ID'],
+            "state": "grant",
+        })
+        return redirect(os.environ['OAUTH_URL'] + "/oauth/authorize?" + params)
 
     try: 
         user = AuthUser.objects.get(os_user_id=user_id)
@@ -113,16 +114,18 @@ def authorize(request: HttpRequest):
         user = AuthUser.objects.get(os_user_id=sess_response['id'])
     except ObjectDoesNotExist:
         user = AuthUser(os_user_id=sess_response['id'], etype="grant")
-        
+
     user.access_token = token_response['access_token']
     user.refresh_token = token_response['refresh_token']
     user.expires_at = timezone.now() + timedelta(seconds=token_response['expires_in'])
     user.save() 
 
-    if user.etype == "infopanel":
-        return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
-    elif user.etype == "grant":
+    state = request.GET.get('state')
+
+    if state == "grant":
         return HttpResponse("App successfully authorized! Please return to Onshape and open the CAD Checker app from the right panel.")
+    elif user.etype == "infopanel":
+        return HttpResponseRedirect(reverse("grader:doc_info_checker", args=[user.os_user_id]))
     else:
         return HttpResponseRedirect(reverse("grader:index", args=[user.os_user_id]))
 
