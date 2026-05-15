@@ -33,7 +33,7 @@ def login(request: HttpRequest):
     
     user_id = request.GET.get('userId')
     
-     # Grant flow from Onshape account settings — no userId present
+    # Grant flow from Onshape account settings — no userId present
     if not user_id:
         return redirect(
             os.environ['OAUTH_URL'] + "/oauth/authorize"
