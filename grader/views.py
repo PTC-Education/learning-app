@@ -109,7 +109,11 @@ def authorize(request: HttpRequest):
         headers={"Authorization": "Bearer " + token_response['access_token']}
     ).json() 
 
-    user = AuthUser.objects.get(os_user_id=sess_response['id'])
+    try:
+        user = AuthUser.objects.get(os_user_id=sess_response['id'])
+    except ObjectDoesNotExist:
+        user = AuthUser(os_user_id=sess_response['id'], etype="grant")
+        
     user.access_token = token_response['access_token']
     user.refresh_token = token_response['refresh_token']
     user.expires_at = timezone.now() + timedelta(seconds=token_response['expires_in'])
