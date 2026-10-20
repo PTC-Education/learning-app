@@ -22,9 +22,13 @@ body{
 }
 
 .submissions_divider {
-    font-size: 0.85em;
+    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: left;
     padding: 10px;
-    margin: 10px 0px;
+    margin: 10px 2px 10px 0px;
+    border-radius: 6px;
     background-color: #eeeeee;
 }
 
@@ -102,7 +106,7 @@ button.blue_button:disabled:hover{
 
 .username{
     color: var(--boston-terrier, #333);
-    font-size: 1em;
+    font-size: 0.85em;
     font-weight: 600;
     line-height: normal;
     margin:0
@@ -114,7 +118,7 @@ button.blue_button:disabled:hover{
 
 .docname{
     color: var(--boston-terrier, #333);
-    font-size: 1em;
+    font-size: 0.85em;
     line-height: normal;
     margin:0;
   }
@@ -302,44 +306,59 @@ td.symbols{
   }
 
   .failed_url_box{
-    width: 95%;
+    width: 100%;
+    min-width: 510px;
     font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
     font-style: normal;
-    position: relative;
-    font-size: 12px;
+    font-size: 14px;
     float: left;
-    padding: 10px;
-    box-shadow: 0 5px 10px rgba(0,0,0,.25);
-    margin: 10px auto;  
-    z-index: 1;
-  }
-
-  ul.failed_url_list{
-    color:darkviolet;
-    font-size: 10px;
-    overflow: hidden;
-    white-space: nowrap;
-    list-style: none;
-    text-align: left;
     padding: 0px;
+    margin: 10px auto;
+    border-bottom: solid 1px #eee;
   }
 
-  .failed_url_reasons{
-    font-family: Flama,Open Sans,Helvetica Neue,Helvetica,Arial,sans-serif;
-    width: 400px;
-    font-style: normal;
-    font-size: 12px;
-    position:absolute;
-    height: 150px;
-    top: -160px;
-    left: 30px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    z-index: 10;
-    padding: 10px;
-    box-shadow: 0 5px 10px rgba(0,0,0,.25);
-    margin:10px auto;
-    background-color: #FCFCFC ;
+  table.failed_url_table{
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+
+  col.failed_name_col{
+    width: 25%;
+  }
+
+  col.failed_thumbnail_col{
+    width: 120px;
+  }
+
+  .failed_url_table th, .failed_url_table td{
+    padding: 12px 16px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+    color: #333;
+    font-size: 0.85em;
+    font-weight: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .failed_url_table th{
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .failed_url_table a{
+    color: #31aae1;
+  }
+
+  .failed_url_reason{
+    color: #942d2b;
+    font-size: 0.85em;
+    margin-top: 2px;
+  }
+
+  .failed_url_table img{
+    max-width: 60px;
+    max-height: 60px;
   }
 
 
