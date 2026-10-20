@@ -301,9 +301,11 @@ p.single_line_text{
 
 .submissions_divider {
     font-size: 0.85em;
+    font-weight: bold;
     padding: 10px;
     margin: 10px 0px;
     background-color: #eeeeee;
+    border-radius: 6px;
 }
 
 .classes_table {

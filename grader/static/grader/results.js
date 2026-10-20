@@ -220,20 +220,55 @@ function build_results(response, url_num){
     calculate_error_for_url(url_num);
   }
   else{
-    //hide the box for failed results
-    document.getElementById("property_box_" + url_num).style.display = 'none';
-    //show the failed results container box
-    document.getElementById("failed_url_box").style.display = "block";
-    //get the failed url list
-    var failed_url_list = document.getElementById("failed_url_list");
-    //creat a new entry to failed url list
-    var new_url = document.createElement("li");
-    //set error message for title - get more info on hover
-    new_url.setAttribute('title', response.error_msg);
-    new_url.innerHTML = "<a href = " + response.failed_url + " target = '_blank'>" + response.failed_url + "</a>";
-    failed_url_list.appendChild(new_url);
-
+    add_failed_url(url_num, response.failed_url, response.error_msg, ref_props ? ref_props[0] : null);
   }
+}
+
+/*Function to move a url that couldn't be graded into the failed url table
+  doc_props, when the server could read the document, is [user_name, doc_name, element_name, doc_time, image, url]*/
+function add_failed_url(url_num, failed_url, error_msg, doc_props){
+  //hide the box for failed results
+  document.getElementById("property_box_" + url_num).style.display = 'none';
+  //record the details and error so the csv report includes them
+  document.getElementById("url_" + url_num).textContent = failed_url;
+  document.getElementById("error_message_" + url_num).textContent = error_msg;
+  if (doc_props){
+    document.getElementById("ref_username_" + url_num).textContent = doc_props[0];
+    document.getElementById("ref_docname_" + url_num).textContent = doc_props[1];
+    document.getElementById("elname_" + url_num).textContent = doc_props[2];
+  }
+  //show the failed results container box
+  document.getElementById("failed_url_box").style.display = "block";
+
+  //create a new row with name, document link with the reason underneath, and thumbnail
+  var row = document.createElement("tr");
+
+  var name_cell = document.createElement("td");
+  name_cell.textContent = doc_props ? doc_props[0] : "";
+  row.appendChild(name_cell);
+
+  var doc_cell = document.createElement("td");
+  var link = document.createElement("a");
+  link.href = failed_url;
+  link.target = "_blank";
+  link.textContent = doc_props ? doc_props[1] + " - " + doc_props[2] : failed_url;
+  var reason = document.createElement("div");
+  reason.className = "failed_url_reason";
+  reason.textContent = error_msg;
+  doc_cell.appendChild(link);
+  doc_cell.appendChild(reason);
+  row.appendChild(doc_cell);
+
+  var thumbnail_cell = document.createElement("td");
+  if (doc_props && doc_props[4]){
+    var thumbnail = document.createElement("img");
+    thumbnail.src = doc_props[4];
+    thumbnail.alt = "";
+    thumbnail_cell.appendChild(thumbnail);
+  }
+  row.appendChild(thumbnail_cell);
+
+  document.getElementById("failed_url_list").appendChild(row);
 }
 
 

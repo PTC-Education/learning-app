@@ -56,15 +56,17 @@ function tableToCSV(num_of_urls) {
 		var username = document.getElementById("ref_username_" + u).innerHTML;
 		const [firstName, lastName] = splitUsername(username);
 		var elname =   document.getElementById('elname_' + u).innerHTML;
+		var url =   document.getElementById('url_' + u).innerHTML;
+		var error_message = document.getElementById("error_message_" + u).innerHTML;
 		var score;
-		if (document.getElementById("ref_score_" + u).innerHTML.includes('red-x')) {
+		if (error_message != "") { // the document couldn't be graded
+			score = "Error";
+		} else if (document.getElementById("ref_score_" + u).innerHTML.includes('red-x')) {
 			score = "Fail";
 		} else {
 			score = "Pass";
 		}
-		var url =   document.getElementById('url_' + u).innerHTML;
-		var error_message = document.getElementById("error_message_" + u).innerHTML;
-	
+
 		csvrow.push(firstName, lastName, score, docname, elname); 
 		if(error_message == ""){ //Ignore the data if there is any  error message
 			var refTable = document.getElementById('table_' + u);

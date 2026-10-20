@@ -97,7 +97,7 @@ def authorize(request: HttpRequest):
                 os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
             ), 
             headers={'Content-Type': "application/x-www-form-urlencoded"}
-        ).json() 
+        ).json()
     except:
         return HttpResponse(
             "User authentication failed!\nError getting access token for user."
@@ -108,7 +108,7 @@ def authorize(request: HttpRequest):
     sess_response = requests.get(
         "https://cad.onshape.com/api/users/sessioninfo", 
         headers={"Authorization": "Bearer " + token_response['access_token']}
-    ).json() 
+    ).json()
 
     try:
         user = AuthUser.objects.get(os_user_id=sess_response['id'])
@@ -813,9 +813,10 @@ def update_result_page(request: HttpRequest, os_user_id: str):
             content_type="application/json"
             )
 
-    props = [] 
+    props = []
     failed_url = "None"
     error_msg = None
+    sketch_info = None
 
     element_info = get_element_info(domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
     # Get all additional info from the reference document
@@ -834,7 +835,10 @@ def update_result_page(request: HttpRequest, os_user_id: str):
             json.dumps({'failed_url': url, 'error_msg': error_msg}),
             content_type="application/json"
             )
- 
+
+    # Document details so failed results can still show who and what failed
+    doc_props = [user_name, doc_name, element_name, doc_time, image, url]
+
     # Refresh token if needed 
     if curr_user.expires_at < timezone.now() + timedelta(minutes=20): 
         curr_user.refresh_oauth_token() 
@@ -842,9 +846,13 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     # Throw a proper error when the element type doesn't match    
     type_dict = {"partstudios":"PARTSTUDIO", "assemblies":"ASSEMBLY"}
     if( not elementType == type_dict[curr_user.etype]):
-        error_msg = 'The element types mismatched.'
+        type_names = {"PARTSTUDIO": "Part Studio", "ASSEMBLY": "Assembly"}
+        error_msg = "This submission can't be graded because it's {} tab and you're grading {}.".format(
+            "an " + type_names[elementType] if elementType in type_names else "a different type of",
+            "an Assembly" if curr_user.etype == "assemblies" else "a Part Studio"
+        )
         return HttpResponse(
-            json.dumps({'failed_url': url, 'error_msg': error_msg}),
+            json.dumps({'failed_url': url, 'error_msg': error_msg, 'ref_props': [doc_props]}),
             content_type="application/json"
             )
 
@@ -857,7 +865,7 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     if not mass_props: # API error 
         error_msg = "Couldn't access the mass properties."
         return HttpResponse(
-            json.dumps({'failed_url': url, 'error_msg': error_msg }),
+            json.dumps({'failed_url': url, 'error_msg': error_msg, 'ref_props': [doc_props]}),
             content_type="application/json"
         )
 
@@ -886,7 +894,7 @@ def update_result_page(request: HttpRequest, os_user_id: str):
             if(props == -1):
                 error_msg = "No parts were detected in the Part Studio."
                 return HttpResponse(
-                    json.dumps({'failed_url': url, 'error_msg': error_msg }),
+                    json.dumps({'failed_url': url, 'error_msg': error_msg, 'ref_props': [doc_props]}),
                     content_type="application/json"
                 )
             
@@ -897,7 +905,7 @@ def update_result_page(request: HttpRequest, os_user_id: str):
             if(props == -1):
                 error_msg = "No instances were detected in the Assembly."
                 return HttpResponse(
-                    json.dumps({'failed_url': url, 'error_msg': error_msg }),
+                    json.dumps({'failed_url': url, 'error_msg': error_msg, 'ref_props': [doc_props]}),
                     content_type="application/json"
                 )
         
