@@ -1,5 +1,6 @@
 import os 
 import requests
+from django.conf import settings
 from datetime import timedelta, datetime
 from math import floor, log10
 from html import unescape
@@ -96,7 +97,8 @@ def authorize(request: HttpRequest):
                 os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
                 os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
             ), 
-            headers={'Content-Type': "application/x-www-form-urlencoded"}
+            headers={'Content-Type': "application/x-www-form-urlencoded"},
+            timeout=settings.OUTBOUND_HTTP_TIMEOUT
         ).json()
     except:
         return HttpResponse(
@@ -107,7 +109,8 @@ def authorize(request: HttpRequest):
     # for backend data storage 
     sess_response = requests.get(
         "https://cad.onshape.com/api/users/sessioninfo", 
-        headers={"Authorization": "Bearer " + token_response['access_token']}
+        headers={"Authorization": "Bearer " + token_response['access_token']},
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     ).json()
 
     try:
@@ -778,7 +781,9 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
         content_type="application/json"
     )
 
-def update_result_page(request: HttpRequest, os_user_id: str): 
+ONSHAPE_TIMEOUT_MSG = "Onshape took too long to respond. Try grading this document again."
+
+def update_result_page(request: HttpRequest, os_user_id: str):
     """ 
     This function returns mass properties and results for one document at a time. It is called from an AJAX function
     There are three checks to make sure it returns correct information.
@@ -818,9 +823,9 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     error_msg = None
     sketch_info = None
 
-    element_info = get_element_info(domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
     # Get all additional info from the reference document
     try:
+        element_info = get_element_info(domain, did, wv, wvid, eid, auth_token=curr_user.access_token)
         elementType = element_info[0]['elementType']
         element_name = element_info[0]["name"]
         doc_info = get_doc_info(domain, did, auth_token=curr_user.access_token)
@@ -828,7 +833,12 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         doc_name = doc_info['name']
         doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
         image = get_shaded_views(domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token)
-        
+
+    except requests.exceptions.Timeout:
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': ONSHAPE_TIMEOUT_MSG}),
+            content_type="application/json"
+            )
     except:
         error_msg = "Couldn't access the document. Make sure it is shared with you."
         return HttpResponse(
@@ -857,11 +867,17 @@ def update_result_page(request: HttpRequest, os_user_id: str):
             )
 
     # Get mass props of model the user currently has opened
-    mass_props = get_mass_props(
-            curr_user.os_domain, did, wv, wvid, eid, curr_user.etype, 
-            massAsGroup=False, auth_token=curr_user.access_token
+    try:
+        mass_props = get_mass_props(
+                curr_user.os_domain, did, wv, wvid, eid, curr_user.etype,
+                massAsGroup=False, auth_token=curr_user.access_token
+            )
+    except requests.exceptions.Timeout:
+        return HttpResponse(
+            json.dumps({'failed_url': url, 'error_msg': ONSHAPE_TIMEOUT_MSG, 'ref_props': [doc_props]}),
+            content_type="application/json"
         )
-    
+
     if not mass_props: # API error 
         error_msg = "Couldn't access the mass properties."
         return HttpResponse(
@@ -887,9 +903,6 @@ def update_result_page(request: HttpRequest, os_user_id: str):
 
             # partstudios props = [[mass, vol, periphery, principalInertia, partName],[...]] sorted by vol decending
             props = make_props(mass_props, partId_to_name)
-            sketch_info = get_sketch_info(
-                curr_user.os_domain, did, wv, wvid, eid, curr_user.access_token
-            )
             #if the props returns -1, it means there were no parts in the part studio
             if(props == -1):
                 error_msg = "No parts were detected in the Part Studio."
@@ -897,7 +910,10 @@ def update_result_page(request: HttpRequest, os_user_id: str):
                     json.dumps({'failed_url': url, 'error_msg': error_msg, 'ref_props': [doc_props]}),
                     content_type="application/json"
                 )
-            
+            sketch_info = get_sketch_info(
+                curr_user.os_domain, did, wv, wvid, eid, curr_user.access_token
+            )
+
         elif curr_user.etype == "assemblies":
             # assemblies props = [mass, vol, periphery, principalInertia]
             props = make_props(mass_props, None)
@@ -908,7 +924,10 @@ def update_result_page(request: HttpRequest, os_user_id: str):
                     json.dumps({'failed_url': url, 'error_msg': error_msg, 'ref_props': [doc_props]}),
                     content_type="application/json"
                 )
-        
+
+    except requests.exceptions.Timeout:
+        failed_url = url
+        error_msg = ONSHAPE_TIMEOUT_MSG
     except:
         # If anything above failed, add url to the fairled URL list
         failed_url = url
