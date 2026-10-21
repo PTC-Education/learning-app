@@ -4,7 +4,7 @@ from django.conf import settings
 from datetime import timedelta, datetime
 from math import floor, log10
 from html import unescape
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 from typing import Union 
 import json
 import re
@@ -21,6 +21,10 @@ from .models import *
 from .api import *
 
 import traceback
+import logging
+import time
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -783,6 +787,15 @@ def user_data_on_result_page(request: HttpRequest, os_user_id: str):
 
 ONSHAPE_TIMEOUT_MSG = "Onshape took too long to respond. Try grading this document again."
 
+def log_onshape_timeout(e: requests.exceptions.Timeout, timer_start: float) -> None:
+    """ Log which Onshape call timed out. Only the URL path is logged so query strings never reach the logs.
+    """
+    path = urlsplit(e.request.url).path if e.request is not None else "unknown"
+    logger.warning(
+        "Onshape timeout in update_result_page: %s %s after %.1fs total",
+        type(e).__name__, path, time.monotonic() - timer_start
+    )
+
 def update_result_page(request: HttpRequest, os_user_id: str):
     """ 
     This function returns mass properties and results for one document at a time. It is called from an AJAX function
@@ -802,6 +815,7 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     
     :template:`grader/basic_results.html`
     """
+    timer_start = time.monotonic()
     curr_user = get_object_or_404(AuthUser, os_user_id=os_user_id)
     domain = request.GET.get('domain')
     did = request.GET.get('did')
@@ -822,6 +836,7 @@ def update_result_page(request: HttpRequest, os_user_id: str):
     failed_url = "None"
     error_msg = None
     sketch_info = None
+    timed_out = False
 
     # Get all additional info from the reference document
     try:
@@ -834,9 +849,10 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         doc_time = elapsed_time(doc_info['defaultWorkspace']['createdAt'],doc_info['defaultWorkspace']['modifiedAt'])
         image = get_shaded_views(domain, did, wv, wvid, eid, curr_user.etype, auth_token=curr_user.access_token)
 
-    except requests.exceptions.Timeout:
+    except requests.exceptions.Timeout as e:
+        log_onshape_timeout(e, timer_start)
         return HttpResponse(
-            json.dumps({'failed_url': url, 'error_msg': ONSHAPE_TIMEOUT_MSG}),
+            json.dumps({'failed_url': url, 'error_msg': ONSHAPE_TIMEOUT_MSG, 'timed_out': True}),
             content_type="application/json"
             )
     except:
@@ -872,9 +888,10 @@ def update_result_page(request: HttpRequest, os_user_id: str):
                 curr_user.os_domain, did, wv, wvid, eid, curr_user.etype,
                 massAsGroup=False, auth_token=curr_user.access_token
             )
-    except requests.exceptions.Timeout:
+    except requests.exceptions.Timeout as e:
+        log_onshape_timeout(e, timer_start)
         return HttpResponse(
-            json.dumps({'failed_url': url, 'error_msg': ONSHAPE_TIMEOUT_MSG, 'ref_props': [doc_props]}),
+            json.dumps({'failed_url': url, 'error_msg': ONSHAPE_TIMEOUT_MSG, 'ref_props': [doc_props], 'timed_out': True}),
             content_type="application/json"
         )
 
@@ -925,9 +942,11 @@ def update_result_page(request: HttpRequest, os_user_id: str):
                     content_type="application/json"
                 )
 
-    except requests.exceptions.Timeout:
+    except requests.exceptions.Timeout as e:
+        log_onshape_timeout(e, timer_start)
         failed_url = url
         error_msg = ONSHAPE_TIMEOUT_MSG
+        timed_out = True
     except:
         # If anything above failed, add url to the fairled URL list
         failed_url = url
@@ -939,7 +958,8 @@ def update_result_page(request: HttpRequest, os_user_id: str):
         "failed_url": failed_url,
         'error_msg': error_msg,
         "ref_props": props,
-        "sketch_info": sketch_info
+        "sketch_info": sketch_info,
+        "timed_out": timed_out
     }
 
     return HttpResponse(
