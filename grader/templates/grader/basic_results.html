@@ -52,12 +52,13 @@
             var loaded_returns = 0;
             var failed_returns = 0;
             var jobs = [];  //one function per submission; each calls done() when its request finishes
+            var retries = [];  //submissions where Onshape timed out on the first pass
             '{% for url in ref_urls %}'
 
                 $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table
                 loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
 
-                jobs.push(function (done) {
+                jobs.push(function grade_doc(done, is_retry) {
                 var domain = "{{url.domain}}";
                 var did =   "{{url.did}}";
                 var wv =     "{{url.wv}}";
@@ -78,6 +79,10 @@
                         'eid' : eid,
                     },
                     success: function (response) {
+                    if (response.timed_out && !is_retry) {
+                        retries.push(grade_doc);    //keep the spinner; try once more after everything else finishes
+                        return;
+                    }
                     $('#features_{{forloop.counter0}}').html(" ");
                     try {
                         build_results(response, "{{forloop.counter0}}");
@@ -106,9 +111,20 @@
 
             update_result_status(loaded_returns, failed_returns);  //show result loading status
 
+            var in_flight = 0;
+            var retrying = false;
             function run_next(){
                 if (jobs.length > 0) {
-                    jobs.shift()(run_next);
+                    in_flight += 1;
+                    jobs.shift()(function () { in_flight -= 1; run_next(); }, retrying);
+                } else if (in_flight == 0 && !retrying && retries.length > 0) {
+                    //first pass is done; Onshape has usually finished computing the slow ones by now
+                    retrying = true;
+                    jobs = retries;
+                    $('#result_status').append('<p>Retrying ' + retries.length + ' document(s) that timed out...</p>');
+                    for (var i = 0; i < MAX_CONCURRENT_RESULTS; i++) {
+                        run_next();
+                    }
                 }
             }
             for (var i = 0; i < MAX_CONCURRENT_RESULTS; i++) {
