@@ -86,6 +86,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
 
+# (connect, read) timeout in seconds for every outbound Onshape/OAuth request.
+# Gunicorn's gthread workers don't kill a request thread stuck on a hung socket,
+# so without this a stalled call holds a thread forever.
+OUTBOUND_HTTP_TIMEOUT = (5, 20)
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 

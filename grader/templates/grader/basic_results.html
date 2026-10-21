@@ -44,16 +44,20 @@
             }
             });
         });
+        // Max update_result_page requests in flight at once. Firing every submission at once
+        // queues them on the server past Heroku's 30s router timeout (H12).
+        var MAX_CONCURRENT_RESULTS = 6;
+
         function get_results(){
             var loaded_returns = 0;
             var failed_returns = 0;
+            var jobs = [];  //one function per submission; each calls done() when its request finishes
             '{% for url in ref_urls %}'
 
-                $(document).ready(function () {
                 $('#property_box_{{forloop.counter0}}').css('display', 'block');    //turn on display for results table
                 loading_spinner_results('features_{{forloop.counter0}}');           //turn on smaller loading spinner for each result table
-                update_result_status(loaded_returns, failed_returns);              //show result loading status
 
+                jobs.push(function (done) {
                 var domain = "{{url.domain}}";
                 var did =   "{{url.did}}";
                 var wv =     "{{url.wv}}";
@@ -94,11 +98,22 @@
                     add_failed_url("{{forloop.counter0}}", doc_url, error_msg);
                     failed_returns += 1;
                     update_result_status(loaded_returns, failed_returns); //update result loading status
-                    }
+                    },
+                    complete: done
                 });
             });
             '{% endfor %}'
 
+            update_result_status(loaded_returns, failed_returns);  //show result loading status
+
+            function run_next(){
+                if (jobs.length > 0) {
+                    jobs.shift()(run_next);
+                }
+            }
+            for (var i = 0; i < MAX_CONCURRENT_RESULTS; i++) {
+                run_next();
+            }
         }
 
         function update_result_status(loaded_returns, failed_returns){

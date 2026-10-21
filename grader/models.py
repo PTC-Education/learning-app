@@ -8,6 +8,7 @@ Initial model only contains AuthUser
 import io 
 import os 
 import requests
+from django.conf import settings
 import base64
 from datetime import datetime, timedelta
 from typing import Optional, Iterable, Union, Tuple, Dict, Any
@@ -75,7 +76,8 @@ class AuthUser(models.Model):
                     os.environ['OAUTH_CLIENT_ID'].replace('=', '%3D'), 
                     os.environ['OAUTH_CLIENT_SECRET'].replace('=', '%3D')
                 ), 
-                headers={'Content-Type': "application/x-www-form-urlencoded"}
+                headers={'Content-Type': "application/x-www-form-urlencoded"},
+                timeout=settings.OUTBOUND_HTTP_TIMEOUT
             )
             response = response.json() 
 

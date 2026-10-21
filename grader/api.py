@@ -1,5 +1,6 @@
 import os 
 import requests
+from django.conf import settings
 from datetime import timedelta, datetime
 from typing import Union 
 import json
@@ -24,7 +25,8 @@ def get_mass_props(
         }, 
         params={
             "massAsGroup": massAsGroup
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -42,7 +44,8 @@ def get_part_list(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -61,7 +64,8 @@ def get_assembly_definition(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -78,7 +82,8 @@ def get_blob_data(
         headers={
             "Accept": "application/octet-stream", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.content
@@ -102,7 +107,8 @@ def get_shaded_views(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization": "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     
     if response.ok: 
@@ -122,7 +128,8 @@ def get_document_thumbnail(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization": "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok:
         sizes = response.json()['sizes']
@@ -136,7 +143,8 @@ def get_document_thumbnail(
             headers={
                 "Accept": "image/png, text/plain", 
                 "Authorization": "Bearer " + auth_token
-            }
+            },
+            timeout=settings.OUTBOUND_HTTP_TIMEOUT
         )
             
         if response2.ok:
@@ -158,7 +166,8 @@ def get_feature_list(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json()
@@ -176,7 +185,8 @@ def get_sketch_info(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json()
@@ -196,7 +206,8 @@ def get_doc_info(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -214,7 +225,8 @@ def get_user_doc_list(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -232,7 +244,8 @@ def get_class_list(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -253,7 +266,8 @@ def get_assignment_list(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -272,7 +286,8 @@ def get_submission_list(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
 
     if response.ok: 
@@ -292,7 +307,8 @@ def get_element_info(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -310,7 +326,8 @@ def get_versions(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
@@ -328,7 +345,8 @@ def get_microversions(
             "Content-Type": "application/json", 
             "Accept": "application/vnd.onshape.v2+json;charset=UTF-8;qs=0.09", 
             "Authorization" : "Bearer " + auth_token
-        }
+        },
+        timeout=settings.OUTBOUND_HTTP_TIMEOUT
     )
     if response.ok: 
         return response.json() 
