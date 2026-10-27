@@ -13,10 +13,6 @@ import base64
 from datetime import datetime, timedelta
 from typing import Optional, Iterable, Union, Tuple, Dict, Any
 
-import numpy as np 
-import numpy.typing as npt 
-from matplotlib.figure import Figure 
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from django.db import models
 from django.utils import timezone
